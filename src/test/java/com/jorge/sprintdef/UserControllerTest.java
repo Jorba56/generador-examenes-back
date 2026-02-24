@@ -6,7 +6,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,12 +25,12 @@ class UserControllerTest {
     private UserController userController;
 
     @Test
-    public void getAllUsers(){
+     void getAllUsers(){
         User usuario=new User();
-        usuario.setNombre_usuario("jorge");
-        usuario.setApellido_usuario("br");
-        usuario.setContrasenha_usuario("jorge12345");
-        usuario.setEmail_usuario("jobr@gmail.com");
+        usuario.setNombreUsuario("jorge");
+        usuario.setApellidoUsuario("br");
+        usuario.setContrasenhaUsuario("jorge12345");
+        usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
         given(userRep.findAll()).willReturn(List.of(usuario));
@@ -46,13 +45,13 @@ class UserControllerTest {
     }
 
     @Test
-    public void getUserId(){
+     void getUserId(){
         User usuario=new User();
-        usuario.setId(1L);
-        usuario.setNombre_usuario("jorge");
-        usuario.setApellido_usuario("br");
-        usuario.setContrasenha_usuario("jorge12345");
-        usuario.setEmail_usuario("jobr@gmail.com");
+        usuario.setIdUser(1L);
+        usuario.setNombreUsuario("jorge");
+        usuario.setApellidoUsuario("br");
+        usuario.setContrasenhaUsuario("jorge12345");
+        usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
         given(userRep.findById(1L)).willReturn(Optional.of(usuario));
@@ -61,17 +60,17 @@ class UserControllerTest {
         User userFind = userController.getUserId(1L);
 
         assertNotNull(userFind);
-        assertEquals(("jorge"), userFind.getNombre_usuario());
+        assertEquals(("jorge"), userFind.getNombreUsuario());
     }
 
     @Test
-    public void addUser(){
+     void addUser(){
         User usuario=new User();
-        usuario.setId(1L);
-        usuario.setNombre_usuario("jorge");
-        usuario.setApellido_usuario("br");
-        usuario.setContrasenha_usuario("jorge12345");
-        usuario.setEmail_usuario("jobr@gmail.com");
+        usuario.setIdUser(1L);
+        usuario.setNombreUsuario("jorge");
+        usuario.setApellidoUsuario("br");
+        usuario.setContrasenhaUsuario("jorge12345");
+        usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
         given(userRep.save(usuario)).willReturn(usuario);
@@ -86,27 +85,27 @@ class UserControllerTest {
     }
 
     @Test
-    public void updateUser(){
-            List <Integer> Roles= new ArrayList<>();
-            Roles.add(1);
-            Roles.add(2);
+     void updateUser(){
+            List <Long> rolesLista= new ArrayList<>();
+            rolesLista.add(1L);
+            rolesLista.add(2L);
             User usuario=new User();
-            usuario.setId(1L);
-            usuario.setNombre_usuario("jorge");
-            usuario.setApellido_usuario("br");
-            usuario.setContrasenha_usuario("jorge12345");
-            usuario.setEmail_usuario("jobr@gmail.com");
-            usuario.setRol_id(Roles);
+            usuario.setIdUser(1L);
+            usuario.setNombreUsuario("jorge");
+            usuario.setApellidoUsuario("br");
+            usuario.setContrasenhaUsuario("jorge12345");
+            usuario.setEmailUsuario("jobr@gmail.com");
+            usuario.setRolId(rolesLista);
             usuario.setActivo(true);
 
-            Roles.add(3);
+            rolesLista.add(3L);
             User usuario2=new User();
-            usuario2.setId(2L);
-            usuario2.setNombre_usuario("jorgete");
-            usuario2.setApellido_usuario("rubio");
-            usuario2.setContrasenha_usuario("jorge0987612345");
-            usuario2.setEmail_usuario("jorbarri@gmail.com");
-            usuario2.setRol_id(Roles);
+            usuario2.setIdUser(2L);
+            usuario2.setNombreUsuario("jorgete");
+            usuario2.setApellidoUsuario("rubio");
+            usuario2.setContrasenhaUsuario("jorge0987612345");
+            usuario2.setEmailUsuario("jorbarri@gmail.com");
+            usuario2.setRolId(rolesLista);
             usuario2.setActivo(true);
 
             given(userRep.findById(1L)).willReturn(Optional.of(usuario));
@@ -119,9 +118,9 @@ class UserControllerTest {
     }
 
     @Test
-    public void deleteUser(){
+     void deleteUser(){
             User usuario=new User();
-            usuario.setId(1L); // no necesito más
+            usuario.setIdUser(1L); // no necesito más
 
             //when
             String borrado = userController.deleteUser(1L);
@@ -130,12 +129,8 @@ class UserControllerTest {
             assertNotNull(borrado);
             assertEquals("usuario borrado con exito", borrado);
 
-            //verificar que realmente se ha borrado
+            //verificar que realmente se ha borrado de la base de datos
             verify(userRep).deleteById(1L);
             verifyNoMoreInteractions(userRep); // ver si no se ejecuta mas veces
         }
     }
-
-
-
-

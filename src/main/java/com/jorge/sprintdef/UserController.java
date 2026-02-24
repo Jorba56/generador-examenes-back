@@ -2,10 +2,7 @@ package com.jorge.sprintdef;
 
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -46,14 +43,14 @@ public class UserController {
         }
 
         // 3. Actualizamos los datos
-        userUpdate.setNombre_usuario(usuario.getNombre_usuario());
-        userUpdate.setApellido_usuario(usuario.getApellido_usuario());
-        userUpdate.setEmail_usuario(usuario.getEmail_usuario());
+        userUpdate.setNombreUsuario(usuario.getNombreUsuario());
+        userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
+        userUpdate.setEmailUsuario(usuario.getEmailUsuario());
         userUpdate.setActivo(usuario.getActivo());
-        userUpdate.setContrasenha_usuario(usuario.getContrasenha_usuario());
+        userUpdate.setContrasenhaUsuario(usuario.getContrasenhaUsuario());
 
         // 4. Actualizamos el rol (ahora usuario.getRol() sí tendrá datos gracias al setter falso)
-        userUpdate.setRoles((List<Rol>) usuario.getRoles());
+        userUpdate.setRoles(usuario.getRoles());
 
         // 5. Guardamos en la base de datos
         userRep.save(userUpdate);

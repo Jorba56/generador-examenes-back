@@ -22,14 +22,14 @@ public class RolController{
     }
 
     @GetMapping("/{id}")
-    public Optional<Rol> getUserId (@PathVariable Long id){
+    public Optional<Rol> getRolId (@PathVariable Long id){
         return rolRepository.findById(id);
     }
 
     @PostMapping("")
-    public void addRol (@RequestBody Rol rol){
+    public String addRol (@RequestBody Rol rol){
         rolRepository.save(rol);
-        System.out.println( "rol añadido con exito");
+        return("rol añadido con exito");
     }
 
     @PutMapping("/update/{id}")
@@ -56,7 +56,7 @@ public class RolController{
     @DeleteMapping("/{id}")
     public String deleteRol (@PathVariable Long id){
         rolRepository.deleteById(id);
-        return( "rol borrado con exito");
+        return("rol borrado con exito");
     }
 
 }

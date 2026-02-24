@@ -6,9 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -16,21 +14,26 @@ public class User{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_user;
+    @Column(name = "id_user")
+    private Long idUser;
 
     @NotNull
-    private String nombre_usuario;
+    @Column(name = "nombre_usuario")
+    private String nombreUsuario;
 
     @NotNull
-    private String apellido_usuario;
+    @Column(name = "apellido_usuario")
+    private String apellidoUsuario;
 
 
     @NotNull
-    private String contrasenha_usuario;
+    @Column(name = "contrasenha_usuario")
+    private String contrasenhaUsuario;
 
     @NotNull
     @Email
-    private String email_usuario;
+    @Column(name = "email_usuario")
+    private String emailUsuario;
 
     @NotNull
     private boolean activo;
@@ -42,20 +45,20 @@ public class User{
     private List<Rol> roles= new ArrayList<>();
 
     // Getters and setters
-    public Long getId() { return id_user; }
-    public void setId(Long id) { this.id_user = id_user; }
+    public Long getIdUser() { return idUser; }
+    public void setIdUser(Long idUser) { this.idUser = idUser; }
 
-    public String getNombre_usuario() { return nombre_usuario; }
-    public void setNombre_usuario(String nombre_usuario) { this.nombre_usuario = nombre_usuario; }
+    public String getNombreUsuario() { return nombreUsuario; }
+    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
 
-    public String getEmail_usuario() { return email_usuario; }
-    public void setEmail_usuario(String email_usuario) { this.email_usuario =email_usuario; }
+    public String getEmailUsuario() { return emailUsuario; }
+    public void setEmailUsuario(String emailUsuario) { this.emailUsuario =emailUsuario; }
 
-    public String getApellido_usuario() { return apellido_usuario; }
-    public void setApellido_usuario(String apellido_usuario) { this.apellido_usuario = apellido_usuario; }
+    public String getApellidoUsuario() { return apellidoUsuario; }
+    public void setApellidoUsuario(String apellidoUsuario) { this.apellidoUsuario = apellidoUsuario; }
 
-    public String getContrasenha_usuario() { return contrasenha_usuario; }
-    public void setContrasenha_usuario(String contrasenha_usuario) { this.contrasenha_usuario = contrasenha_usuario; }
+    public String getContrasenhaUsuario() { return contrasenhaUsuario; }
+    public void setContrasenhaUsuario(String contrasenhaUsuario) { this.contrasenhaUsuario = contrasenhaUsuario; }
 
     public boolean getActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo= activo; }
@@ -71,21 +74,22 @@ public class User{
 
 
     // 3. El "Getter Falso": Jackson lee esto y crea la clave "rol_id" automáticamente
-    public List<Integer> getRol_id() {
+    public List<Long> getRolId() {
+        List<Long> rolesFinal=new ArrayList<>();
         if (this.roles != null) {
-            List<Integer> rolesFinal=new ArrayList<>();
             for(int i=0; i<roles.size();i++){
                 rolesFinal.add((roles.get(i)).getId());
             }
             return rolesFinal;
         }
-        return null; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
+
+        return rolesFinal; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
     }
     // Jackson usará esto cuando envíes "rol_id": 2 desde Postman
-    public String setRol_id(List<Integer> ids)  {
+    public String setRolId(List<Long> ids)  {
         if (ids != null) {
             this.roles = new ArrayList<>();
-            for (Integer id : ids) {
+            for (Long id : ids) {
                 Rol nuevoRol = new Rol();
                 nuevoRol.setId(id);
                 this.roles.add(nuevoRol);

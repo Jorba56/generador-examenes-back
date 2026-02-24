@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotNull
     private String name;
@@ -16,13 +16,13 @@ public class Rol {
     @NotNull
     private boolean activo;
 
-    public int getId() { return id; }
+    public Long getId() { return id; }
 
     public String getName() { return name; }
 
     public boolean getActivo() { return activo; }
 
-    public void setId(int id) { this.id= id; }
+    public void setId(Long id) { this.id= id; }
 
     public void setName(String name) { this.name= name; }
 
