@@ -26,7 +26,7 @@ public class UserDTO {
     @JsonProperty("roles_usuario")
     private List<Rol> roles= new ArrayList<>();
 
-    // Getters and setters
+    // Getters y setters
     public Long getIdUser() { return idUser; }
     public void setIdUser(Long idUser) { this.idUser = idUser; }
 

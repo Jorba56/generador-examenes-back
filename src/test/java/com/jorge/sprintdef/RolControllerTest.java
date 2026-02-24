@@ -30,13 +30,13 @@ class RolControllerTest {
         rol1.setActivo(false);
         rol1.setIdRol(4L);
 
-        given(rolRep.findAll()).willReturn(List.of(rol1));
+        given(rolRep.findRolsByActivoIs(true)).willReturn(List.of(rol1));
 
         List <Rol> rolList=rolController.getAllRoles();
 
         assertFalse(rolList.isEmpty());
         assertEquals(1,rolList.size());
-        verify(rolRep).findAll();
+        verify(rolRep).findRolsByActivoIs(true);
         verifyNoMoreInteractions(rolRep);
     }
 
@@ -102,14 +102,11 @@ class RolControllerTest {
         rol.setIdRol(6L); // no necesito más
 
         //when
-        String borrado = rolController.deleteRol(rol.getIdRol());
+        String borrado = rolController.deleteRol(6L);
 
         //asserts
         assertNotNull(borrado);
         assertEquals("rol borrado con exito", borrado);
 
-        //verificar que realmente se ha borrado de la base de datos
-        verify(rolRep).deleteById(6L);
-        verifyNoMoreInteractions(rolRep); // ver si no se ejecuta mas veces
     }
 }

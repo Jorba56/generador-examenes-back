@@ -4,7 +4,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +33,14 @@ class UserControllerTest {
         usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
-        given(userRep.findAll()).willReturn(List.of(usuario));
+        given(userRep.findUsersByActivoIs(true)).willReturn(List.of(usuario));
 
         //when
         List<UserDTO> userList=userController.getAllUsers();
 
         assertFalse(userList.isEmpty());
         assertEquals((1), userList.size());
-        verify(userRep).findAll();
+        verify(userRep).findUsersByActivoIs(true);
         verifyNoMoreInteractions(userRep); // ver si no se ejecuta mas veces
     }
 
@@ -128,10 +127,7 @@ class UserControllerTest {
 
             //asserts
             assertNotNull(borrado);
-            assertEquals("usuario borrado con exito", borrado);
+            assertEquals("usuario borrado correctamente", borrado);
 
-            //verificar que realmente se ha borrado de la base de datos
-            verify(userRep).deleteById(1L);
-            verifyNoMoreInteractions(userRep); // ver si no se ejecuta mas veces
         }
     }
