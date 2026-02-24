@@ -4,6 +4,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ class UserControllerTest {
         given(userRep.findAll()).willReturn(List.of(usuario));
 
         //when
-        List<User> userList=userController.getAllUsers();
+        List<UserDTO> userList=userController.getAllUsers();
 
         assertFalse(userList.isEmpty());
         assertEquals((1), userList.size());
@@ -57,7 +58,7 @@ class UserControllerTest {
         given(userRep.findById(1L)).willReturn(Optional.of(usuario));
 
         //when
-        User userFind = userController.getUserId(1L);
+        UserDTO userFind = userController.getUserId(1L).getBody();
 
         assertNotNull(userFind);
         assertEquals(("jorge"), userFind.getNombreUsuario());

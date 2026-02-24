@@ -15,10 +15,9 @@ public class RolController{
         this.rolRepository = rolRepository;
     }
 
-
     @GetMapping
     public List<Rol> getAllRoles(){
-        return rolRepository.findAll();
+        return rolRepository.findRolsByActivoIs(true);
     }
 
     @GetMapping("/{id}")
@@ -55,7 +54,11 @@ public class RolController{
 
     @DeleteMapping("/{id}")
     public String deleteRol (@PathVariable Long id){
-        rolRepository.deleteById(id);
+        Rol rolSelect=rolRepository.findById(id).orElse(null);
+        if (rolSelect!=null) {
+            rolSelect.setActivo(false);
+            rolRepository.save(rolSelect);
+        }
         return("rol borrado con exito");
     }
 

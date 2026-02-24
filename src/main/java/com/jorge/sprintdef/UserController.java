@@ -1,7 +1,9 @@
 package com.jorge.sprintdef;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -16,15 +18,27 @@ public class UserController {
 
 
     @GetMapping
-    public List<User> getAllUsers(){
-        return userRep.findAll();
+    public List<UserDTO> getAllUsers() {
+        List<User> encontrados = userRep.findUsersByActivoIs(true);
+        List<UserDTO> usuarios=new ArrayList<>();
+        for (User encontrado : encontrados) usuarios.add(mappingADTO(encontrado));
+        return usuarios;
     }
 
     @GetMapping("/{id}")
-    public User getUserId (@PathVariable Long id){
-        return userRep.findById(id).orElse(null);
-    }
+    public ResponseEntity<UserDTO> getUserId(@PathVariable Long id) {
+        // 1. Buscamos el usuario de forma segura
+        User usuario = userRep.findById(id).orElse(null);
 
+        // 2. Si no existe, devolvemos un 404 (Not Found) y cortamos la ejecución
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 3. Si existe, lo mapeamos y lo envolvemos en un 200 (OK)
+        UserDTO dto = mappingADTO(usuario);
+        return ResponseEntity.ok(dto);
+    }
     @PostMapping("/add")
     public String addUser (@RequestBody User usuario){
         userRep.save(usuario);
@@ -60,8 +74,22 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public String deleteUser (@PathVariable Long id){
-        userRep.deleteById(id);
-        return("usuario borrado con exito");
+        User userSelect=userRep.findById(id).orElse(null);
+        if (userSelect!=null) {
+            userSelect.setActivo(false);
+            userRep.save(userSelect);
+        }
+        return ("usuario borrado correctamente");
+    }
+
+    UserDTO mappingADTO (User usuario){
+        UserDTO dto= new UserDTO();
+        dto.setIdUser(usuario.getIdUser());
+        dto.setRolId(usuario.getRolId());
+        dto.setNombreUsuario(usuario.getNombreUsuario());
+        dto.setApellidoUsuario(usuario.getApellidoUsuario());
+        dto.setEmailUsuario(usuario.getEmailUsuario());
+        return dto;
     }
 
 }

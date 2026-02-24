@@ -28,7 +28,7 @@ class RolControllerTest {
         Rol rol1=new Rol();
         rol1.setName("administrador");
         rol1.setActivo(false);
-        rol1.setId(4L);
+        rol1.setIdRol(4L);
 
         given(rolRep.findAll()).willReturn(List.of(rol1));
 
@@ -45,15 +45,15 @@ class RolControllerTest {
         Rol rol1=new Rol();
         rol1.setName("administrador");
         rol1.setActivo(false);
-        rol1.setId(4L);
+        rol1.setIdRol(4L);
 
-        given(rolRep.findById(rol1.getId())).willReturn(Optional.of(rol1));
+        given(rolRep.findById(rol1.getIdRol())).willReturn(Optional.of(rol1));
 
-        Rol rolSearch=rolController.getRolId(rol1.getId()).orElse(null);
+        Rol rolSearch=rolController.getRolId(rol1.getIdRol()).orElse(null);
 
         assertNotNull(rolSearch);
-        assertEquals(rol1.getId(),rolSearch.getId());
-        verify(rolRep).findById(rol1.getId());
+        assertEquals(rol1.getIdRol(),rolSearch.getIdRol());
+        verify(rolRep).findById(rol1.getIdRol());
         verifyNoMoreInteractions(rolRep);
     }
 
@@ -62,7 +62,7 @@ class RolControllerTest {
         Rol rol1=new Rol();
         rol1.setName("administrador");
         rol1.setActivo(false);
-        rol1.setId(4L);
+        rol1.setIdRol(4L);
 
         given(rolRep.save(rol1)).willReturn(rol1);
 
@@ -79,14 +79,14 @@ class RolControllerTest {
         Rol rol1=new Rol();
         rol1.setName("administrador");
         rol1.setActivo(false);
-        rol1.setId(4L);
+        rol1.setIdRol(4L);
 
         Rol rol2=new Rol();
         rol2.setName("administrador2");
         rol2.setActivo(true);
-        rol2.setId(5L);
+        rol2.setIdRol(5L);
 
-        given(rolRep.findById(rol1.getId())).willReturn(Optional.of(rol1));
+        given(rolRep.findById(rol1.getIdRol())).willReturn(Optional.of(rol1));
 
         String correcto=rolController.updateRol(4L,rol2);
 
@@ -99,10 +99,10 @@ class RolControllerTest {
     @Test
      void deleteRol(){
         Rol rol=new Rol();
-        rol.setId(6L); // no necesito más
+        rol.setIdRol(6L); // no necesito más
 
         //when
-        String borrado = rolController.deleteRol(rol.getId());
+        String borrado = rolController.deleteRol(rol.getIdRol());
 
         //asserts
         assertNotNull(borrado);

@@ -1,47 +1,29 @@
 package com.jorge.sprintdef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "usuarios")
-public class User{
+public class UserDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_user")
+    @NotNull
+    @JsonProperty("id_user")
     private Long idUser;
 
-    @NotNull
-    @Column(name = "nombre_usuario")
+    @JsonProperty("nombre_usuario")
     private String nombreUsuario;
 
-    @NotNull
-    @Column(name = "apellido_usuario")
+    @JsonProperty("apellido_usuario")
     private String apellidoUsuario;
 
-
-    @NotNull
-    @Column(name = "contrasenha_usuario")
-    private String contrasenhaUsuario;
-
-    @NotNull
-    @Email
-    @Column(name = "email_usuario")
+    @JsonProperty("email_usuario")
     private String emailUsuario;
 
-    @NotNull
-    private boolean activo;
-
-    @ManyToMany
-    @JoinTable(name = "roles_usuario",
-    joinColumns=@JoinColumn(name="id_user"),
-    inverseJoinColumns = @JoinColumn(name = "id_rol"))
+    @JsonIgnore
+    @JsonProperty("roles_usuario")
     private List<Rol> roles= new ArrayList<>();
 
     // Getters and setters
@@ -57,12 +39,6 @@ public class User{
     public String getApellidoUsuario() { return apellidoUsuario; }
     public void setApellidoUsuario(String apellidoUsuario) { this.apellidoUsuario = apellidoUsuario; }
 
-    public String getContrasenhaUsuario() { return contrasenhaUsuario; }
-    public void setContrasenhaUsuario(String contrasenhaUsuario) { this.contrasenhaUsuario = contrasenhaUsuario; }
-
-    public boolean getActivo() { return activo; }
-    public void setActivo(boolean activo) { this.activo= activo; }
-    @JsonIgnore
     public List<Rol> getRoles() {
         return roles;
     }
@@ -72,8 +48,6 @@ public class User{
         this.roles = roles;
     }
 
-
-    // 3. El "Getter Falso": Jackson lee esto y crea la clave "rol_id" automáticamente
     public List<Long> getRolId() {
         List<Long> rolesFinal=new ArrayList<>();
         if (this.roles != null) {
@@ -82,7 +56,6 @@ public class User{
             }
             return rolesFinal;
         }
-
         return rolesFinal; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
     }
     // Jackson usará esto cuando envíes "rol_id": 2 desde Postman
@@ -99,8 +72,3 @@ public class User{
         }
     }
 }
-
-
-
-
-
