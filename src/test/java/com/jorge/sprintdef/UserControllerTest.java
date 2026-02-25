@@ -1,15 +1,18 @@
 package com.jorge.sprintdef;
+import com.jorge.sprintdef.dto.UsersAllDTO;
+import com.jorge.sprintdef.dto.UserIdDTo;
+import com.jorge.sprintdef.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,45 +22,42 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 class UserControllerTest {
 
     @Mock
-    private UserRepository userRep;
+    private UserService userService;
 
     @InjectMocks
     private UserController userController;
 
     @Test
      void getAllUsers(){
-        User usuario=new User();
+        UsersAllDTO usuario=new UsersAllDTO();
         usuario.setNombreUsuario("jorge");
         usuario.setApellidoUsuario("br");
-        usuario.setContrasenhaUsuario("jorge12345");
         usuario.setEmailUsuario("jobr@gmail.com");
-        usuario.setActivo(true);
 
-        given(userRep.findUsersByActivoIs(true)).willReturn(List.of(usuario));
+        given(userService.listarUsuarios()).willReturn(List.of(usuario));
 
         //when
-        List<UserDTO> userList=userController.getAllUsers();
+        List<UsersAllDTO> userList=userController.getAllUsers();
 
         assertFalse(userList.isEmpty());
         assertEquals((1), userList.size());
-        verify(userRep).findUsersByActivoIs(true);
-        verifyNoMoreInteractions(userRep); // ver si no se ejecuta mas veces
+        verify(userService).listarUsuarios();
+        verifyNoMoreInteractions(userService); // ver si no se ejecuta mas veces
     }
 
     @Test
      void getUserId(){
-        User usuario=new User();
+        UserIdDTo usuario=new UserIdDTo();
         usuario.setIdUser(1L);
         usuario.setNombreUsuario("jorge");
         usuario.setApellidoUsuario("br");
-        usuario.setContrasenhaUsuario("jorge12345");
         usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
-        given(userRep.findById(1L)).willReturn(Optional.of(usuario));
+        given(userService.buscarPorId(1L)).willReturn((usuario));
 
         //when
-        UserDTO userFind = userController.getUserId(1L).getBody();
+        UserIdDTo userFind = userController.getUserId(1L);
 
         assertNotNull(userFind);
         assertEquals(("jorge"), userFind.getNombreUsuario());
@@ -65,69 +65,54 @@ class UserControllerTest {
 
     @Test
      void addUser(){
+
         User usuario=new User();
-        usuario.setIdUser(1L);
         usuario.setNombreUsuario("jorge");
         usuario.setApellidoUsuario("br");
         usuario.setContrasenhaUsuario("jorge12345");
         usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
-        given(userRep.save(usuario)).willReturn(usuario);
+        given(userService.addUsuario(any(User.class))).willReturn("usuario añadido con exito");
 
         //when
         String correcto=userController.addUser(usuario);
 
         assertNotNull(correcto);
         assertEquals(("usuario añadido con exito"),correcto);
-        verify(userRep).save(usuario);
-        verifyNoMoreInteractions(userRep); // ver si no se ejecuta mas veces
+        verify(userService).addUsuario(usuario);
+        verifyNoMoreInteractions(userService); // ver si no se ejecuta mas veces
     }
 
     @Test
      void updateUser(){
-            List <Long> rolesLista= new ArrayList<>();
-            rolesLista.add(1L);
-            rolesLista.add(2L);
-            User usuario=new User();
-            usuario.setIdUser(1L);
-            usuario.setNombreUsuario("jorge");
-            usuario.setApellidoUsuario("br");
-            usuario.setContrasenhaUsuario("jorge12345");
-            usuario.setEmailUsuario("jobr@gmail.com");
-            usuario.setRolId(rolesLista);
-            usuario.setActivo(true);
 
-            rolesLista.add(3L);
             User usuario2=new User();
-            usuario2.setIdUser(2L);
+
             usuario2.setNombreUsuario("jorgete");
             usuario2.setApellidoUsuario("rubio");
-            usuario2.setContrasenhaUsuario("jorge0987612345");
             usuario2.setEmailUsuario("jorbarri@gmail.com");
-            usuario2.setRolId(rolesLista);
             usuario2.setActivo(true);
 
-            given(userRep.findById(1L)).willReturn(Optional.of(usuario));
+            given(userService.actualizarUsuario("admin", 1L, usuario2)).willReturn(("Usuario editado correctamente"));
 
             //when
-            String correcto=userController.updateUser(1L,usuario2);
+            String salida=(userController.updateUser("admin",1L,usuario2));
 
-            assertNotNull(correcto);
-            assertEquals(("Usuario editado correctamente"),correcto);
+            assertNotNull(salida);
+            assertEquals(("Usuario editado correctamente"),salida);
     }
 
     @Test
      void deleteUser(){
             User usuario=new User();
-            usuario.setIdUser(1L); // no necesito más
-
+            usuario.setIdUser(1L);
+            given(userService.desactivarUsuario(usuario.getIdUser())).willReturn(("usuario borrado correctamente"));
             //when
-            String borrado = userController.deleteUser(1L);
+            String borrado = userController.deleteUser(usuario.getIdUser());
 
             //asserts
             assertNotNull(borrado);
             assertEquals("usuario borrado correctamente", borrado);
-
         }
     }

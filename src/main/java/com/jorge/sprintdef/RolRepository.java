@@ -8,6 +8,4 @@ import java.util.List;
 @Repository
 public interface RolRepository extends JpaRepository<Rol, Long> {
     List<Rol> findRolsByActivoIs(boolean b);
-
-    List<Rol> getRolsByActivoIsTrue(boolean activo);
 }

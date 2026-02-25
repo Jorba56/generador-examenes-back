@@ -25,7 +25,6 @@ public class User{
     @Column(name = "apellido_usuario")
     private String apellidoUsuario;
 
-
     @NotNull
     @Column(name = "contrasenha_usuario")
     private String contrasenhaUsuario;
@@ -46,7 +45,7 @@ public class User{
 
     // Getters and setters
     public Long getIdUser() { return idUser; }
-    public void setIdUser(Long idUser) { this.idUser = idUser; }
+    public void setIdUser(Long idUser) { this.idUser= idUser; }
 
     public String getNombreUsuario() { return nombreUsuario; }
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
@@ -82,7 +81,6 @@ public class User{
             }
             return rolesFinal;
         }
-
         return rolesFinal; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
     }
     // Jackson usará esto cuando envíes "rol_id": 2 desde Postman
@@ -98,6 +96,8 @@ public class User{
             this.roles = null;
         }
     }
+
+
 }
 
 

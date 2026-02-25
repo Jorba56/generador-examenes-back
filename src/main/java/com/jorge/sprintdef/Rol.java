@@ -15,7 +15,7 @@ public class Rol {
     private String name;
 
     @NotNull
-    private boolean activo;
+    private boolean activo=true;
 
     public Long getIdRol() { return idRol; }
     public void setIdRol(Long idRol) { this.idRol= idRol; }
