@@ -2,11 +2,11 @@ package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+
 
 import com.jorge.sprintdef.services.UserService;
 @RestController

@@ -1,6 +1,5 @@
 package com.jorge.sprintdef;
 
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
