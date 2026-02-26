@@ -2,6 +2,7 @@ package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
+import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.services.RolService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +20,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 
 class RolServiceTest {
+
     @Mock
     private RolRepository rolRep;
+
+    @Mock
+    private RolMapper rolMap;
 
     @InjectMocks
     private RolService rolService;
@@ -106,7 +111,12 @@ class RolServiceTest {
         rol2.setName("administrador2");
         rol2.setActivo(true);
 
-        given(rolRep.findById(rol1.getIdRol())).willReturn(Optional.of(rol1));
+        Rol rolMapeado = new Rol();
+        rolMapeado.setName("administrador2");
+        rolMapeado.setActivo(true);
+
+        given(rolRep.findById(4L)).willReturn(Optional.of(rol1));
+        given(rolMap.mappingPutReverse(rol2)).willReturn((rolMapeado));
 
         String correcto=rolService.actualizarRol(4L,rol2);
 

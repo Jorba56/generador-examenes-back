@@ -47,12 +47,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}/roles")
-    public List<Rol> rolesUser(Long id){
+    public List<Rol> rolesUser(@PathVariable Long id){
         return userService.rolesUser(id);
     }
 
     @PostMapping("/{id}/roles")
-    public String userAddRol(@PathVariable Long id, @RequestBody RolPostUser id_rol){
-        return userService.addRolUser(id,id_rol);
+    public String userAddRol(@PathVariable Long id, @RequestBody RolPostUser idRol){
+        return userService.addRolUser(id,idRol);
+    }
+
+    @DeleteMapping("/{id_usuario}/roles/{id_rol}") //Quitarle un rol a un usuario
+    public String deleteRolUser (@PathVariable Long id_rol, @PathVariable Long id_usuario) {
+        return userService.deleteRolUser(id_rol, id_usuario);
     }
 }

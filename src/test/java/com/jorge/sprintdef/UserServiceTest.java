@@ -1,9 +1,7 @@
 package com.jorge.sprintdef;
 
 
-import com.jorge.sprintdef.dto.UserAddDTO;
-import com.jorge.sprintdef.dto.UserIdDTo;
-import com.jorge.sprintdef.dto.UsersAllDTO;
+import com.jorge.sprintdef.dto.*;
 import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.services.UserService;
 import org.junit.jupiter.api.Test;
@@ -11,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +24,9 @@ import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
+    @Mock // <-- ¡Añade esto si no lo tienes!
+    private RolRepository rolRep;
+
     @Mock
     private UserRepository userRepository;
 
@@ -32,6 +35,7 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
 
     @Test
     void getAllUsers() {
@@ -157,7 +161,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateRolNull() {
+    void updateUserNull() {
 
         User user2 = new User();
         user2.setNombreUsuario("administrador2");
@@ -173,7 +177,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteRol(){
+    void deleteUser(){
         User user=new User();
         user.setIdUser(6L);
         user.setActivo(true);// no necesito más
@@ -190,7 +194,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteRolNull() {
+    void deleteUserNull() {
         // Obligamos a Mockito a devolver vacío
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
@@ -204,5 +208,97 @@ class UserServiceTest {
         //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
         verify(userRepository, never()).save(any(User.class));
 
+    }
+
+
+    @Test
+    void rolesUser() {
+        User user = new User();
+        user.setIdUser(6L);
+        user.setActivo(true);
+
+        Rol rolFalso = new Rol();
+        rolFalso.setIdRol(1L);
+        rolFalso.setName("admin");
+        user.setRoles(List.of(rolFalso)); // Añadimos el rol al usuario
+
+        given(userRepository.findById(6L)).willReturn(Optional.of(user));
+
+        List<Rol> roles = userService.rolesUser(user.getIdUser());
+
+        assertNotNull(roles);
+        assertFalse(roles.isEmpty()); // Comprobamos que la lista NO viene vacía
+        assertEquals(1, roles.size()); // Comprobamos que trae exactamente 1 rol
+        assertEquals("admin", roles.get(0).getName()); // Comprobamos que es el rol correcto
+
+        verify(userRepository).findById(6L);
+    }
+
+    @Test
+    void addRolUser() {
+        // GIVEN: Preparamos un usuario con una lista de roles vacía
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        usuario.setRoles(new ArrayList<>()); // Inicializamos la lista para que no dé null pointer
+
+        // GIVEN: Preparamos el rol que vamos a buscar en base de datos
+        Rol rolNuevo = new Rol();
+        rolNuevo.setIdRol(2L);
+
+        // GIVEN: Preparamos el DTO que entra por el controlador
+        RolPostUser rolPost = new RolPostUser();
+
+        // Educamos a los mocks
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
+
+        // WHEN: Ejecutamos el servicio
+        String resultado = userService.addRolUser(1L, rolPost);
+
+        // THEN: Comprobamos el texto devuelto
+        assertNotNull(resultado);
+        assertEquals("rol añdadido a usuario", resultado);
+
+        // THEN: Comprobamos que efectivamente el rol se metió en la lista del usuario
+        assertFalse(usuario.getRoles().isEmpty());
+        assertEquals(2L, usuario.getRoles().get(0).getIdRol());
+
+        // THEN: Comprobamos que se guardó en la base de datos
+        verify(userRepository).save(usuario);
+        verify(userRepository).findById(1L);
+        verify(rolRep).findById(2L);
+    }
+
+    @Test
+    void deleteRolUser() {
+        // GIVEN: Preparamos un rol
+        Rol rolAEliminar = new Rol();
+        rolAEliminar.setIdRol(2L);
+
+        // GIVEN: Preparamos un usuario que YA TIENE ese rol asignado
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        List<Rol> rolesDelUsuario = new ArrayList<>();
+        rolesDelUsuario.add(rolAEliminar);
+        usuario.setRoles(rolesDelUsuario);
+
+        // Educamos a los mocks
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolAEliminar));
+
+        // WHEN: Ejecutamos el servicio
+        String resultado = userService.deleteRolUser(1L, 2L);
+
+        // THEN: Comprobamos el texto
+        assertNotNull(resultado);
+        assertEquals("Rol eliminado correctamente", resultado);
+
+        // THEN: Comprobamos que la lista del usuario ahora está vacía (se ha borrado)
+        assertTrue(usuario.getRoles().isEmpty());
+
+        // THEN: Comprobamos que los cambios se guardaron
+        verify(userRepository).save(usuario);
+        verify(userRepository).findById(1L);
+        verify(rolRep).findById(2L);
     }
 }

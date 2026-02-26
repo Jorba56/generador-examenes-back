@@ -13,6 +13,7 @@ import com.jorge.sprintdef.mapping.UserMapper;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserService {
@@ -55,7 +56,7 @@ public class UserService {
 
     public String actualizarUsuario(String rolEditor, Long id, User usuario) {
 
-        String salida="";
+        String salida;
 
         if(rolEditor.equalsIgnoreCase("admin") || (rolEditor.equalsIgnoreCase("administrador"))){
 
@@ -97,17 +98,51 @@ public class UserService {
     }
 
     public List<Rol>rolesUser(Long idUser){
+        List<Rol> roles=new ArrayList<>();
         User encontrado=userRep.findById(idUser).orElse(null);
-        return encontrado.getRoles();
+        if (encontrado!=null) { roles = encontrado.getRoles();}
+        return roles;
     }
 
     public String addRolUser(Long idUser, RolPostUser idRol){
+        String salida;
         User encontrado=userRep.findById(idUser).orElse(null);
         Rol rolN=rolRep.findById(idRol.getIdRol()).orElse(null);
-        List <Rol> roles=encontrado.getRoles();
-        roles.add(rolN);
-        encontrado.setRoles(roles);
-        userRep.save(encontrado);
-        return "rol añdadido a usuario";
+        if (encontrado!=null) {
+            List<Rol> roles = encontrado.getRoles();
+            roles.add(rolN);
+            encontrado.setRoles(roles);
+            userRep.save(encontrado);
+            salida= "rol añdadido a usuario";
+        } else{ salida="Usuario no encontrado";}
+        return salida;
+    }
+
+    public String deleteRolUser(Long idUser, Long idRol) {
+
+        // Cláusula de guarda: Comprobamos el usuario primero y salimos si falla
+        User usuario = userRep.findById(idUser).orElse(null);
+        if (usuario == null) {
+            return "Usuario no encontrado";
+        }
+
+        // 2. Cláusula de guarda: Comprobamos el rol y salimos si falla
+        Rol rolN = rolRep.findById(idRol).orElse(null);
+        if (rolN == null) {
+            return "Ese rol no existe en la base de datos";
+        }
+
+        // 3. Acción directa: removeIf hace el bucle y el borrado de forma segura
+        boolean rolBorrado = usuario.getRoles().removeIf(rol ->
+                Objects.equals(rol.getIdRol(), rolN.getIdRol())
+        );
+
+        // 4. Guardamos solo si de verdad se ha borrado algo
+        if (rolBorrado) {
+            userRep.save(usuario);
+            return "Rol eliminado correctamente";
+        }
+
+        return "El usuario no tenía asignado ese rol";
     }
 }

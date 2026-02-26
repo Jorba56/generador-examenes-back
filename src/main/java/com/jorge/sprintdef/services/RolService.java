@@ -5,7 +5,6 @@ import com.jorge.sprintdef.*;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.mapping.RolMapper;
-import com.jorge.sprintdef.mapping.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,10 +38,10 @@ public class RolService {
     public String actualizarRol(Long id, RolPutDTO rolNuevo) {
          String salida;
         // 1. Buscamos el usuario y abrimos el Optional de forma segura
-        Rol rolUpdate = rolRepository.findById(id).orElse(new Rol());
+        Rol rolUpdate = rolRepository.findById(id).orElse(null);
 
         // 2. Comprobamos que exista
-        if (rolUpdate.getIdRol()==null) {
+        if (rolUpdate==null) {
              salida= "Error: Rol no encontrado";
         }else {
             Rol rolUpdate2= rolMap.mappingPutReverse(rolNuevo);

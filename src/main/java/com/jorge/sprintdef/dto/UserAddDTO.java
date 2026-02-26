@@ -2,7 +2,6 @@ package com.jorge.sprintdef.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotNull;
 
 public class UserAddDTO {
 

@@ -3,20 +3,15 @@ package com.jorge.sprintdef.services;
 import com.jorge.sprintdef.*;
 import com.jorge.sprintdef.dto.*;
 
-import com.jorge.sprintdef.mapping.RolMapper;
-import com.jorge.sprintdef.mapping.UserMapper;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UsuariosRolesDTOService {
-
-    private final UsuariosRolesRepository usuariosRolesRepository;
     private final UserRepository userRep;
 
-    public UsuariosRolesDTOService(UsuariosRolesRepository usuariosRolesRepository,   UserRepository userRep){
-        this.usuariosRolesRepository=usuariosRolesRepository;
+    public UsuariosRolesDTOService( UserRepository userRep){
         this.userRep=userRep;
     }
 
