@@ -3,6 +3,9 @@ package com.jorge.sprintdef.services;
 
 import com.jorge.sprintdef.*;
 import com.jorge.sprintdef.dto.RolDTO;
+import com.jorge.sprintdef.dto.RolPutDTO;
+import com.jorge.sprintdef.mapping.RolMapper;
+import com.jorge.sprintdef.mapping.UserMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,8 +15,10 @@ import java.util.Optional;
 public class RolService {
 
     private final RolRepository rolRepository;
+    private final RolMapper rolMap;
 
-    public RolService(RolRepository rolRepository) {
+    public RolService(RolRepository rolRepository, RolMapper rolMap) {
+        this.rolMap = rolMap;
         this.rolRepository = rolRepository;
     }
 
@@ -31,7 +36,7 @@ public class RolService {
         return("rol añadido con exito");
     }
 
-    public String actualizarRol(Long id, Rol rolNuevo) {
+    public String actualizarRol(Long id, RolPutDTO rolNuevo) {
          String salida;
         // 1. Buscamos el usuario y abrimos el Optional de forma segura
         Rol rolUpdate = rolRepository.findById(id).orElse(new Rol());
@@ -40,10 +45,9 @@ public class RolService {
         if (rolUpdate.getIdRol()==null) {
              salida= "Error: Rol no encontrado";
         }else {
-            // 3.   Actualizamos los datos
-            rolUpdate.setName(rolNuevo.getName());
-            rolUpdate.setActivo(rolNuevo.getActivo());
-
+            Rol rolUpdate2= rolMap.mappingPutReverse(rolNuevo);
+            rolUpdate.setName(rolUpdate2.getName());
+            rolUpdate.setActivo(rolUpdate2.getActivo());
             // 5.   Guardamos en la base de datos
             rolRepository.save(rolUpdate);
             salida= "Rol editado correctamente";
@@ -53,18 +57,26 @@ public class RolService {
     }
 
     public String desactivarRol ( Long id){
+        String borrado="";
         Rol rolSelect=rolRepository.findById(id).orElse(null);
         if (rolSelect!=null) {
             rolSelect.setActivo(false);
             rolRepository.save(rolSelect);
+            borrado="rol borrado con éxito";
+        }else{
+            borrado="Error: Rol no encontrado";
         }
-        return("rol borrado con exito");
+        return borrado;
     }
 
     public Rol mappingARol(RolDTO rol){
         Rol dto= new Rol();
         dto.setName(rol.getName());
         return dto;
+    }
+
+    public List<User> userPorRol (Long idRol){
+        return rolRepository.findUsuariosPorRol(idRol);
     }
 
 }

@@ -1,25 +1,30 @@
 package com.jorge.sprintdef.services;
 
+import com.jorge.sprintdef.Rol;
+import com.jorge.sprintdef.RolRepository;
 import com.jorge.sprintdef.User;
+import com.jorge.sprintdef.dto.RolPostUser;
+import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.UserRepository;
 
-import org.springframework.stereotype.Service;
 import com.jorge.sprintdef.mapping.UserMapper;
+import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserService {
 
+    private final RolRepository rolRep;
     private final UserRepository userRep;
     private final UserMapper userMap;
 
-    public UserService(UserRepository userRep, UserMapper userMap) {
+    public UserService(UserRepository userRep, UserMapper userMap, RolRepository rolRep) {
         this.userRep = userRep;
         this.userMap = userMap;
-
+        this.rolRep = rolRep;
     }
 
     public List<UsersAllDTO> listarUsuarios(){
@@ -30,19 +35,21 @@ public class UserService {
     }
 
     public UserIdDTo buscarPorId(Long id) {
-        // 1. Buscamos el usuario de forma segura
+        // 1. Buscamos el usuario y si no está, devolvemos null (abrimos la caja Optional)
+        User usuarioEncontrado = userRep.findById(id).orElse(null);
 
-        User usuario = userRep.findById(id).orElseThrow(() -> new RuntimeException("Mensaje de error"));
+        // 2. Si no existe, cortamos aquí y devolvemos null
+        if (usuarioEncontrado == null) {
+            return null;
+        }
 
-        // 2. Si no existe, devolvemos un 404 (Not Found) y cortamos la ejecución
-
-        // 3. Si existe, lo mapeamos y lo envolvemos en un 200 (OK)
-
-        return userMap.userToIdDTO(usuario);
+        // 3. Si existe, usamos el mapper con el usuario real
+        return userMap.userToIdDTO(usuarioEncontrado);
     }
 
-    public String addUsuario (User usuario){
-        userRep.save(usuario);
+    public String addUsuario (UserAddDTO usuario){
+        User usuario2= userMap.userAddDTO(usuario);
+        userRep.save(usuario2);
         return( "usuario añadido con exito");
     }
 
@@ -89,6 +96,18 @@ public class UserService {
         return ("usuario borrado correctamente");
     }
 
+    public List<Rol>rolesUser(Long idUser){
+        User encontrado=userRep.findById(idUser).orElse(null);
+        return encontrado.getRoles();
+    }
 
-
+    public String addRolUser(Long idUser, RolPostUser idRol){
+        User encontrado=userRep.findById(idUser).orElse(null);
+        Rol rolN=rolRep.findById(idRol.getIdRol()).orElse(null);
+        List <Rol> roles=encontrado.getRoles();
+        roles.add(rolN);
+        encontrado.setRoles(roles);
+        userRep.save(encontrado);
+        return "rol añdadido a usuario";
+    }
 }

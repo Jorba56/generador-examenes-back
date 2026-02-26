@@ -1,6 +1,7 @@
 package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.RolDTO;
+import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.services.RolService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,10 +102,9 @@ class RolServiceTest {
         rol1.setActivo(false);
         rol1.setIdRol(4L);
 
-        Rol rol2=new Rol();
+        RolPutDTO rol2=new RolPutDTO();
         rol2.setName("administrador2");
         rol2.setActivo(true);
-        rol2.setIdRol(5L);
 
         given(rolRep.findById(rol1.getIdRol())).willReturn(Optional.of(rol1));
 
@@ -119,10 +119,9 @@ class RolServiceTest {
     @Test
     void updateRolNull(){
 
-        Rol rol2=new Rol();
+        RolPutDTO rol2=new RolPutDTO();
         rol2.setName("administrador2");
         rol2.setActivo(true);
-        rol2.setIdRol(5L);
 
         given(rolRep.findById(99L)).willReturn(Optional.empty());
 
@@ -145,7 +144,7 @@ class RolServiceTest {
         //asserts
         assertFalse(rol.getActivo());
         assertNotNull(borrado);
-        assertEquals("rol borrado con exito", borrado);
+        assertEquals("rol borrado con éxito", borrado);
         verify(rolRep).save(rol);
     }
 
@@ -159,10 +158,9 @@ class RolServiceTest {
 
         //devuelve el mensaje, pero la base de datos nunca guardó nada
         assertNotNull(borrado);
-        assertEquals("rol borrado con exito", borrado);
+        assertEquals("Error: Rol no encontrado", borrado);
 
         //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
         verify(rolRep, never()).save(any(Rol.class));
-
     }
 }

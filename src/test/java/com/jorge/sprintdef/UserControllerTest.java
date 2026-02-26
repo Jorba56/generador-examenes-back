@@ -1,4 +1,5 @@
 package com.jorge.sprintdef;
+import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.services.UserService;
@@ -66,14 +67,13 @@ class UserControllerTest {
     @Test
      void addUser(){
 
-        User usuario=new User();
+        UserAddDTO usuario=new UserAddDTO();
         usuario.setNombreUsuario("jorge");
         usuario.setApellidoUsuario("br");
         usuario.setContrasenhaUsuario("jorge12345");
         usuario.setEmailUsuario("jobr@gmail.com");
-        usuario.setActivo(true);
 
-        given(userService.addUsuario(any(User.class))).willReturn("usuario añadido con exito");
+        given(userService.addUsuario(any(UserAddDTO.class))).willReturn("usuario añadido con exito");
 
         //when
         String correcto=userController.addUser(usuario);

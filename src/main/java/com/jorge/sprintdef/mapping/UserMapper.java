@@ -1,29 +1,18 @@
 package com.jorge.sprintdef.mapping;
 
-import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.User;
+import com.jorge.sprintdef.dto.UserAddDTO;
+import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-public class UserMapper implements UserMapping {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface UserMapper {
 
-    @Override
-    public UsersAllDTO mappingADTO(User usuario){
-        UsersAllDTO dto= new UsersAllDTO();
-        dto.setIdUser(usuario.getIdUser());
-        dto.setNombreUsuario(usuario.getNombreUsuario());
-        dto.setApellidoUsuario(usuario.getApellidoUsuario());
-        dto.setEmailUsuario(usuario.getEmailUsuario());
-        return dto;
-    }
+    UsersAllDTO mappingADTO(User usuario);
 
-    @Override
-    public UserIdDTo userToIdDTO(User usuario) {
-        UserIdDTo dto= new UserIdDTo();
-        dto.setIdUser(usuario.getIdUser());
-        dto.setNombreUsuario(usuario.getNombreUsuario());
-        dto.setApellidoUsuario(usuario.getApellidoUsuario());
-        dto.setEmailUsuario(usuario.getEmailUsuario());
-        dto.setActivo(usuario.getActivo());
-        return dto;
-    }
+    UserIdDTo userToIdDTO(User usuario);
+
+    User userAddDTO(UserAddDTO usuario);
 }
