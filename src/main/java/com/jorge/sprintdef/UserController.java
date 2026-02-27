@@ -56,8 +56,8 @@ public class UserController {
         return userService.addRolUser(id,idRol);
     }
 
-    @DeleteMapping("/{id_usuario}/roles/{id_rol}") //Quitarle un rol a un usuario
-    public String deleteRolUser (@PathVariable Long id_rol, @PathVariable Long id_usuario) {
-        return userService.deleteRolUser(id_rol, id_usuario);
+    @DeleteMapping("/{idUsuario}/roles/{idRol}") //Quitarle un rol a un usuario
+    public String deleteRolUser (@PathVariable Long idRol, @PathVariable Long idUsuario) {
+        return userService.deleteRolUser(idUsuario, idRol );
     }
 }

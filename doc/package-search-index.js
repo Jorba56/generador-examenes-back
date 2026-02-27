@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.jorge.sprintdef"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.jorge.sprintdef"},{"l":"com.jorge.sprintdef.dto"},{"l":"com.jorge.sprintdef.mapping"},{"l":"com.jorge.sprintdef.services"}];updateSearchResults();

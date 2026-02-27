@@ -1,4 +1,5 @@
 package com.jorge.sprintdef;
+import com.jorge.sprintdef.dto.RolPostUser;
 import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
@@ -114,5 +115,56 @@ class UserControllerTest {
             //asserts
             assertNotNull(borrado);
             assertEquals("usuario borrado correctamente", borrado);
-        }
     }
+
+    @Test
+    void getUserIdNull() {
+        // GIVEN: El servicio no encuentra nada y devuelve null
+        given(userService.buscarPorId(99L)).willReturn(null);
+
+        // WHEN
+        UserIdDTo userFind = userController.getUserId(99L);
+
+        // THEN
+        assertNull(userFind);
+        verify(userService).buscarPorId(99L);
+    }
+
+    @Test
+    void rolesUser() {
+        Rol rol = new Rol();
+        rol.setIdRol(1L);
+        rol.setName("admin");
+
+        given(userService.rolesUser(1L)).willReturn(List.of(rol));
+
+        List<Rol> roles = userController.rolesUser(1L);
+
+        assertFalse(roles.isEmpty());
+        assertEquals("admin", roles.getFirst().getName());
+        verify(userService).rolesUser(1L);
+    }
+
+    @Test
+    void userAddRol() {
+        RolPostUser rolPost = new RolPostUser();
+        rolPost.setIdRol(2L);
+
+        given(userService.addRolUser(1L, rolPost)).willReturn("rol añdadido a usuario");
+
+        String resultado = userController.userAddRol(1L, rolPost);
+
+        assertEquals("rol añdadido a usuario", resultado);
+        verify(userService).addRolUser(1L, rolPost);
+    }
+
+    @Test
+    void deleteRolUser() {
+        given(userService.deleteRolUser(1L, 2L)).willReturn("Rol eliminado correctamente");
+
+        // Fíjate en el orden de las variables según tengas tu Controller
+        String resultado = userController.deleteRolUser(1L, 2L);
+
+        assertEquals("Rol eliminado correctamente", resultado);
+    }
+}

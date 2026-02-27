@@ -8,5 +8,6 @@ public class RolPostUser {
     @JsonProperty("id_rol")
     private Long idRol;
 
+    public void setIdRol(Long idRol) { this.idRol=idRol; }
     public Long getIdRol() { return idRol; }
 }

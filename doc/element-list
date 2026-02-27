@@ -1,1 +1,4 @@
 com.jorge.sprintdef
+com.jorge.sprintdef.dto
+com.jorge.sprintdef.mapping
+com.jorge.sprintdef.services

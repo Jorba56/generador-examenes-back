@@ -173,4 +173,44 @@ class RolServiceTest {
         //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
         verify(rolRep, never()).save(any(Rol.class));
     }
+
+    @Test
+    void userPorRol() {
+        // GIVEN: Preparamos un usuario falso
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        usuario.setNombreUsuario("jorge");
+
+        // Le enseñamos al mock que devuelva una lista con ese usuario cuando busque el rol 2
+        given(rolRep.findUsuariosPorRol(2L)).willReturn(List.of(usuario));
+
+        // WHEN: Ejecutamos el servicio
+        List<User> usuarios = rolService.userPorRol(2L);
+
+        // THEN: Comprobamos resultados
+        assertNotNull(usuarios);
+        assertFalse(usuarios.isEmpty());
+        assertEquals(1, usuarios.size());
+        assertEquals("jorge", usuarios.getFirst().getNombreUsuario()); // Comprobamos que es nuestro usuario
+
+        // Verificamos que llamó a la base de datos
+        verify(rolRep).findUsuariosPorRol(2L);
+        verifyNoMoreInteractions(rolRep);
+    }
+
+    @Test
+    void userPorRolVacio() {
+        // GIVEN: Simulamos que buscamos un rol que no lo tiene nadie (devuelve lista vacía)
+        given(rolRep.findUsuariosPorRol(99L)).willReturn(List.of());
+
+        // WHEN: Ejecutamos el servicio
+        List<User> usuarios = rolService.userPorRol(99L);
+
+        // THEN: Comprobamos que devuelve la lista vacía sin fallar
+        assertNotNull(usuarios);
+        assertTrue(usuarios.isEmpty());
+
+        verify(rolRep).findUsuariosPorRol(99L);
+        verifyNoMoreInteractions(rolRep);
+    }
 }

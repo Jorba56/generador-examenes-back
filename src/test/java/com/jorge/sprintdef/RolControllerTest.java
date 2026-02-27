@@ -104,4 +104,29 @@ class RolControllerTest {
         verify(rolService).desactivarRol(6L);
         verifyNoMoreInteractions(rolService);
     }
+
+    @Test
+    void getRolIdNull() {
+        given(rolService.rolPorId(99L)).willReturn(Optional.empty());
+
+        Optional<Rol> rolSearch = rolController.getRolId(99L);
+
+        assertTrue(rolSearch.isEmpty());
+        verify(rolService).rolPorId(99L);
+    }
+
+    @Test
+    void userRol() {
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        usuario.setNombreUsuario("jorge");
+
+        given(rolService.userPorRol(2L)).willReturn(List.of(usuario));
+
+        List<User> usuarios = rolController.userRol(2L);
+
+        assertFalse(usuarios.isEmpty());
+        assertEquals("jorge", usuarios.getFirst().getNombreUsuario());
+        verify(rolService).userPorRol(2L);
+    }
 }

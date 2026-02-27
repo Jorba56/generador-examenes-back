@@ -229,41 +229,43 @@ class UserServiceTest {
         assertNotNull(roles);
         assertFalse(roles.isEmpty()); // Comprobamos que la lista NO viene vacía
         assertEquals(1, roles.size()); // Comprobamos que trae exactamente 1 rol
-        assertEquals("admin", roles.get(0).getName()); // Comprobamos que es el rol correcto
+        assertEquals("admin", roles.getFirst().getName()); // Comprobamos que es el rol correcto
 
         verify(userRepository).findById(6L);
     }
 
     @Test
     void addRolUser() {
-        // GIVEN: Preparamos un usuario con una lista de roles vacía
+        //Preparamos un usuario con una lista de roles vacía
         User usuario = new User();
         usuario.setIdUser(1L);
         usuario.setRoles(new ArrayList<>()); // Inicializamos la lista para que no dé null pointer
 
-        // GIVEN: Preparamos el rol que vamos a buscar en base de datos
+        //Preparamos el rol que vamos a buscar en base de datos
         Rol rolNuevo = new Rol();
         rolNuevo.setIdRol(2L);
+        rolNuevo.setName("rol");
 
-        // GIVEN: Preparamos el DTO que entra por el controlador
+        //Preparamos el DTO que entra por el controlador
         RolPostUser rolPost = new RolPostUser();
+        rolPost.setIdRol(2L);
 
         // Educamos a los mocks
         given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
         given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
 
-        // WHEN: Ejecutamos el servicio
+        //Ejecutamos el servicio
         String resultado = userService.addRolUser(1L, rolPost);
 
-        // THEN: Comprobamos el texto devuelto
+        //Comprobamos el texto devuelto
         assertNotNull(resultado);
         assertEquals("rol añdadido a usuario", resultado);
 
-        // THEN: Comprobamos que efectivamente el rol se metió en la lista del usuario
+        //Comprobamos que efectivamente el rol se metió en la lista del usuario
         assertFalse(usuario.getRoles().isEmpty());
-        assertEquals(2L, usuario.getRoles().get(0).getIdRol());
+        assertEquals(2L, usuario.getRoles().getFirst().getIdRol());
 
-        // THEN: Comprobamos que se guardó en la base de datos
+        //Comprobamos que se guardó en la base de datos
         verify(userRepository).save(usuario);
         verify(userRepository).findById(1L);
         verify(rolRep).findById(2L);
@@ -271,11 +273,11 @@ class UserServiceTest {
 
     @Test
     void deleteRolUser() {
-        // GIVEN: Preparamos un rol
+        //Preparamos un rol
         Rol rolAEliminar = new Rol();
         rolAEliminar.setIdRol(2L);
 
-        // GIVEN: Preparamos un usuario que YA TIENE ese rol asignado
+        //Preparamos un usuario que YA TIENE ese rol asignado
         User usuario = new User();
         usuario.setIdUser(1L);
         List<Rol> rolesDelUsuario = new ArrayList<>();
@@ -286,19 +288,98 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
         given(rolRep.findById(2L)).willReturn(Optional.of(rolAEliminar));
 
-        // WHEN: Ejecutamos el servicio
+        // Ejecutamos el servicio
         String resultado = userService.deleteRolUser(1L, 2L);
 
-        // THEN: Comprobamos el texto
+        //Comprobamos el texto
         assertNotNull(resultado);
         assertEquals("Rol eliminado correctamente", resultado);
 
-        // THEN: Comprobamos que la lista del usuario ahora está vacía (se ha borrado)
+        //Comprobamos que la lista del usuario ahora está vacía (se ha borrado)
         assertTrue(usuario.getRoles().isEmpty());
 
-        // THEN: Comprobamos que los cambios se guardaron
+        //Comprobamos que los cambios se guardaron
         verify(userRepository).save(usuario);
         verify(userRepository).findById(1L);
         verify(rolRep).findById(2L);
+    }
+
+    @Test
+    void rolesUser_UserNotFound() {
+        //El usuario 99 no existe
+        given(userRepository.findById(99L)).willReturn(Optional.empty());
+
+        // WHEN
+        List<Rol> roles = userService.rolesUser(99L);
+
+        // THEN: Devuelve una lista vacía y no da error
+        assertTrue(roles.isEmpty());
+        verify(userRepository).findById(99L);
+    }
+
+    @Test
+    void addRolUser_UserNotFound() {
+        RolPostUser rolPost = new RolPostUser();
+        rolPost.setIdRol(2L);
+
+        //El usuario 99 no existe
+        given(userRepository.findById(99L)).willReturn(Optional.empty());
+
+        // WHEN
+        String resultado = userService.addRolUser(99L, rolPost);
+
+        // THEN: Comprobamos el mensaje de error
+        assertEquals("Usuario no encontrado", resultado);
+
+    }
+
+    @Test
+    void deleteRolUser_UserNotFound() {
+        // GIVEN: El usuario no existe
+        given(userRepository.findById(99L)).willReturn(Optional.empty());
+
+        String resultado = userService.deleteRolUser(99L, 2L);
+
+        assertEquals("Usuario no encontrado", resultado);
+        verifyNoInteractions(rolRep); // No llega a buscar el rol
+    }
+
+    @Test
+    void deleteRolUser_RolNotFound() {
+        //El usuario sí existe
+        User usuario = new User();
+        usuario.setIdUser(1L);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        // Pero el rol que intentamos borrar no existe en la BD
+        given(rolRep.findById(99L)).willReturn(Optional.empty());
+
+        String resultado = userService.deleteRolUser(1L, 99L);
+
+        assertEquals("Ese rol no existe en la base de datos", resultado);
+        // Comprobamos que nunca hace "save" por error
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void deleteRolUser_RolNotAssigned() {
+        // El usuario existe pero NO tiene roles (lista vacía)
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        usuario.setRoles(new ArrayList<>());
+
+        // El rol existe
+        Rol rol = new Rol();
+        rol.setIdRol(2L);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rol));
+
+        // WHEN
+        String resultado = userService.deleteRolUser(1L, 2L);
+
+        // THEN
+        assertEquals("El usuario no tenía asignado ese rol", resultado);
+        verify(userRepository, never()).save(any(User.class)); // Cero mentiras en BD
     }
 }
