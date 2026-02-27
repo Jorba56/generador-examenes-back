@@ -163,7 +163,7 @@ class UserControllerTest {
         given(userService.deleteRolUser(1L, 2L)).willReturn("Rol eliminado correctamente");
 
         // Fíjate en el orden de las variables según tengas tu Controller
-        String resultado = userController.deleteRolUser(1L, 2L);
+        String resultado = userController.deleteRolUser(2L, 1L);
 
         assertEquals("Rol eliminado correctamente", resultado);
     }

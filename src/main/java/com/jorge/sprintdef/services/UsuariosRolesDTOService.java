@@ -18,13 +18,13 @@ public class UsuariosRolesDTOService {
     public List<UsuarioRolesDTO> listaUsuariosRoles() {
         List<UsuarioRolesDTO> usersRoles = new ArrayList<>();
         List<User> usuarios = userRep.findUsersByActivoIs(true);
-        for (int i = 0; i < usuarios.size(); i++) {
+        for (User usuario : usuarios) {
             UsuarioRolesDTO dto = new UsuarioRolesDTO();
             List<Long> ids = new ArrayList<>();
-            dto.setIdUser(usuarios.get(i).getIdUser());
-            List<Rol> roles = usuarios.get(i).getRoles();
-            for (int j = 0; j < roles.size(); j++) {
-                ids.add(roles.get(j).getIdRol());
+            dto.setIdUser(usuario.getIdUser());
+            List<Rol> roles = usuario.getRoles();
+            for (Rol role : roles) {
+                ids.add(role.getIdRol());
             }
             dto.setIdRoles(ids);
             usersRoles.add(dto);
