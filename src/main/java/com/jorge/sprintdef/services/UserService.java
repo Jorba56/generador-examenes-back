@@ -177,7 +177,7 @@ public class UserService {
             roles.add(rolN);
             encontrado.setRoles(roles);
             userRep.save(encontrado);
-            salida= "Rol con id "+rolN.getIdRol()+" añdadido correctamente a usuario con id"+idUser;
+            salida= "Rol con id "+rolN.getIdRol()+" añdadido correctamente a usuario con id "+idUser;
         } else{ salida="Usuario/Rol no encontrado";}
         return salida;
     }

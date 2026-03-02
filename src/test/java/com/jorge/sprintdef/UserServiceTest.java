@@ -260,7 +260,7 @@ class UserServiceTest {
 
         //Comprobamos el texto devuelto
         assertNotNull(resultado);
-        assertEquals("Rol con id "+rolPost.getIdRol()+" añdadido correctamente a usuario con id"+1L, resultado);
+        assertEquals("Rol con id "+rolPost.getIdRol()+" añdadido correctamente a usuario con id "+1L, resultado);
 
         //Comprobamos que efectivamente el rol se metió en la lista del usuario
         assertFalse(usuario.getRoles().isEmpty());
@@ -332,6 +332,28 @@ class UserServiceTest {
         // THEN: Comprobamos el mensaje de error
         assertEquals("Usuario/Rol no encontrado", resultado);
 
+    }
+
+    @Test
+    void addRolUser_RolNotFound() {
+        // GIVEN
+        Long idUser = 1L;
+        RolPostUser rolDto = new RolPostUser();
+        rolDto.setIdRol(99L);
+
+        User usuarioReal = new User();
+        usuarioReal.setIdUser(1L);
+
+        // Educamos a los mocks: El usuario SÍ existe, pero el rol NO existe
+        given(userRepository.findById(idUser)).willReturn(Optional.of(usuarioReal));
+        given(rolRep.findById(rolDto.getIdRol())).willReturn(Optional.empty());
+
+        // WHEN
+        String resultado = userService.addRolUser(idUser, rolDto);
+
+        // THEN: Comprobamos el mensaje de error y la seguridad de la BD
+        assertEquals("Usuario/Rol no encontrado", resultado);
+        verify(userRepository , never()).save(any(User.class));
     }
 
     @Test
