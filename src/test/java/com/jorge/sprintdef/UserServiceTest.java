@@ -105,14 +105,16 @@ class UserServiceTest {
     @Test
     void addUser() {
         UserAddDTO userdto = new UserAddDTO();
+        UsersAllDTO userdto2= new UsersAllDTO();
         User usuarioU = userMap.userAddDTO(userdto);
         given(userRepository.save(usuarioU)).willReturn(usuarioU);
         given(userMap.userAddDTO(userdto)).willReturn(usuarioU);
+        given(userMap.mappingADTO(usuarioU)).willReturn(userdto2);
 
-        String correcto = userService.addUsuario(userdto);
+        userdto2 = userService.addUsuario(userdto);
 
-        assertNotNull(correcto);
-        assertEquals(("usuario añadido con exito"), correcto);
+        assertNotNull(userdto2);
+        assertEquals(userdto2.getNombreUsuario(), userdto.getNombreUsuario());
         verify(userRepository).save(usuarioU);
         verifyNoMoreInteractions(userRepository);
     }

@@ -3,6 +3,7 @@ import com.jorge.sprintdef.dto.RolPostUser;
 import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
+import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +15,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -22,6 +22,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @ExtendWith(MockitoExtension.class)
 
 class UserControllerTest {
+
+    @Mock
+    private UserMapper userMap;
 
     @Mock
     private UserService userService;
@@ -67,22 +70,19 @@ class UserControllerTest {
 
     @Test
      void addUser(){
+        UserAddDTO userdto = new UserAddDTO();
+        userdto.setNombreUsuario("jorge"); // Damos un nombre de entrada
 
-        UserAddDTO usuario=new UserAddDTO();
-        usuario.setNombreUsuario("jorge");
-        usuario.setApellidoUsuario("br");
-        usuario.setContrasenhaUsuario("jorge12345");
-        usuario.setEmailUsuario("jobr@gmail.com");
+        UsersAllDTO userdto2 = new UsersAllDTO();
+        userdto2.setNombreUsuario("jorge");
 
-        given(userService.addUsuario(any(UserAddDTO.class))).willReturn("usuario añadido con exito");
+        given(userService.addUsuario(userdto)).willReturn(userdto2);
+        userdto2 = userController.addUser(userdto);
 
-        //when
-        String correcto=userController.addUser(usuario);
-
-        assertNotNull(correcto);
-        assertEquals(("usuario añadido con exito"),correcto);
-        verify(userService).addUsuario(usuario);
-        verifyNoMoreInteractions(userService); // ver si no se ejecuta mas veces
+        assertNotNull(userdto2);
+        assertEquals(userdto2.getNombreUsuario(), userdto.getNombreUsuario());
+        verify(userService).addUsuario(userdto);
+        verifyNoMoreInteractions(userService);
     }
 
     @Test

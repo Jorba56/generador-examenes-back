@@ -4,9 +4,12 @@ package com.jorge.sprintdef.services;
 import com.jorge.sprintdef.*;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
+import com.jorge.sprintdef.dto.UserByRol;
 import com.jorge.sprintdef.mapping.RolMapper;
+import com.jorge.sprintdef.mapping.UserMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +18,11 @@ public class RolService {
 
     private final RolRepository rolRepository;
     private final RolMapper rolMap;
+    private final UserMapper userMap;
 
-    public RolService(RolRepository rolRepository, RolMapper rolMap) {
+    public RolService(RolRepository rolRepository, RolMapper rolMap, UserMapper userMap) {
         this.rolMap = rolMap;
+        this.userMap = userMap;
         this.rolRepository = rolRepository;
     }
 
@@ -74,8 +79,14 @@ public class RolService {
         return dto;
     }
 
-    public List<User> userPorRol (Long idRol){
-        return rolRepository.findUsuariosPorRol(idRol);
+    public List<UserByRol> userPorRol (Long idRol){
+        List<UserByRol> respuesta= new ArrayList<>();
+        List<User> users = rolRepository.findUsuariosPorRol(idRol);
+        for (int i=0; i<users.size();i++){
+            userMap.mappingRoles(users.get(i));
+            respuesta.add(userMap.mappingRoles(users.get(i)));
+        }
+        return respuesta;
     }
 
 }

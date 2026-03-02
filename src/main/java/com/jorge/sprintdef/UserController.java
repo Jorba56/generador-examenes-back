@@ -32,7 +32,7 @@ public class UserController {
     }
 
     @PostMapping("")
-    public String addUser (@RequestBody UserAddDTO usuario){
+    public UsersAllDTO addUser (@RequestBody UserAddDTO usuario){
         return userService.addUsuario(usuario);
     }
 

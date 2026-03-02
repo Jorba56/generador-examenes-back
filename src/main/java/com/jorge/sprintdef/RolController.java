@@ -2,13 +2,14 @@ package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
+import com.jorge.sprintdef.dto.UserByRol;
 import com.jorge.sprintdef.services.RolService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/usuarios/roles")
+@RequestMapping("/roles")
 public class RolController{
 
     private final RolService rolService;
@@ -44,7 +45,7 @@ public class RolController{
     }
 
     @GetMapping("/{idRol}/usuarios")
-    public List<User> userRol(@PathVariable Long idRol){
+    public List<UserByRol> userRol(@PathVariable Long idRol){
         return rolService.userPorRol(idRol);
     }
 

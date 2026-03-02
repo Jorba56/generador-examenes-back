@@ -2,7 +2,9 @@ package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
+import com.jorge.sprintdef.dto.UserByRol;
 import com.jorge.sprintdef.mapping.RolMapper;
+import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.services.RolService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,9 @@ class RolServiceTest {
 
     @Mock
     private RolRepository rolRep;
+
+    @Mock
+    private UserMapper userMap;
 
     @Mock
     private RolMapper rolMap;
@@ -181,11 +186,15 @@ class RolServiceTest {
         usuario.setIdUser(1L);
         usuario.setNombreUsuario("jorge");
 
+        UserByRol userRol=new UserByRol();
+        userRol.setNombreUsuario("jorge");
+
         // Le enseñamos al mock que devuelva una lista con ese usuario cuando busque el rol 2
         given(rolRep.findUsuariosPorRol(2L)).willReturn(List.of(usuario));
+        given(userMap.mappingRoles(usuario)).willReturn((userRol));
 
         // WHEN: Ejecutamos el servicio
-        List<User> usuarios = rolService.userPorRol(2L);
+        List<UserByRol> usuarios = rolService.userPorRol(2L);
 
         // THEN: Comprobamos resultados
         assertNotNull(usuarios);
@@ -204,7 +213,7 @@ class RolServiceTest {
         given(rolRep.findUsuariosPorRol(99L)).willReturn(List.of());
 
         // WHEN: Ejecutamos el servicio
-        List<User> usuarios = rolService.userPorRol(99L);
+        List<UserByRol> usuarios = rolService.userPorRol(99L);
 
         // THEN: Comprobamos que devuelve la lista vacía sin fallar
         assertNotNull(usuarios);

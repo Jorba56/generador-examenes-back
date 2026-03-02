@@ -2,6 +2,7 @@ package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
+import com.jorge.sprintdef.dto.UserByRol;
 import com.jorge.sprintdef.services.RolService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -121,12 +122,16 @@ class RolControllerTest {
         usuario.setIdUser(1L);
         usuario.setNombreUsuario("jorge");
 
-        given(rolService.userPorRol(2L)).willReturn(List.of(usuario));
+        UserByRol usuario2 = new UserByRol();
+        usuario2.setNombreUsuario("jorge");
 
-        List<User> usuarios = rolController.userRol(2L);
+        given(rolService.userPorRol(2L)).willReturn(List.of(usuario2));
+
+        List<UserByRol> usuarios = rolController.userRol(2L);
+        UserByRol user1= usuarios.getFirst();
 
         assertFalse(usuarios.isEmpty());
-        assertEquals("jorge", usuarios.getFirst().getNombreUsuario());
+        assertEquals("jorge", user1.getNombreUsuario());
         verify(rolService).userPorRol(2L);
     }
 }

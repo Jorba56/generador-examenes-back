@@ -48,10 +48,10 @@ public class UserService {
         return userMap.userToIdDTO(usuarioEncontrado);
     }
 
-    public String addUsuario (UserAddDTO usuario){
+    public UsersAllDTO addUsuario (UserAddDTO usuario){
         User usuario2= userMap.userAddDTO(usuario);
         userRep.save(usuario2);
-        return( "usuario añadido con exito");
+        return(userMap.mappingADTO(usuario2));
     }
 
     public String actualizarUsuario(String rolEditor, Long id, User usuario) {
