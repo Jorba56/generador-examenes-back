@@ -12,6 +12,7 @@ public class Rol {
     private Long idRol;
 
     @NotNull
+    @Column(name = "nombre_rol", length = 100)
     private String name;
 
     @NotNull
@@ -25,10 +26,5 @@ public class Rol {
 
     public boolean getActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo= activo; }
-
-
-
-
-
 
 }

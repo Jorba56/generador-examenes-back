@@ -18,20 +18,20 @@ public class User{
     private Long idUser;
 
     @NotNull
-    @Column(name = "nombre_usuario")
+    @Column(name = "nombre_usuario", length = 100)
     private String nombreUsuario;
 
     @NotNull
-    @Column(name = "apellido_usuario")
+    @Column(name = "apellido_usuario", length = 150)
     private String apellidoUsuario;
 
     @NotNull
-    @Column(name = "contrasenha_usuario")
+    @Column(name = "contrasenha_usuario", length = 255)
     private String contrasenhaUsuario;
 
     @NotNull
     @Email
-    @Column(name = "email_usuario")
+    @Column(name = "correo_usuario", length = 254, unique = true)
     private String emailUsuario;
 
     @NotNull
@@ -96,8 +96,6 @@ public class User{
             this.roles = null;
         }
     }
-
-
 }
 
 

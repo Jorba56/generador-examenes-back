@@ -100,7 +100,7 @@ class RolServiceTest {
         String correcto=rolService.newRol(rol);
 
         assertNotNull(correcto);
-        assertEquals(("rol añadido con exito"),correcto);
+        assertEquals(("Rol añadido con exito"),correcto);
         verify(rolRep).save(any(Rol.class));
         verifyNoMoreInteractions(rolRep);
     }
@@ -126,7 +126,7 @@ class RolServiceTest {
         String correcto=rolService.actualizarRol(4L,rol2);
 
         assertNotNull(correcto);
-        assertEquals(("Rol editado correctamente"),correcto);
+        assertEquals(("Rol con id"+4L+" editado correctamente"),correcto);
         assertEquals(("administrador2"),rol1.getName());
         verify(rolRep).save(rol1); //comprobar que en la base de datos se guarda y se actualiza
     }
@@ -159,7 +159,7 @@ class RolServiceTest {
         //asserts
         assertFalse(rol.getActivo());
         assertNotNull(borrado);
-        assertEquals("rol borrado con éxito", borrado);
+        assertEquals("Rol  con id "+ 6L +" borrado con éxito", borrado);
         verify(rolRep).save(rol);
     }
 

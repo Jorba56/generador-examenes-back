@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 public class UsersAllDTO {
 
     @NotNull
-    @JsonProperty("id_user")
+    @JsonProperty("id_usuario")
     private Long idUser;
 
     @JsonProperty("nombre_usuario")
@@ -15,7 +15,7 @@ public class UsersAllDTO {
     @JsonProperty("apellido_usuario")
     private String apellidoUsuario;
 
-    @JsonProperty("email_usuario")
+    @JsonProperty("correo_usuario")
     private String emailUsuario;
 
     // Getters y setters

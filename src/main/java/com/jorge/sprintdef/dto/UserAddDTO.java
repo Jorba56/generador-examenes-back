@@ -11,7 +11,7 @@ public class UserAddDTO {
     @JsonProperty("apellido_usuario")
     private String apellidoUsuario;
 
-    @JsonProperty("email_usuario")
+    @JsonProperty("correo_usuario")
     private String emailUsuario;
 
     @Column(name = "contrasenha_usuario")

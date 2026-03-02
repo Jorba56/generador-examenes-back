@@ -138,11 +138,11 @@ class UserServiceTest {
         String correcto2 = userService.actualizarUsuario("administrador", 4L, user2);
 
         assertNotNull(correcto);
-        assertEquals(("Usuario editado correctamente"), correcto);
+        assertEquals(("Usuario con id "+4L +" editado correctamente"), correcto);
         assertEquals(("administrador2"), user1.getNombreUsuario());
 
         assertNotNull(correcto2);
-        assertEquals(("Usuario editado correctamente"), correcto2);
+        assertEquals(("Usuario con id "+4L +" editado correctamente"), correcto2);
         assertEquals(("administrador2"), user1.getNombreUsuario());
     }
 
@@ -191,7 +191,7 @@ class UserServiceTest {
         //asserts
         assertFalse(user.getActivo());
         assertNotNull(borrado);
-        assertEquals("usuario borrado correctamente", borrado);
+        assertEquals("Usuario con id "+6L+" borrado correctamente", borrado);
         verify(userRepository).save(user);
     }
 
@@ -205,11 +205,10 @@ class UserServiceTest {
 
         //devuelve el mensaje, pero la base de datos nunca guardó nada
         assertNotNull(borrado);
-        assertEquals("usuario borrado correctamente", borrado);
+        assertEquals("No existe un usuario con el id "+99L, borrado);
 
         //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
         verify(userRepository, never()).save(any(User.class));
-
     }
 
 
@@ -261,7 +260,7 @@ class UserServiceTest {
 
         //Comprobamos el texto devuelto
         assertNotNull(resultado);
-        assertEquals("rol añdadido a usuario", resultado);
+        assertEquals("Rol con id "+rolPost.getIdRol()+" añdadido correctamente a usuario con id"+1L, resultado);
 
         //Comprobamos que efectivamente el rol se metió en la lista del usuario
         assertFalse(usuario.getRoles().isEmpty());
@@ -295,7 +294,7 @@ class UserServiceTest {
 
         //Comprobamos el texto
         assertNotNull(resultado);
-        assertEquals("Rol eliminado correctamente", resultado);
+        assertEquals("Rol con id "+2L+" eliminado correctamente del usuario con id"+1L, resultado);
 
         //Comprobamos que la lista del usuario ahora está vacía (se ha borrado)
         assertTrue(usuario.getRoles().isEmpty());
@@ -331,7 +330,7 @@ class UserServiceTest {
         String resultado = userService.addRolUser(99L, rolPost);
 
         // THEN: Comprobamos el mensaje de error
-        assertEquals("Usuario no encontrado", resultado);
+        assertEquals("Usuario/Rol no encontrado", resultado);
 
     }
 
