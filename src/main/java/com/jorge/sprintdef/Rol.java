@@ -12,7 +12,7 @@ public class Rol {
     private Long idRol;
 
     @NotNull
-    @Column(name = "nombre_rol", length = 100)
+    @Column(name = "name", length = 100)
     private String name;
 
     @NotNull

@@ -35,13 +35,14 @@ public class User{
     private String emailUsuario;
 
     @NotNull
-    private boolean activo;
+    private boolean activo=true;
 
     @ManyToMany
     @JoinTable(name = "roles_usuario",
     joinColumns=@JoinColumn(name="id_user"),
     inverseJoinColumns = @JoinColumn(name = "id_rol"))
     private List<Rol> roles= new ArrayList<>();
+
 
     // Getters and setters
     public Long getIdUser() { return idUser; }
@@ -96,6 +97,38 @@ public class User{
             this.roles = null;
         }
     }
+
+   /* public List<Incidencia> getIncidencias() {
+        return incidencias;
+    }
+
+    public void setIncidencias(List<Incidencia> incidencias) {
+        this.incidencias = incidencias;
+    }
+
+    public List<Long> getIdIncidencia() {
+        List<Long> incidenciasFinal=new ArrayList<>();
+        if (this.incidencias != null) {
+            for(int i=0; i<incidencias.size();i++){
+                incidenciasFinal.add((incidencias.get(i)).getIdIncidencia());
+            }
+            return incidenciasFinal;
+        }
+        return incidenciasFinal; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
+    }
+    // Jackson usará esto cuando envíes "rol_id": 2 desde Postman
+    public void setIdIncidencias (List<Long> ids)  {
+        if (ids != null) {
+            this.incidencias = new ArrayList<>();
+            for (Long id : ids) {
+                Incidencia nueva = new Incidencia();
+                nueva.setIdIncidencia(id);
+                this.incidencias.add(nueva);
+            }
+        } else {
+            this.incidencias = null;
+        }
+    }*/
 }
 
 
