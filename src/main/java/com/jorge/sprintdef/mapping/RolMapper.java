@@ -13,4 +13,5 @@ public interface RolMapper {
     RolPutDTO mappingPut(Rol rol);
 
     Rol mappingPutReverse(RolPutDTO rolNuevo);
+    RolPostUser mappingPost(Rol rol);
 }

@@ -2,6 +2,8 @@ package com.jorge.sprintdef.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 public class UserAddDTO {
 
@@ -11,6 +13,8 @@ public class UserAddDTO {
     @JsonProperty("apellido_usuario")
     private String apellidoUsuario;
 
+    @NotBlank(message = "El correo no puede estar vacío")
+    @Email(message = "El formato del correo no es válido")
     @JsonProperty("correo_usuario")
     private String emailUsuario;
 

@@ -3,6 +3,7 @@ package com.jorge.sprintdef;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
+import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.services.RolService;
@@ -67,7 +68,7 @@ class RolServiceTest {
      void getRolId(){
         Rol rol1=new Rol();
         rol1.setName("administrador");
-        rol1.setActivo(false);
+        rol1.setActivo(true);
         rol1.setIdRol(4L);
 
         given(rolRep.findById(rol1.getIdRol())).willReturn(Optional.of(rol1));
@@ -84,9 +85,12 @@ class RolServiceTest {
     void getRolIdNull(){
         given(rolRep.findById(5L)).willReturn(Optional.empty());
 
-        Optional<Rol> rolSearch=rolService.rolPorId(5L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> rolService.rolPorId(5L)
+        );
 
-        assertEquals(Optional.empty(), rolSearch);
+        assertEquals("Rol no encontrado con ID: "+5L, ex.getMessage());
         verify(rolRep).findById(5L);
         verifyNoMoreInteractions(rolRep);
     }
@@ -159,7 +163,7 @@ class RolServiceTest {
         //asserts
         assertFalse(rol.getActivo());
         assertNotNull(borrado);
-        assertEquals("Rol  con id "+ 6L +" borrado con éxito", borrado);
+        assertEquals("Rol con id "+ 6L +" borrado con éxito", borrado);
         verify(rolRep).save(rol);
     }
 
@@ -169,11 +173,12 @@ class RolServiceTest {
         given(rolRep.findById(99L)).willReturn(Optional.empty());
 
         // WHEN
-        String borrado = rolService.desactivarRol(99L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> rolService.desactivarRol(99L)
+        );
 
-        //devuelve el mensaje, pero la base de datos nunca guardó nada
-        assertNotNull(borrado);
-        assertEquals("Error: Rol no encontrado", borrado);
+        assertEquals("Rol no encontrado con ID: "+99L, ex.getMessage());
 
         //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
         verify(rolRep, never()).save(any(Rol.class));

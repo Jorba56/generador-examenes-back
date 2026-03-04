@@ -3,11 +3,13 @@ package com.jorge.sprintdef;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
+//@Data
 @Entity
 @Table(name = "usuarios")
 public class User{
@@ -17,20 +19,20 @@ public class User{
     @Column(name = "id_user")
     private Long idUser;
 
-    @NotNull
+    @NotBlank(message = "El nombre no puede estar vacío")
     @Column(name = "nombre_usuario", length = 100)
     private String nombreUsuario;
 
-    @NotNull
+    @NotBlank(message = "El apellido no puede estar vacío")
     @Column(name = "apellido_usuario", length = 150)
     private String apellidoUsuario;
 
-    @NotNull
+    @NotBlank(message = "La contraseña no puede estar vacía")
     @Column(name = "contrasenha_usuario", length = 255)
     private String contrasenhaUsuario;
 
-    @NotNull
-    @Email
+    @NotBlank(message = "El correo no puede estar vacío")
+    @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,8}$",message = "El formato del correo no es válido")
     @Column(name = "correo_usuario", length = 254, unique = true)
     private String emailUsuario;
 
@@ -43,6 +45,11 @@ public class User{
     inverseJoinColumns = @JoinColumn(name = "id_rol"))
     private List<Rol> roles= new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(name = "incidencias_usuario",
+            joinColumns=@JoinColumn(name="id_user"),
+            inverseJoinColumns = @JoinColumn(name = "id_incidencia"))
+    private List<Incidencia> incidencias= new ArrayList<>();
 
     // Getters and setters
     public Long getIdUser() { return idUser; }
@@ -98,7 +105,7 @@ public class User{
         }
     }
 
-   /* public List<Incidencia> getIncidencias() {
+   public List<Incidencia> getIncidencias() {
         return incidencias;
     }
 
@@ -128,7 +135,7 @@ public class User{
         } else {
             this.incidencias = null;
         }
-    }*/
+    }
 }
 
 

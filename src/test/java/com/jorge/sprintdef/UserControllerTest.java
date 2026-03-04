@@ -1,6 +1,5 @@
 package com.jorge.sprintdef;
 import com.jorge.sprintdef.dto.RolPostUser;
-import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.mapping.UserMapper;
@@ -66,23 +65,6 @@ class UserControllerTest {
 
         assertNotNull(userFind);
         assertEquals(("jorge"), userFind.getNombreUsuario());
-    }
-
-    @Test
-     void addUser(){
-        UserAddDTO userdto = new UserAddDTO();
-        userdto.setNombreUsuario("jorge"); // Damos un nombre de entrada
-
-        UsersAllDTO userdto2 = new UsersAllDTO();
-        userdto2.setNombreUsuario("jorge");
-
-        given(userService.addUsuario(userdto)).willReturn(userdto2);
-        userdto2 = userController.addUser(userdto);
-
-        assertNotNull(userdto2);
-        assertEquals(userdto2.getNombreUsuario(), userdto.getNombreUsuario());
-        verify(userService).addUsuario(userdto);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test

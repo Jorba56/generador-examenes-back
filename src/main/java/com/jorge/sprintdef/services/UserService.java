@@ -9,7 +9,10 @@ import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.UserRepository;
 
+import com.jorge.sprintdef.exceptions.*;
+import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,8 @@ public class UserService {
     private final RolRepository rolRep;
     private final UserRepository userRep;
     private final UserMapper userMap;
+    private final PasswordEncoder passwordEncoder;
+
     /**
      * Crea una nueva instancia del servicio de usuarios inyectando sus dependencias.
      * Inicializa el repositorio de usuarios, el mapper de usuarios y el repositorio de roles
@@ -35,10 +40,11 @@ public class UserService {
      * @param userMap mapper encargado de transformar entidades de usuario y sus DTOs
      * @param rolRep repositorio para la gestión de la persistencia de roles asociados a usuarios
      */
-    public UserService(UserRepository userRep, UserMapper userMap, RolRepository rolRep) {
+    public UserService(UserRepository userRep, UserMapper userMap, RolRepository rolRep, PasswordEncoder passwordEncoder, RolMapper rolMapper) {
         this.userRep = userRep;
         this.userMap = userMap;
         this.rolRep = rolRep;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -61,15 +67,12 @@ public class UserService {
      * @return representación {@code UserIdDTo} del usuario encontrado o {@code null} si no existe
      */
     public UserIdDTo buscarPorId(Long id) {
-        // 1. Buscamos el usuario y si no está, devolvemos null (abrimos la caja Optional)
-        User usuarioEncontrado = userRep.findById(id).orElse(null);
+        User usuarioEncontrado = userRep.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con ID: " + id));
 
-        // 2. Si no existe, cortamos aquí y devolvemos null
-        if (usuarioEncontrado == null) {
-            return null;
+        if (!usuarioEncontrado.getActivo()) {
+            throw new NotFoundException("El usuario con ID " + id + " está desactivado y no se puede mostrar.");
         }
-
-        // 3. Si existe, usamos el mapper con el usuario real
         return userMap.userToIdDTO(usuarioEncontrado);
     }
 
@@ -80,8 +83,20 @@ public class UserService {
      * @param usuario DTO con la información del usuario a crear
      * @return el usuario creado proyectado a {@code UsersAllDTO}
      */
+
     public UsersAllDTO addUsuario (UserAddDTO usuario){
+        List <Rol> roles=new ArrayList<>();
+        if ((userRep.findUserByEmailUsuario(usuario.getEmailUsuario()))!=null) {
+            // Lanzamos una excepción controlada que luego podemos capturar para mostrar un error 400 al cliente
+            throw new DuplicateException("El correo electrónico ya está en uso.");
+        }
+
         User usuario2= userMap.userAddDTO(usuario);
+        usuario2.setContrasenhaUsuario(passwordEncoder.encode(usuario.getContrasenhaUsuario()));
+
+        Rol rolN=rolRep.findByName(("alumno")).orElseThrow(() -> new NotFoundException("El rol introducido no existe en el sistema."));
+        roles.add(rolN);
+        usuario2.setRoles(roles);
         userRep.save(usuario2);
         return(userMap.mappingADTO(usuario2));
     }
@@ -100,16 +115,12 @@ public class UserService {
 
         String salida;
 
-        if(rolEditor.equalsIgnoreCase("admin") || (rolEditor.equalsIgnoreCase("administrador"))){
-
-        // 1. Buscamos el usuario y abrimos el Optional de forma segura
-        User userUpdate = userRep.findById(id).orElse(null);
-
-        // 2. Comprobamos que exista
-        if (userUpdate == null) {
-            return "Error: Usuario no encontrado";
+        User userUpdate = userRep.findById(id).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
+        if (!userUpdate.getActivo()) {
+            throw new ConflictException("No se puede actualizar un usuario desactivado.");
         }
 
+        if(rolEditor.equalsIgnoreCase("admin") || (rolEditor.equalsIgnoreCase("administrador"))){
         // 3. Actualizamos los datos
         userUpdate.setNombreUsuario(usuario.getNombreUsuario());
         userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
@@ -125,7 +136,7 @@ public class UserService {
 
         salida="Usuario con id "+id+" editado correctamente";
         } else {
-            salida="Rol de editor no válido. Solo el administrador puede editar usuarios.";
+            throw new BadRequestException("Rol de editor no válido.");
         }
         return salida;
     }
@@ -137,13 +148,11 @@ public class UserService {
      * @return mensaje indicando si el usuario fue desactivado o si no existe
      */
     public String desactivarUsuario (Long id){
-        User userSelect=userRep.findById(id).orElse(null);
+        User userSelect=userRep.findById(id).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
         String salida;
-        if (userSelect!=null) {
-            userSelect.setActivo(false);
-            userRep.save(userSelect);
-            salida= ("Usuario con id "+id+" borrado correctamente");
-        }else{ salida= "No existe un usuario con el id "+id;}
+        userSelect.setActivo(false);
+        userRep.save(userSelect);
+        salida= ("Usuario con id "+id+" borrado correctamente");
         return salida;
     }
 
@@ -156,8 +165,8 @@ public class UserService {
      */
     public List<Rol>rolesUser(Long idUser){
         List<Rol> roles=new ArrayList<>();
-        User encontrado=userRep.findById(idUser).orElse(null);
-        if (encontrado!=null) { roles = encontrado.getRoles();}
+        User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
+        roles = encontrado.getRoles();
         return roles;
     }
 
@@ -170,17 +179,22 @@ public class UserService {
      */
     public String addRolUser(Long idUser, RolPostUser idRol){
         String salida;
-        User encontrado=userRep.findById(idUser).orElse(null);
-        Rol rolN=rolRep.findById(idRol.getIdRol()).orElse(null);
-        if (encontrado!=null && rolN!=null) {
-            List<Rol> roles = encontrado.getRoles();
-            roles.add(rolN);
-            encontrado.setRoles(roles);
-            userRep.save(encontrado);
-            salida= "Rol con id "+rolN.getIdRol()+" añdadido correctamente a usuario con id "+idUser;
-        } else{ salida="Usuario/Rol no encontrado";}
+        User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
+        Rol rolN=rolRep.findById(idRol.getIdRol()).orElseThrow(() -> new NotFoundException("El rol introducido no existe en el sistema."));
+        List<Rol> roles = encontrado.getRoles();
+        for (Rol r:roles){
+            if(Objects.equals(r.getIdRol(), idRol.getIdRol())){
+                throw new DuplicateException("Error: El usuario ya tiene ese rol.");
+            }
+        }
+        roles.add(rolN);
+        encontrado.setRoles(roles);
+        userRep.save(encontrado);
+        salida= "Rol con id "+rolN.getIdRol()+" añdadido correctamente a usuario con id "+idUser;
         return salida;
     }
+
+
 
     /**
      * Elimina la asociación de un rol con un usuario.
@@ -192,15 +206,11 @@ public class UserService {
      */
     public String deleteRolUser(Long idUser, Long idRol) {
 
-        User usuario = userRep.findById(idUser).orElse(null);
-        if (usuario == null) {
-            return "Usuario no encontrado";
-        }
+        User usuario = userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
 
-        Rol rolN = rolRep.findById(idRol).orElse(null);
-        if (rolN == null) {
-            return "Ese rol no existe en la base de datos";
-        }
+
+        Rol rolN = rolRep.findById(idRol).orElseThrow(() -> new NotFoundException("El rol introducido no existe en el sistema."));
+
 
         //Acción directa: removeIf hace el bucle y el borrado de forma segura, guarda el resultado en un boolean
         boolean rolBorrado = usuario.getRoles().removeIf(rol ->
@@ -211,6 +221,6 @@ public class UserService {
             userRep.save(usuario);
             return "Rol con id "+idRol+" eliminado correctamente del usuario con id"+idUser;
         }
-        return "El usuario no tenía asignado ese rol";
+        throw new NotFoundException("Error: El usuario no tenía asignado ese rol.");
     }
 }

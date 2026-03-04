@@ -2,6 +2,10 @@ package com.jorge.sprintdef;
 
 
 import com.jorge.sprintdef.dto.*;
+import com.jorge.sprintdef.exceptions.BadRequestException;
+import com.jorge.sprintdef.exceptions.ConflictException;
+import com.jorge.sprintdef.exceptions.DuplicateException;
+import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.services.UserService;
 import org.junit.jupiter.api.Test;
@@ -9,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +29,10 @@ import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
-    @Mock // <-- ¡Añade esto si no lo tienes!
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private RolRepository rolRep;
 
     @Mock
@@ -35,7 +43,6 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
-
 
     @Test
     void getAllUsers() {
@@ -93,37 +100,135 @@ class UserServiceTest {
     @Test
     void getUserIdNull() {
 
-        given(userRepository.findById(5L)).willReturn(Optional.empty());
+        given(userRepository.findById(99L)).willReturn(Optional.empty());
 
-        UserIdDTo userFind = userService.buscarPorId(5L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.buscarPorId(99L)
+        );
 
-        assertNull(userFind);
-        verify(userRepository).findById(5L);
+        assertEquals("Usuario no encontrado con ID: "+99L, ex.getMessage());
+
+        verify(userRepository).findById(99L);
         verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void getUserId_Inactivo() {
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        usuario.setActivo(false); // Simulamos que está inactivo
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.buscarPorId(1L)
+        );
+
+        assertEquals("El usuario con ID 1 está desactivado y no se puede mostrar.", ex.getMessage());
     }
 
     @Test
     void addUser() {
         UserAddDTO userdto = new UserAddDTO();
         UsersAllDTO userdto2= new UsersAllDTO();
-        User usuarioU = userMap.userAddDTO(userdto);
+        User usuarioU= new User();
+
+        Rol alumno= new Rol();
+        alumno.setName("alumno");
+        alumno.setActivo(true);
+
         given(userRepository.save(usuarioU)).willReturn(usuarioU);
         given(userMap.userAddDTO(userdto)).willReturn(usuarioU);
         given(userMap.mappingADTO(usuarioU)).willReturn(userdto2);
+        given(rolRep.save(alumno)).willReturn(alumno);
+        given(rolRep.findByName("alumno")).willReturn(Optional.of(alumno));
 
-        userdto2 = userService.addUsuario(userdto);
+        usuarioU= userMap.userAddDTO(userdto);
+        userdto.setEmailUsuario("mbappe09@gmail.com");
+        userdto.setContrasenhaUsuario("123abc");
+        rolRep.save(alumno);
+        UsersAllDTO respuesta = userService.addUsuario(userdto);
 
         assertNotNull(userdto2);
-        assertEquals(userdto2.getNombreUsuario(), userdto.getNombreUsuario());
+        assertEquals(respuesta.getNombreUsuario(), userdto.getNombreUsuario());
         verify(userRepository).save(usuarioU);
-        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void addUser_EmailDuplicado() {
+        UserAddDTO userdto = new UserAddDTO();
+        userdto.setEmailUsuario("duplicado@gmail.com");
+
+        // Simulamos que el repositorio ya encuentra a alguien con ese correo
+        given(userRepository.findUserByEmailUsuario("duplicado@gmail.com")).willReturn(new User());
+
+        DuplicateException ex = assertThrows(
+                DuplicateException.class,
+                () -> userService.addUsuario(userdto)
+        );
+
+        assertEquals("El correo electrónico ya está en uso.", ex.getMessage());
+        verify(userRepository, never()).save(any()); // Comprobamos que no se guardó
+    }
+
+    @Test
+    void addUser_RolAlumnoNoExiste() {
+        UserAddDTO userdto = new UserAddDTO();
+        userdto.setEmailUsuario("nuevo@gmail.com");
+        userdto.setContrasenhaUsuario("123");
+
+        User usuarioMapeado = new User();
+
+        given(userRepository.findUserByEmailUsuario(anyString())).willReturn(null);
+        given(userMap.userAddDTO(userdto)).willReturn(usuarioMapeado);
+        given(passwordEncoder.encode(anyString())).willReturn("encriptada");
+
+        // Simulamos que el rol "alumno" no existe en la BD
+        given(rolRep.findByName("alumno")).willReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.addUsuario(userdto)
+        );
+
+        assertEquals("El rol introducido no existe en el sistema.", ex.getMessage());
+    }
+
+    @Test
+    void addRolUser_RolYaAsignado() {
+
+        RolPostUser idRolEntrada = new RolPostUser();
+        idRolEntrada.setIdRol(2L);
+
+        Rol rolEnBaseDeDatos = new Rol();
+        rolEnBaseDeDatos.setIdRol(2L);
+        rolEnBaseDeDatos.setName("ADMIN");
+
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        List<Rol> rolesActuales = new ArrayList<>();
+        rolesActuales.add(rolEnBaseDeDatos); // <-- Esto es lo que hará que el IF se cumpla
+        usuario.setRoles(rolesActuales);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolEnBaseDeDatos));
+
+        DuplicateException ex = assertThrows(
+                DuplicateException.class,
+                () -> userService.addRolUser(1L, idRolEntrada)
+        );
+
+        assertEquals("Error: El usuario ya tiene ese rol.", ex.getMessage());
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void updateUser() {
         User user1 = new User();
         user1.setNombreUsuario("administrador");
-        user1.setActivo(false);
+        user1.setActivo(true);
         user1.setIdUser(4L);
 
         User user2 = new User();
@@ -147,19 +252,42 @@ class UserServiceTest {
     }
 
     @Test
+    void updateUserInactivo() {
+        User user1 = new User();
+        user1.setNombreUsuario("administrador");
+        user1.setActivo(false);
+        user1.setIdUser(4L);
+
+        User user2 = new User();
+        user2.setNombreUsuario("administrador2");
+        user2.setActivo(true);
+        user2.setIdUser(5L);
+
+        given(userRepository.findById(user1.getIdUser())).willReturn(Optional.of(user1));
+
+        ConflictException ex = assertThrows(
+                ConflictException.class,
+                () -> userService.actualizarUsuario("admin", 4L, user2)
+        );
+
+        assertEquals("No se puede actualizar un usuario desactivado.", ex.getMessage());
+    }
+
+    @Test
     void actualizarUsuarioNoPermitido() {
         // GIVEN: Un usuario con datos inventados
         User usuario = new User();
+        usuario.setIdUser(4L);
 
-        // WHEN: Llamamos al servicio con un rol que NO es "admin" ni "administrador"
-        String salida = userService.actualizarUsuario("alumno", 4L, usuario);
+        given(userRepository.findById(4L)).willReturn(Optional.of(usuario));
+
+        BadRequestException ex = assertThrows(
+                BadRequestException.class,
+                () -> userService.actualizarUsuario("alumno", 4L, usuario)
+        );
 
         // THEN: Comprobamos que entra por el "else" y da el mensaje de error correcto
-        assertNotNull(salida);
-        assertEquals("Rol de editor no válido. Solo el administrador puede editar usuarios.", salida);
-
-        // Comprobamos que ni siquiera intentó buscar en la base de datos
-        verifyNoInteractions(userRepository);
+        assertEquals("Rol de editor no válido.", ex.getMessage());
     }
 
     @Test
@@ -172,10 +300,12 @@ class UserServiceTest {
 
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
-        String fallo = userService.actualizarUsuario("admin", 99L, user2);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.actualizarUsuario("admin",99L, user2)
+        );
 
-        assertNotNull(fallo);
-        assertEquals(("Error: Usuario no encontrado"), fallo);
+        assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
     }
 
     @Test
@@ -201,16 +331,13 @@ class UserServiceTest {
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         // WHEN
-        String borrado = userService.desactivarUsuario(99L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.desactivarUsuario(99L)
+        );
 
-        //devuelve el mensaje, pero la base de datos nunca guardó nada
-        assertNotNull(borrado);
-        assertEquals("No existe un usuario con el id "+99L, borrado);
-
-        //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
-        verify(userRepository, never()).save(any(User.class));
+        assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
     }
-
 
     @Test
     void rolesUser() {
@@ -272,6 +399,7 @@ class UserServiceTest {
         verify(rolRep).findById(2L);
     }
 
+
     @Test
     void deleteRolUser() {
         //Preparamos un rol
@@ -311,10 +439,14 @@ class UserServiceTest {
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         // WHEN
-        List<Rol> roles = userService.rolesUser(99L);
 
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.rolesUser(99L)
+        );
+
+        assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
         // THEN: Devuelve una lista vacía y no da error
-        assertTrue(roles.isEmpty());
         verify(userRepository).findById(99L);
     }
 
@@ -326,11 +458,13 @@ class UserServiceTest {
         //El usuario 99 no existe
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
-        // WHEN
-        String resultado = userService.addRolUser(99L, rolPost);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.addRolUser(99L, rolPost)
+        );
 
         // THEN: Comprobamos el mensaje de error
-        assertEquals("Usuario/Rol no encontrado", resultado);
+        assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
 
     }
 
@@ -348,11 +482,13 @@ class UserServiceTest {
         given(userRepository.findById(idUser)).willReturn(Optional.of(usuarioReal));
         given(rolRep.findById(rolDto.getIdRol())).willReturn(Optional.empty());
 
-        // WHEN
-        String resultado = userService.addRolUser(idUser, rolDto);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.addRolUser(1L, rolDto)
+        );
 
-        // THEN: Comprobamos el mensaje de error y la seguridad de la BD
-        assertEquals("Usuario/Rol no encontrado", resultado);
+        // Verifica el mensaje de la excepción
+        assertEquals("El rol introducido no existe en el sistema.", ex.getMessage());
         verify(userRepository , never()).save(any(User.class));
     }
 
@@ -361,9 +497,13 @@ class UserServiceTest {
         // GIVEN: El usuario no existe
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
-        String resultado = userService.deleteRolUser(99L, 2L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.deleteRolUser(99L, 2L)
+        );
 
-        assertEquals("Usuario no encontrado", resultado);
+        // Verifica el mensaje de la excepción
+        assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
         verifyNoInteractions(rolRep); // No llega a buscar el rol
     }
 
@@ -377,16 +517,20 @@ class UserServiceTest {
         // Pero el rol que intentamos borrar no existe en la BD
         given(rolRep.findById(99L)).willReturn(Optional.empty());
 
-        String resultado = userService.deleteRolUser(1L, 99L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.deleteRolUser(1L, 99L)
+        );
 
-        assertEquals("Ese rol no existe en la base de datos", resultado);
+        // Verifica el mensaje de la excepción
+        assertEquals("El rol introducido no existe en el sistema.", ex.getMessage());
         // Comprobamos que nunca hace "save" por error
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void deleteRolUser_RolNotAssigned() {
-        // El usuario existe pero NO tiene roles (lista vacía)
+        // El usuario existe, pero NO tiene roles (lista vacía)
         User usuario = new User();
         usuario.setIdUser(1L);
         usuario.setRoles(new ArrayList<>());
@@ -398,11 +542,14 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
         given(rolRep.findById(2L)).willReturn(Optional.of(rol));
 
-        // WHEN
-        String resultado = userService.deleteRolUser(1L, 2L);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> userService.deleteRolUser(1L, 2L)
+        );
 
-        // THEN
-        assertEquals("El usuario no tenía asignado ese rol", resultado);
+        // Verifica el mensaje de la excepción
+        assertEquals("Error: El usuario no tenía asignado ese rol.", ex.getMessage());
+
         verify(userRepository, never()).save(any(User.class)); // Cero mentiras en BD
     }
 }

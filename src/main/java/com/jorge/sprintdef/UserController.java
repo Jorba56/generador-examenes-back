@@ -5,6 +5,7 @@ import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,10 +46,11 @@ public class UserController {
     /**
      * Registra un nuevo usuario en la base de datos.
      */
+    /*
     @PostMapping("")
-    public UsersAllDTO addUser (@RequestBody UserAddDTO usuario){
+    public UsersAllDTO addUser (@Valid @RequestBody UserAddDTO usuario){
         return userService.addUsuario(usuario);
-    }
+    }*/
 
     /**
      * Actualiza la información de un usuario existente.

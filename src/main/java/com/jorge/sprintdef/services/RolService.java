@@ -5,6 +5,7 @@ import com.jorge.sprintdef.*;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
+import com.jorge.sprintdef.exceptions.*;
 import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,13 @@ public class RolService {
      * @return Un Optional que contiene el rol si se encuentra, o vacío si no existe.
      */
     public Optional<Rol> rolPorId (Long id){
-        return rolRepository.findById(id);
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Rol no encontrado con ID: " + id));
+
+        if (!rol.getActivo()) {
+            throw new NotFoundException("El rol se encuentra desactivado.");
+        }
+        return Optional.of(rol);
     }
 
     /**
@@ -86,7 +93,6 @@ public class RolService {
             salida= "Rol con id"+id+" editado correctamente";
         }
         return salida;
-
     }
 
     /**
@@ -96,16 +102,22 @@ public class RolService {
      * @return Un mensaje confirmando el borrado exitoso o un aviso si el rol no existe.
      */
     public String desactivarRol ( Long id){
-        String borrado="";
-        Rol rolSelect=rolRepository.findById(id).orElse(null);
-        if (rolSelect!=null) {
-            rolSelect.setActivo(false);
-            rolRepository.save(rolSelect);
-            borrado="Rol  con id "+id+" borrado con éxito";
-        }else{
-            borrado="Error: Rol no encontrado";
+        Rol rolSelect = rolRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Rol no encontrado con ID: " + id));
+
+        if (!rolSelect.getActivo()) {
+            throw new ConflictException("El rol ya está desactivado.");
         }
-        return borrado;
+
+        // Comprobar si hay usuarios asignados a este rol
+        List<User> usuariosConRol = rolRepository.findUsuariosPorRol(id);
+        if (!usuariosConRol.isEmpty()) {
+            throw new ConflictException("No se puede desactivar un rol que tiene usuarios asignados.");
+        }
+
+        rolSelect.setActivo(false);
+        rolRepository.save(rolSelect);
+        return "Rol con id " + id + " borrado con éxito";
     }
 
     /**

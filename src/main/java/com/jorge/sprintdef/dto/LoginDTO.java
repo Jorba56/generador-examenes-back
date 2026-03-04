@@ -1,0 +1,20 @@
+package com.jorge.sprintdef.dto;
+
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public class LoginDTO {
+
+    @NotBlank(message = "El correo no puede estar vacío")
+    @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,8}$",message = "El formato del correo no es válido")
+    private String emailUsuario;
+
+    @NotBlank(message = "La contraseña no puede estar vacía")
+    private String contrasenhaUsuario;
+
+    public String getEmailUsuario() { return emailUsuario; }
+    public void setEmailUsuario(String emailUsuario) { this.emailUsuario = emailUsuario; }
+    public String getContrasenhaUsuario() { return contrasenhaUsuario; }
+    public void setContrasenhaUsuario(String contrasenhaUsuario) { this.contrasenhaUsuario = contrasenhaUsuario; }
+}
