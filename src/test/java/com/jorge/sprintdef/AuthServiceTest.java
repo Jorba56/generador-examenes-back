@@ -4,6 +4,7 @@ package com.jorge.sprintdef;
 import com.jorge.sprintdef.dto.LoginDTO;
 import com.jorge.sprintdef.exceptions.BadRequestException;
 
+import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.security.JwtUtil;
 import com.jorge.sprintdef.services.AuthService;
@@ -100,6 +101,29 @@ class AuthServiceTest {
         );
 
         assertEquals("Credenciales de acceso incorrectas.", ex.getMessage());
+    }
+
+    @Test
+    void loginInactivo(){
+        User usuario= new User();
+        LoginDTO user= new LoginDTO();
+        usuario.setIdUser(1L);
+        usuario.setActivo(false);
+        usuario.setContrasenhaUsuario("1234");
+        usuario.setEmailUsuario("luis@gmail.com");
+        user.setEmailUsuario("luis@gmail.com");
+        user.setContrasenhaUsuario("1234");
+
+        given(userRepository.findUserByEmailUsuario("luis@gmail.com")).willReturn(usuario);
+        given(passwordEncoder.matches(user.getContrasenhaUsuario(), usuario.getContrasenhaUsuario())).willReturn(true);
+
+
+        ConflictException ex = assertThrows(
+                ConflictException.class,
+                () -> authService.login(user)
+        );
+
+        assertEquals("La cuenta de usuario se encuentra desactivada.", ex.getMessage());
     }
 
 }

@@ -61,7 +61,6 @@ class UserServiceTest {
         verifyNoMoreInteractions(userRepository);
     }
 
-
     @Test
     void getAllUsersVacio() {
 
@@ -74,7 +73,6 @@ class UserServiceTest {
         verify(userRepository).findUsersByActivoIs(true);
         verifyNoMoreInteractions(userRepository);
     }
-
 
     @Test
     void getUserId() {
@@ -95,7 +93,6 @@ class UserServiceTest {
         assertNotNull(userFind);
         assertEquals(("Jorge"), userFind.getNombreUsuario());
     }
-
 
     @Test
     void getUserIdNull() {
@@ -131,28 +128,46 @@ class UserServiceTest {
 
     @Test
     void addUser() {
+        // 1. Preparar DTO de entrada (CON LOS DATOS YA PUESTOS DESDE EL PRINCIPIO)
         UserAddDTO userdto = new UserAddDTO();
-        UsersAllDTO userdto2= new UsersAllDTO();
-        User usuarioU= new User();
-
-        Rol alumno= new Rol();
-        alumno.setName("alumno");
-        alumno.setActivo(true);
-
-        given(userRepository.save(usuarioU)).willReturn(usuarioU);
-        given(userMap.userAddDTO(userdto)).willReturn(usuarioU);
-        given(userMap.mappingADTO(usuarioU)).willReturn(userdto2);
-        given(rolRep.save(alumno)).willReturn(alumno);
-        given(rolRep.findByName("alumno")).willReturn(Optional.of(alumno));
-
-        usuarioU= userMap.userAddDTO(userdto);
         userdto.setEmailUsuario("mbappe09@gmail.com");
         userdto.setContrasenhaUsuario("123abc");
-        rolRep.save(alumno);
+        userdto.setNombreUsuario("Kylian");
+
+        // 2. Preparar el Usuario "real" que creará el mapper
+        User usuarioU = new User();
+        usuarioU.setNombreUsuario("Kylian");
+
+        // 3. Preparar el Rol que sacaremos de la BD
+        Rol alumno = new Rol();
+        alumno.setIdRol(1L);
+        alumno.setName("alumno");
+
+        // 4. Preparar el DTO final que se devuelve al cliente
+        UsersAllDTO userdto2 = new UsersAllDTO();
+        userdto2.setNombreUsuario("Kylian");
+
+        // 5. Educar a los mocks en el orden correcto
+        given(userRepository.findUserByEmailUsuario(userdto.getEmailUsuario())).willReturn(null);
+        given(userMap.userAddDTO(userdto)).willReturn(usuarioU);
+        given(passwordEncoder.encode(userdto.getContrasenhaUsuario())).willReturn("claveEncriptada");
+        given(rolRep.findByName("alumno")).willReturn(Optional.of(alumno));
+        given(userRepository.save(usuarioU)).willReturn(usuarioU);
+        given(userMap.mappingADTO(usuarioU)).willReturn(userdto2);
+
+        // 6. Ejecutamos el método del servicio
         UsersAllDTO respuesta = userService.addUsuario(userdto);
 
-        assertNotNull(userdto2);
-        assertEquals(respuesta.getNombreUsuario(), userdto.getNombreUsuario());
+        // 7. Comprobaciones (Aserciones)
+        assertNotNull(respuesta);
+        assertEquals("Kylian", respuesta.getNombreUsuario());
+
+        // ¡Comprobamos que las líneas que te faltaban hacen su trabajo!
+        assertFalse(usuarioU.getRoles().isEmpty());
+        assertEquals("alumno", usuarioU.getRoles().get(0).getName());
+        assertEquals("claveEncriptada", usuarioU.getContrasenhaUsuario());
+
+        // Verificamos que se llamó al guardado de la BD
         verify(userRepository).save(usuarioU);
     }
 
@@ -194,34 +209,6 @@ class UserServiceTest {
         );
 
         assertEquals("El rol introducido no existe en el sistema.", ex.getMessage());
-    }
-
-    @Test
-    void addRolUser_RolYaAsignado() {
-
-        RolPostUser idRolEntrada = new RolPostUser();
-        idRolEntrada.setIdRol(2L);
-
-        Rol rolEnBaseDeDatos = new Rol();
-        rolEnBaseDeDatos.setIdRol(2L);
-        rolEnBaseDeDatos.setName("ADMIN");
-
-        User usuario = new User();
-        usuario.setIdUser(1L);
-        List<Rol> rolesActuales = new ArrayList<>();
-        rolesActuales.add(rolEnBaseDeDatos); // <-- Esto es lo que hará que el IF se cumpla
-        usuario.setRoles(rolesActuales);
-
-        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
-        given(rolRep.findById(2L)).willReturn(Optional.of(rolEnBaseDeDatos));
-
-        DuplicateException ex = assertThrows(
-                DuplicateException.class,
-                () -> userService.addRolUser(1L, idRolEntrada)
-        );
-
-        assertEquals("Error: El usuario ya tiene ese rol.", ex.getMessage());
-        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -362,43 +349,6 @@ class UserServiceTest {
         verify(userRepository).findById(6L);
     }
 
-    @Test
-    void addRolUser() {
-        //Preparamos un usuario con una lista de roles vacía
-        User usuario = new User();
-        usuario.setIdUser(1L);
-        usuario.setRoles(new ArrayList<>()); // Inicializamos la lista para que no dé null pointer
-
-        //Preparamos el rol que vamos a buscar en base de datos
-        Rol rolNuevo = new Rol();
-        rolNuevo.setIdRol(2L);
-        rolNuevo.setName("rol");
-
-        //Preparamos el DTO que entra por el controlador
-        RolPostUser rolPost = new RolPostUser();
-        rolPost.setIdRol(2L);
-
-        // Educamos a los mocks
-        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
-        given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
-
-        //Ejecutamos el servicio
-        String resultado = userService.addRolUser(1L, rolPost);
-
-        //Comprobamos el texto devuelto
-        assertNotNull(resultado);
-        assertEquals("Rol con id "+rolPost.getIdRol()+" añdadido correctamente a usuario con id "+1L, resultado);
-
-        //Comprobamos que efectivamente el rol se metió en la lista del usuario
-        assertFalse(usuario.getRoles().isEmpty());
-        assertEquals(2L, usuario.getRoles().getFirst().getIdRol());
-
-        //Comprobamos que se guardó en la base de datos
-        verify(userRepository).save(usuario);
-        verify(userRepository).findById(1L);
-        verify(rolRep).findById(2L);
-    }
-
 
     @Test
     void deleteRolUser() {
@@ -530,26 +480,114 @@ class UserServiceTest {
 
     @Test
     void deleteRolUser_RolNotAssigned() {
-        // El usuario existe, pero NO tiene roles (lista vacía)
+        // GIVEN: El usuario existe y tiene un rol, pero es DISTINTO al que queremos borrar
         User usuario = new User();
         usuario.setIdUser(1L);
-        usuario.setRoles(new ArrayList<>());
 
-        // El rol existe
-        Rol rol = new Rol();
-        rol.setIdRol(2L);
+        Rol rolDistinto = new Rol();
+        rolDistinto.setIdRol(8L); // Diferente a 2L
+
+        List<Rol> roles = new ArrayList<>();
+        roles.add(rolDistinto);
+        usuario.setRoles(roles);
+
+        // El rol que queremos borrar
+        Rol rolAEliminar = new Rol();
+        rolAEliminar.setIdRol(2L);
 
         given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
-        given(rolRep.findById(2L)).willReturn(Optional.of(rol));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolAEliminar));
 
+        // WHEN
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
                 () -> userService.deleteRolUser(1L, 2L)
         );
 
-        // Verifica el mensaje de la excepción
+        // THEN
         assertEquals("Error: El usuario no tenía asignado ese rol.", ex.getMessage());
+        verify(userRepository, never()).save(any(User.class));
+    }
 
-        verify(userRepository, never()).save(any(User.class)); // Cero mentiras en BD
+    @Test
+    void addRolUser_Exito_ListaVacia() {
+        // ESCENARIO 1: Usuario totalmente nuevo sin roles (El bucle FOR se salta)
+        User usuario = new User();
+        usuario.setIdUser(1L);
+        usuario.setRoles(new ArrayList<>()); // Lista vacía
+
+        Rol rolNuevo = new Rol();
+        rolNuevo.setIdRol(2L);
+        rolNuevo.setName("rol");
+
+        RolPostUser rolPost = new RolPostUser();
+        rolPost.setIdRol(2L);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
+
+        String resultado = userService.addRolUser(1L, rolPost);
+
+        assertEquals("Rol con id 2 añdadido correctamente a usuario con id 1", resultado);
+        assertEquals(1, usuario.getRoles().size());
+    }
+
+    @Test
+    void addRolUser_Exito_ConRolDistinto() {
+        // ESCENARIO 2: Usuario ya tiene un rol, pero es distinto (El IF da FALSE)
+        User usuario = new User();
+        usuario.setIdUser(1L);
+
+        Rol rolPrevio = new Rol();
+        rolPrevio.setIdRol(8L); // ID distinto (8 vs 2)
+
+        List<Rol> listaRoles = new ArrayList<>();
+        listaRoles.add(rolPrevio);
+        usuario.setRoles(listaRoles);
+
+        Rol rolNuevo = new Rol();
+        rolNuevo.setIdRol(2L);
+
+        RolPostUser rolPost = new RolPostUser();
+        rolPost.setIdRol(2L);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
+
+        String resultado = userService.addRolUser(1L, rolPost);
+
+        assertEquals("Rol con id 2 añdadido correctamente a usuario con id 1", resultado);
+        assertEquals(2, usuario.getRoles().size()); // Ahora tiene 2 roles
+    }
+
+    @Test
+    void addRolUser_Error_RolYaAsignado() {
+        // ESCENARIO 3: El usuario ya tiene ese mismo rol exacto (El IF da TRUE)
+        User usuario = new User();
+        usuario.setIdUser(1L);
+
+        Rol rolPrevio = new Rol();
+        rolPrevio.setIdRol(2L); // ID idéntico (2 vs 2)
+
+        List<Rol> rolesActuales = new ArrayList<>();
+        rolesActuales.add(rolPrevio);
+        usuario.setRoles(rolesActuales);
+
+        Rol rolEnBaseDeDatos = new Rol();
+        rolEnBaseDeDatos.setIdRol(2L);
+
+        RolPostUser idRolEntrada = new RolPostUser();
+        idRolEntrada.setIdRol(2L);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolEnBaseDeDatos));
+
+        DuplicateException ex = assertThrows(
+                DuplicateException.class,
+                () -> userService.addRolUser(1L, idRolEntrada)
+        );
+
+        assertEquals("Error: El usuario ya tiene ese rol.", ex.getMessage());
+        verify(userRepository, never()).save(any(User.class)); // Verificamos que no guardó nada
     }
 }

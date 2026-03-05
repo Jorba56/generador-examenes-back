@@ -3,6 +3,7 @@ package com.jorge.sprintdef;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
+import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
@@ -79,6 +80,24 @@ class RolServiceTest {
         assertEquals(rol1.getIdRol(),rolSearch.getIdRol());
         verify(rolRep).findById(rol1.getIdRol());
         verifyNoMoreInteractions(rolRep);
+    }
+
+    @Test
+    void rolPorId_Inactivo() {
+        // GIVEN: Un rol que existe pero está desactivado
+        Rol rolInactivo = new Rol();
+        rolInactivo.setIdRol(1L);
+        rolInactivo.setActivo(false);
+
+        given(rolRep.findById(1L)).willReturn(Optional.of(rolInactivo));
+
+        // WHEN & THEN: Forzamos la excepción y comprobamos el mensaje
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> rolService.rolPorId(1L)
+        );
+
+        assertEquals("El rol se encuentra desactivado.", ex.getMessage());
     }
 
     @Test
@@ -168,6 +187,26 @@ class RolServiceTest {
     }
 
     @Test
+    void desactivarRol_YaDesactivado() {
+        // GIVEN: Un rol que ya tiene activo=false
+        Rol rolInactivo = new Rol();
+        rolInactivo.setIdRol(2L);
+        rolInactivo.setActivo(false);
+
+        given(rolRep.findById(2L)).willReturn(Optional.of(rolInactivo));
+
+        // WHEN & THEN: Forzamos la excepción
+        ConflictException ex = assertThrows(
+                ConflictException.class,
+                () -> rolService.desactivarRol(2L)
+        );
+
+        assertEquals("El rol ya está desactivado.", ex.getMessage());
+        // Nos aseguramos de que no ha guardado nada en BD por error
+        verify(rolRep, never()).save(any(Rol.class));
+    }
+
+    @Test
     void deleteRolNull() {
         // obligamos a Mockito a devolver vacío
         given(rolRep.findById(99L)).willReturn(Optional.empty());
@@ -181,6 +220,33 @@ class RolServiceTest {
         assertEquals("Rol no encontrado con ID: "+99L, ex.getMessage());
 
         //asegurarme de que nunca se haya usado el metodo "save" para ninguna clase "Rol"
+        verify(rolRep, never()).save(any(Rol.class));
+    }
+
+    @Test
+    void desactivarRol_ConUsuariosAsignados() {
+        // GIVEN: Un rol activo
+        Rol rolActivo = new Rol();
+        rolActivo.setIdRol(3L);
+        rolActivo.setActivo(true);
+
+        // Simulamos que hay un usuario usando este rol
+        User usuario = new User();
+        usuario.setIdUser(100L);
+        List<User> usuariosUsandoRol = List.of(usuario);
+
+        // Educamos a los mocks
+        given(rolRep.findById(3L)).willReturn(Optional.of(rolActivo));
+        given(rolRep.findUsuariosPorRol(3L)).willReturn(usuariosUsandoRol);
+
+        // WHEN & THEN: Forzamos la excepción de conflicto
+        ConflictException ex = assertThrows(
+                ConflictException.class,
+                () -> rolService.desactivarRol(3L)
+        );
+
+        assertEquals("No se puede desactivar un rol que tiene usuarios asignados.", ex.getMessage());
+        // Verificamos que se bloqueó el borrado
         verify(rolRep, never()).save(any(Rol.class));
     }
 
