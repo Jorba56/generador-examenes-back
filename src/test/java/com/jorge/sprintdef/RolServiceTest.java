@@ -169,7 +169,7 @@ class RolServiceTest {
 
     @Test
     void deleteRolNull() {
-        // Obligamos a Mockito a devolver vacío
+        // obligamos a Mockito a devolver vacío
         given(rolRep.findById(99L)).willReturn(Optional.empty());
 
         // WHEN
@@ -194,7 +194,7 @@ class RolServiceTest {
         UserByRol userRol=new UserByRol();
         userRol.setNombreUsuario("jorge");
 
-        // Le enseñamos al mock que devuelva una lista con ese usuario cuando busque el rol 2
+        // le enseñamos al mock que devuelva una lista con ese usuario cuando busque el rol 2
         given(rolRep.findUsuariosPorRol(2L)).willReturn(List.of(usuario));
         given(userMap.mappingRoles(usuario)).willReturn((userRol));
 

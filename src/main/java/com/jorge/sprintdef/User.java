@@ -39,12 +39,13 @@ public class User{
     @NotNull
     private boolean activo=true;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "roles_usuario",
     joinColumns=@JoinColumn(name="id_user"),
     inverseJoinColumns = @JoinColumn(name = "id_rol"))
     private List<Rol> roles= new ArrayList<>();
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "incidencias_usuario",
             joinColumns=@JoinColumn(name="id_user"),

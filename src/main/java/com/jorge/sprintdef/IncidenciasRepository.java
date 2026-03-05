@@ -7,6 +7,8 @@ import java.util.List;
 
 @Repository
 public interface IncidenciasRepository extends JpaRepository<Incidencia, Long> {
-    List<Incidencia> findByTipo(TipoIncidencia tipo);
+    List<Incidencia> findByClase(String clase);
+    List<Incidencia> findByIdUsuario(Long id);
+    List<Incidencia> findByMetodo(String metodo);
 }
 

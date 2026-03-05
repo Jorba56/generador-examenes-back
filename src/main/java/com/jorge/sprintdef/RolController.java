@@ -4,6 +4,9 @@ import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
 import com.jorge.sprintdef.services.RolService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +17,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/roles")
+@Tag(name = "Roles", description = "Endpoints para la creación, modificación y listado de los niveles de acceso del sistema.")
 public class RolController{
 
     private final RolService rolService;
@@ -26,6 +30,8 @@ public class RolController{
     /**
      * Obtiene el listado de todos los roles disponibles y activos.
      */
+    @Operation(summary = "Listar todos los roles", description = "Obtiene el listado completo de roles activos disponibles para asignar.")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public List<Rol> getAllRoles(){
         return rolService.listarRoles();
@@ -34,6 +40,8 @@ public class RolController{
     /**
      * Busca un rol específico por su identificador.
      */
+    @Operation(summary = "Buscar rol por ID", description = "Devuelve la información de un rol específico mediante su identificador.")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}")
     public Optional<Rol> getRolId (@PathVariable Long id){
         return rolService.rolPorId(id);
@@ -42,6 +50,8 @@ public class RolController{
     /**
      * Crea un nuevo rol en el sistema (por ejemplo, "ADMIN" o "PROFESOR").
      */
+    @Operation(summary = "Crear nuevo rol", description = "Registra un nuevo rol (ej: PROFESOR, ADMIN) en la base de datos.")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("")
     public String addRol (@RequestBody RolDTO rol){
         return rolService.newRol(rol);
@@ -50,6 +60,8 @@ public class RolController{
     /**
      * Modifica el nombre o el estado de un rol existente.
      */
+    @Operation(summary = "Actualizar rol", description = "Modifica el nombre o el estado de un rol ya existente.")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public String updateRol(@PathVariable Long id, @RequestBody RolPutDTO rolNuevo) {
         return rolService.actualizarRol(id, rolNuevo);
@@ -58,6 +70,8 @@ public class RolController{
     /**
      * Realiza el borrado lógico de un rol para que deje de estar disponible.
      */
+    @Operation(summary = "Desactivar rol", description = "Realiza un borrado lógico del rol. Fallará si el rol tiene usuarios asignados.")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public String deleteRol (@PathVariable Long id){
         return rolService.desactivarRol(id);
@@ -66,6 +80,8 @@ public class RolController{
     /**
      * Consulta qué usuarios tienen asignado el rol especificado.
      */
+    @Operation(summary = "Ver usuarios por rol", description = "Devuelve una lista con todos los usuarios que poseen un rol determinado.")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{idRol}/usuarios")
     public List<UserByRol> userRol(@PathVariable Long idRol){
         return rolService.userPorRol(idRol);

@@ -1,10 +1,7 @@
 package com.jorge.sprintdef.mapping;
 
 import com.jorge.sprintdef.User;
-import com.jorge.sprintdef.dto.UserAddDTO;
-import com.jorge.sprintdef.dto.UserByRol;
-import com.jorge.sprintdef.dto.UserIdDTo;
-import com.jorge.sprintdef.dto.UsersAllDTO;
+import com.jorge.sprintdef.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -18,4 +15,8 @@ public interface UserMapper {
     User userAddDTO(UserAddDTO usuario);
 
     UserByRol mappingRoles(User usuario);
+
+    LoginDTO mapeoLogin(User usuario);
+
+    LoginDTO mappeoLogin(User usuario);
 }

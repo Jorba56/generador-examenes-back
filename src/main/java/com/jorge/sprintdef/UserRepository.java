@@ -9,7 +9,6 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findUsersByActivoIs(boolean activo);
     User findUserByEmailUsuario(String correo);
-
 }
 
 

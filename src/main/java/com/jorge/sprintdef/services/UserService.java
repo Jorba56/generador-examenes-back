@@ -121,17 +121,17 @@ public class UserService {
         }
 
         if(rolEditor.equalsIgnoreCase("admin") || (rolEditor.equalsIgnoreCase("administrador"))){
-        // 3. Actualizamos los datos
+        //actualizamos los datos
         userUpdate.setNombreUsuario(usuario.getNombreUsuario());
         userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
         userUpdate.setEmailUsuario(usuario.getEmailUsuario());
         userUpdate.setActivo(usuario.getActivo());
         userUpdate.setContrasenhaUsuario(usuario.getContrasenhaUsuario());
 
-        // 4. Actualizamos el rol (ahora usuario.getRol() sí tendrá datos gracias al setter falso)
+        //actualizamos el rol (ahora usuario.getRol() sí tendrá datos gracias al setter falso)
         userUpdate.setRoles(usuario.getRoles());
 
-        // 5. Guardamos en la base de datos
+        //guardamos en la base de datos
         userRep.save(userUpdate);
 
         salida="Usuario con id "+id+" editado correctamente";
@@ -164,7 +164,7 @@ public class UserService {
      * @return lista de roles asignados al usuario; vacía si el usuario no existe
      */
     public List<Rol>rolesUser(Long idUser){
-        List<Rol> roles=new ArrayList<>();
+        List<Rol> roles;
         User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
         roles = encontrado.getRoles();
         return roles;
@@ -194,8 +194,6 @@ public class UserService {
         return salida;
     }
 
-
-
     /**
      * Elimina la asociación de un rol con un usuario.
      * Si el usuario y el rol existen y el rol está asignado al usuario, se elimina y se persiste el cambio.
@@ -208,11 +206,9 @@ public class UserService {
 
         User usuario = userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
 
-
         Rol rolN = rolRep.findById(idRol).orElseThrow(() -> new NotFoundException("El rol introducido no existe en el sistema."));
 
-
-        //Acción directa: removeIf hace el bucle y el borrado de forma segura, guarda el resultado en un boolean
+        //acción directa: removeif hace el bucle y el borrado de forma segura, guarda el resultado en un boolean
         boolean rolBorrado = usuario.getRoles().removeIf(rol ->
                 Objects.equals(rol.getIdRol(), rolN.getIdRol())
         );

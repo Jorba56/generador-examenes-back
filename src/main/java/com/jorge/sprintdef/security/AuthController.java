@@ -6,6 +6,8 @@ import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.services.AuthService;
 import com.jorge.sprintdef.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticación", description = "Endpoints públicos para registro y login de usuarios.")
 public class AuthController {
     private final AuthService authService;
     private final UserService userService;
@@ -24,11 +27,12 @@ public class AuthController {
         this.userService = userService;
         this.authService=authService;
     }
+    @Operation(summary = "Iniciar sesión", description = "Valida las credenciales del usuario y devuelve un token JWT para acceder a los endpoints protegidos.")
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginDTO loginDto) {
         return ResponseEntity.ok(authService.login(loginDto));
     }
-
+    @Operation(summary = "Registrar nuevo usuario", description = "Crea un usuario en el sistema, encripta su contraseña y le asigna el rol ALUMNO por defecto.")
     @PostMapping("/register")
     public ResponseEntity<UsersAllDTO> registro(@Valid @RequestBody UserAddDTO dto) {
         return ResponseEntity.ok(userService.addUsuario(dto));

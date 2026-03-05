@@ -1,9 +1,7 @@
 package com.jorge.sprintdef;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "incidencias")
@@ -11,76 +9,53 @@ public class Incidencia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_incidencia")
     private Long idIncidencia;
 
-    @NotNull
-    @Column(name = "descripcion_inc", length = 300)
-    private String descripcion;
+    @Column(name = "endpoint")
+    private String endpoint;
 
+    @Column(name = "tipo")
+    private String tipo;
 
+    @Column(name = "clase")
+    private String clase;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_incidencia")
-    private TipoIncidencia tipo;
+    @Column(name = "metodo")
+    private String metodo;
 
+    @Column(name = "traza", columnDefinition = "TEXT")
+    private String traza;
 
-    @ManyToOne
-    @JsonProperty("id_usuario")
-    @JsonIgnore
-    @JoinColumn(name = "id_user")
-    private User usuario;
+    @Column(name = "fecha")
+    private LocalDateTime fecha;
 
-    public Long getIdIncidencia() {
-        return idIncidencia;
-    }
+    @Column(name = "id_usuario")
+    private Long idUsuario;
 
-    public void setIdIncidencia(Long idIncidencia) {
-        this.idIncidencia = idIncidencia;
-    }
+    public Incidencia() {}
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    // ¡Añade aquí los Getters y Setters correspondientes para todos los campos!
+    public Long getIdIncidencia() { return idIncidencia; }
+    public void setIdIncidencia(Long idIncidencia) { this.idIncidencia = idIncidencia; }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
+    public String getEndpoint() { return endpoint; }
+    public void setEndpoint(String endpoint) { this.endpoint = endpoint; }
 
-    // --- MAGIA PARA EL JSON (CUANDO HACES UN GET) ---
-    @JsonProperty("usuario_id")
-    public Long getUsuarioIdParaJson() {
-        if (this.usuario != null) {
-            return this.usuario.getIdUser(); // OJO: Pon aquí cómo se llame tu getter del ID en la clase User (getIdUsuario() o getIdUser())
-        }
-        return null;
-    }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
 
-    // --- MAGIA PARA EL JSON (CUANDO HACES UN POST) ---
-    @JsonProperty("usuario_id")
-    public void setUsuarioIdDesdeJson(Long id) {
-        if (id != null) {
-            User u = new User();
-            u.setIdUser(id); // OJO: Igual aquí, usa tu setter real
-            this.usuario = u;
-        }
-    }
+    public String getClase() { return clase; }
+    public void setClase(String clase) { this.clase = clase; }
 
-    public TipoIncidencia getTipo() {
-        return tipo;
-    }
+    public String getMetodo() { return metodo; }
+    public void setMetodo(String metodo) { this.metodo = metodo; }
 
-    public void setTipo(TipoIncidencia tipo) {
-        this.tipo = tipo;
-    }
+    public String getTraza() { return traza; }
+    public void setTraza(String traza) { this.traza = traza; }
 
-    public User getUsuario() {
-        return usuario;
-    }
+    public LocalDateTime getFecha() { return fecha; }
+    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
 
-    public void setUsuario(User usuario) {
-        this.usuario = usuario;
-    }
-
+    public Long getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
 }
