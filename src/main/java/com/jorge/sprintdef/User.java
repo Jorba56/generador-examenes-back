@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "usuarios")
 public class User{
-
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user")
@@ -39,6 +39,7 @@ public class User{
     @NotNull
     private boolean activo=true;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "roles_usuario",
     joinColumns=@JoinColumn(name="id_user"),
@@ -53,7 +54,9 @@ public class User{
     private List<Incidencia> incidencias= new ArrayList<>();
 
     // Getters and setters
+    @JsonIgnore
     public Long getIdUser() { return idUser; }
+    @JsonIgnore
     public void setIdUser(Long idUser) { this.idUser= idUser; }
 
     public String getNombreUsuario() { return nombreUsuario; }
@@ -74,14 +77,13 @@ public class User{
     public List<Rol> getRoles() {
         return roles;
     }
-
-    // 2. Mantenemos el setter normal para que tu POST siga funcionando
+    @JsonIgnore
     public void setRoles(List<Rol> roles) {
         this.roles = roles;
     }
 
-
-    // 3. El "Getter Falso": Jackson lee esto y crea la clave "rol_id" automáticamente
+    //el "Getter Falso": Jackson lee esto y crea la clave "rol_id" automáticamente
+    @JsonIgnore
     public List<Long> getRolId() {
         List<Long> rolesFinal=new ArrayList<>();
         if (this.roles != null) {
@@ -92,7 +94,8 @@ public class User{
         }
         return rolesFinal; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
     }
-    // Jackson usará esto cuando envíes "rol_id": 2 desde Postman
+    // Jackson usará esto
+    @JsonIgnore
     public void setRolId(List<Long> ids)  {
         if (ids != null) {
             this.roles = new ArrayList<>();
@@ -105,15 +108,16 @@ public class User{
             this.roles = null;
         }
     }
-
-   public List<Incidencia> getIncidencias() {
+    @JsonIgnore
+    public List<Incidencia> getIncidencias() {
         return incidencias;
     }
-
+    @JsonIgnore
     public void setIncidencias(List<Incidencia> incidencias) {
         this.incidencias = incidencias;
     }
 
+    @JsonIgnore
     public List<Long> getIdIncidencia() {
         List<Long> incidenciasFinal=new ArrayList<>();
         if (this.incidencias != null) {
@@ -124,7 +128,7 @@ public class User{
         }
         return incidenciasFinal; // Si el usuario aún no tiene rol, devolverá null en vez de dar error
     }
-    // Jackson usará esto cuando envíes "rol_id": 2 desde Postman
+    @JsonIgnore
     public void setIdIncidencias (List<Long> ids)  {
         if (ids != null) {
             this.incidencias = new ArrayList<>();

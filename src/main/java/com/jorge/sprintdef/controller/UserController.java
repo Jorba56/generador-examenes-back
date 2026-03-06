@@ -1,16 +1,17 @@
-package com.jorge.sprintdef;
+package com.jorge.sprintdef.controller;
 
+import com.jorge.sprintdef.Rol;
+import com.jorge.sprintdef.User;
 import com.jorge.sprintdef.dto.RolPostUser;
-import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+//import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.Authentication;
 import java.util.List;
 
 
@@ -57,8 +58,8 @@ public class UserController {
      */
     @Operation(summary = "Actualizar usuario", description = "Modifica los datos de un usuario. Bloquea la edición de contraseñas para admins y roles para usuarios normales.")
     @PutMapping("/{id}")
-    public String updateUser(@PathVariable String rolEditor, @PathVariable Long id, @RequestBody User usuario) {
-        return userService.actualizarUsuario(rolEditor, id, usuario);
+    public String updateUser(@PathVariable Long id, @RequestBody User usuario, Authentication authentication) {
+        return userService.actualizarUsuario(id, usuario, authentication);
     }
 
     /**

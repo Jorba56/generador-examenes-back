@@ -19,10 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-
 
 @ExtendWith(MockitoExtension.class)
 
@@ -116,7 +114,6 @@ class AuthServiceTest {
 
         given(userRepository.findUserByEmailUsuario("luis@gmail.com")).willReturn(usuario);
         given(passwordEncoder.matches(user.getContrasenhaUsuario(), usuario.getContrasenhaUsuario())).willReturn(true);
-
 
         ConflictException ex = assertThrows(
                 ConflictException.class,

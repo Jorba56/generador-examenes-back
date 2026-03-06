@@ -1,6 +1,5 @@
 package com.jorge.sprintdef;
 
-
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.services.IncidenciasService;
 import org.junit.jupiter.api.Test;
@@ -49,7 +48,7 @@ class IncidenciasServiceTest {
         verify(incidenciaRepository).save(incidencia);
     }
 
-    // filtros por id
+    // filtros por ID
 
     @Test
     void obtenerPorId_Exito() {

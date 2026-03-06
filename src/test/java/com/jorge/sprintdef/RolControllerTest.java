@@ -1,5 +1,6 @@
 package com.jorge.sprintdef;
 
+import com.jorge.sprintdef.controller.RolController;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;

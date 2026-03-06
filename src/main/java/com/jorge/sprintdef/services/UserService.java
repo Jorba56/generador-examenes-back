@@ -12,8 +12,10 @@ import com.jorge.sprintdef.UserRepository;
 import com.jorge.sprintdef.exceptions.*;
 import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
+//import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -111,7 +113,7 @@ public class UserService {
      * @param usuario entidad con los nuevos valores a aplicar
      * @return mensaje indicando el resultado: éxito, usuario no encontrado o editor no autorizado
      */
-    public String actualizarUsuario(String rolEditor, Long id, User usuario) {
+    public String actualizarUsuario( Long id, User usuario, Authentication authentication) {
 
         String salida;
 
@@ -120,26 +122,59 @@ public class UserService {
             throw new ConflictException("No se puede actualizar un usuario desactivado.");
         }
 
-        if(rolEditor.equalsIgnoreCase("admin") || (rolEditor.equalsIgnoreCase("administrador"))){
-        //actualizamos los datos
-        userUpdate.setNombreUsuario(usuario.getNombreUsuario());
-        userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
-        userUpdate.setEmailUsuario(usuario.getEmailUsuario());
-        userUpdate.setActivo(usuario.getActivo());
-        userUpdate.setContrasenhaUsuario(usuario.getContrasenhaUsuario());
+        String emailLogueado = authentication.getName();
 
-        //actualizamos el rol (ahora usuario.getRol() sí tendrá datos gracias al setter falso)
-        userUpdate.setRoles(usuario.getRoles());
+        List<String> rolesAdmin = List.of("ADMIN", "ADMINISTRADOR", "ROLE_ADMIN");
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(auth -> rolesAdmin.contains(auth.getAuthority().toUpperCase()));
 
-        //guardamos en la base de datos
-        userRep.save(userUpdate);
+        System.out.println("--- DEBUG DE SEGURIDAD ---");
+        System.out.println("Email del Token (Tú): '" + emailLogueado + "'");
+        System.out.println("Email de la BD (El ID de la URL): '" + userUpdate.getEmailUsuario() + "'");
+        System.out.println("¿Es reconocido como Admin?: " + isAdmin);
+        System.out.println("--------------------------");
 
-        salida="Usuario con id "+id+" editado correctamente";
-        } else {
-            throw new BadRequestException("Rol de editor no válido.");
+        if (!isAdmin && !userUpdate.getEmailUsuario().equals(emailLogueado)) {
+            throw new BadRequestException("No tienes permisos para modificar el perfil de otro usuario.");
         }
-        return salida;
-    }
+
+        if (isAdmin) {
+            // un admin no puede tocar contraseñas
+            if (usuario.getContrasenhaUsuario() != null && !usuario.getContrasenhaUsuario().trim().isEmpty()) {
+                throw new BadRequestException("Un administrador no puede cambiar la contraseña de un usuario.");
+            }
+
+            //actualizamos los datos
+            userUpdate.setNombreUsuario(usuario.getNombreUsuario());
+            userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
+            userUpdate.setEmailUsuario(usuario.getEmailUsuario());
+            userUpdate.setActivo(usuario.getActivo());
+
+            // el admin puede actualizar roles
+            if (usuario.getRoles() != null) {
+                userUpdate.setRoles(usuario.getRoles());
+            }
+        } else {
+                // REGLA 2: Un usuario NORMAL no puede tocar roles
+                if (usuario.getRoles() != null && !usuario.getRoles().isEmpty()) {
+                    throw new BadRequestException("Un usuario que no es administrador no puede modificar sus roles.");
+                }
+
+                userUpdate.setNombreUsuario(usuario.getNombreUsuario());
+                userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
+                userUpdate.setEmailUsuario(usuario.getEmailUsuario());
+
+                // El usuario sí puede actualizar su propia contraseña
+                if (usuario.getContrasenhaUsuario() != null && !usuario.getContrasenhaUsuario().trim().isEmpty()) {
+                    // IMPORTANTE: Encriptamos la clave antes de guardarla
+                    userUpdate.setContrasenhaUsuario(passwordEncoder.encode(usuario.getContrasenhaUsuario()));
+                }
+            }
+        userRep.save(userUpdate);
+        return "Usuario con id " + id + " editado correctamente";
+        }
+        //guardamos en la base de datos
+
 
     /**
      * Desactiva (borrado lógico) un usuario estableciendo su campo {@code activo} a {@code false}.

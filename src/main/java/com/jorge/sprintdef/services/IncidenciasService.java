@@ -37,7 +37,6 @@ public class IncidenciasService {
         return incidencias;
     }
 
-
     public List<Incidencia> obtenerPorClase(String clase) {
         List<Incidencia> incidencias = incidenciaRepository.findByClase(clase);
         if (incidencias.isEmpty()) {

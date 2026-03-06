@@ -1,5 +1,6 @@
-package com.jorge.sprintdef;
+package com.jorge.sprintdef.controller;
 
+import com.jorge.sprintdef.Incidencia;
 import com.jorge.sprintdef.services.IncidenciasService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -7,7 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Controlador REST encargado de gestionar las incidencias del sistema.
