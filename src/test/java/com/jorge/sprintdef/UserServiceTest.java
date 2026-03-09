@@ -1,8 +1,8 @@
 package com.jorge.sprintdef;
 
-
 import com.jorge.sprintdef.dto.*;
-
+import com.jorge.sprintdef.exceptions.BadRequestException;
+import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.exceptions.DuplicateException;
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.mapping.UserMapper;
@@ -18,11 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
 
@@ -127,26 +129,26 @@ class UserServiceTest {
 
     @Test
     void addUser() {
-        // 1. Preparar DTO de entrada (CON LOS DATOS YA PUESTOS DESDE EL PRINCIPIO)
+        // preparar dto de entrada (con los datos ya puestos desde el principio)
         UserAddDTO userdto = new UserAddDTO();
         userdto.setEmailUsuario("mbappe09@gmail.com");
         userdto.setContrasenhaUsuario("123abc");
         userdto.setNombreUsuario("Kylian");
 
-        // 2. Preparar el Usuario "real" que creará el mapper
+        // preparar el usuario que creará el mapper
         User usuarioU = new User();
         usuarioU.setNombreUsuario("Kylian");
 
-        // 3. Preparar el Rol que sacaremos de la BD
+        // preparar el rol que sacaremos de la bd
         Rol alumno = new Rol();
         alumno.setIdRol(1L);
         alumno.setName("alumno");
 
-        // 4. Preparar el DTO final que se devuelve al cliente
+        // preparar el dto final que se devuelve al cliente
         UsersAllDTO userdto2 = new UsersAllDTO();
         userdto2.setNombreUsuario("Kylian");
 
-        // 5. Educar a los mocks en el orden correcto
+        // educar a los mocks en el orden correcto
         given(userRepository.findUserByEmailUsuario(userdto.getEmailUsuario())).willReturn(null);
         given(userMap.userAddDTO(userdto)).willReturn(usuarioU);
         given(passwordEncoder.encode(userdto.getContrasenhaUsuario())).willReturn("claveEncriptada");
@@ -154,19 +156,19 @@ class UserServiceTest {
         given(userRepository.save(usuarioU)).willReturn(usuarioU);
         given(userMap.mappingADTO(usuarioU)).willReturn(userdto2);
 
-        // 6. Ejecutamos el método del servicio
+        // ejecutamos el metodo del servicio
         UsersAllDTO respuesta = userService.addUsuario(userdto);
 
         // 7. Comprobaciones (Aserciones)
         assertNotNull(respuesta);
         assertEquals("Kylian", respuesta.getNombreUsuario());
 
-        // ¡Comprobamos que las líneas que te faltaban hacen su trabajo!
+        // comprobamos que las líneas que te faltaban hacen su trabajo
         assertFalse(usuarioU.getRoles().isEmpty());
         assertEquals("alumno", usuarioU.getRoles().getFirst().getName());
         assertEquals("claveEncriptada", usuarioU.getContrasenhaUsuario());
 
-        // Verificamos que se llamó al guardado de la BD
+        // verificamos que se llamó al guardado de la BD
         verify(userRepository).save(usuarioU);
     }
 
@@ -209,91 +211,7 @@ class UserServiceTest {
 
         assertEquals("El rol introducido no existe en el sistema.", ex.getMessage());
     }
-/*
-    @Test
-    void updateUser() {
-        User user1 = new User();
-        user1.setNombreUsuario("administrador");
-        user1.setActivo(true);
-        user1.setIdUser(4L);
 
-        User user2 = new User();
-        user2.setNombreUsuario("administrador2");
-        user2.setActivo(true);
-        user2.setIdUser(5L);
-
-        given(userRepository.findById(user1.getIdUser())).willReturn(Optional.of(user1));
-
-        String correcto = userService.actualizarUsuario("admin", 4L, user2);
-
-        String correcto2 = userService.actualizarUsuario("administrador", 4L, user2);
-
-        assertNotNull(correcto);
-        assertEquals(("Usuario con id "+4L +" editado correctamente"), correcto);
-        assertEquals(("administrador2"), user1.getNombreUsuario());
-
-        assertNotNull(correcto2);
-        assertEquals(("Usuario con id "+4L +" editado correctamente"), correcto2);
-        assertEquals(("administrador2"), user1.getNombreUsuario());
-    }
-
-    @Test
-    void updateUserInactivo() {
-        User user1 = new User();
-        user1.setNombreUsuario("administrador");
-        user1.setActivo(false);
-        user1.setIdUser(4L);
-
-        User user2 = new User();
-        user2.setNombreUsuario("administrador2");
-        user2.setActivo(true);
-        user2.setIdUser(5L);
-
-        given(userRepository.findById(user1.getIdUser())).willReturn(Optional.of(user1));
-
-        ConflictException ex = assertThrows(
-                ConflictException.class,
-                () -> userService.actualizarUsuario("admin", 4L, user2)
-        );
-
-        assertEquals("No se puede actualizar un usuario desactivado.", ex.getMessage());
-    }
-
-    @Test
-    void actualizarUsuarioNoPermitido() {
-        // GIVEN: Un usuario con datos inventados
-        User usuario = new User();
-        usuario.setIdUser(4L);
-
-        given(userRepository.findById(4L)).willReturn(Optional.of(usuario));
-
-        BadRequestException ex = assertThrows(
-                BadRequestException.class,
-                () -> userService.actualizarUsuario("alumno", 4L, usuario)
-        );
-
-        // THEN: Comprobamos que entra por el "else" y da el mensaje de error correcto
-        assertEquals("Rol de editor no válido.", ex.getMessage());
-    }
-
-    @Test
-    void updateUserNull() {
-
-        User user2 = new User();
-        user2.setNombreUsuario("administrador2");
-        user2.setActivo(true);
-        user2.setIdUser(5L);
-
-        given(userRepository.findById(99L)).willReturn(Optional.empty());
-
-        NotFoundException ex = assertThrows(
-                NotFoundException.class,
-                () -> userService.actualizarUsuario("admin",99L, user2)
-        );
-
-        assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
-    }
-*/
     @Test
     void deleteUser(){
         User user=new User();
@@ -371,7 +289,7 @@ class UserServiceTest {
 
         //Comprobamos el texto
         assertNotNull(resultado);
-        assertEquals("Rol con id "+2L+" eliminado correctamente del usuario con id"+1L, resultado);
+        assertEquals("Rol con id "+2L+" eliminado correctamente del usuario con id "+1L, resultado);
 
         //Comprobamos que la lista del usuario ahora está vacía (se ha borrado)
         assertTrue(usuario.getRoles().isEmpty());
@@ -588,5 +506,267 @@ class UserServiceTest {
 
         assertEquals("Error: El usuario ya tiene ese rol.", ex.getMessage());
         verify(userRepository, never()).save(any(User.class)); // Verificamos que no guardó nada
+    }
+
+    @Test
+    void actualizarUsuario_comoAdmin_exito() {
+        // preparar usuario en bd
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("alumno@gmail.com");
+
+        // preparar datos a cambiar
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setNombreUsuario("Paco");
+        usuarioNuevosDatos.setActivo(true);
+
+        // mock de autenticacion como admin
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("admin@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ADMIN"))).when(authMock).getAuthorities();
+
+        // simular busqueda
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // ejecutar
+        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+
+        // comprobar
+        assertEquals("Usuario con id 1 editado correctamente", resultado);
+        verify(userRepository).save(usuarioBd); // verifica que se llamo a guardar
+    }
+
+    @Test
+    void actualizarUsuario_mismoUsuario_exito() {
+        // preparar usuario en bd
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("paco@gmail.com");
+
+        // preparar datos a cambiar (cambia contrasena)
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setEmailUsuario("paco@gmail.com");
+        usuarioNuevosDatos.setContrasenhaUsuario("1234");
+        usuarioNuevosDatos.setActivo(true);
+
+        // mock de autenticacion como usuario normal (coincide el email)
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("paco@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ALUMNO"))).when(authMock).getAuthorities();
+
+        // simular bd y encriptacion
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+        given(passwordEncoder.encode("1234")).willReturn("hash1234");
+
+        // ejecutar
+        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+
+        // comprobar
+        assertEquals("Usuario con id 1 editado correctamente", resultado);
+        assertEquals("hash1234", usuarioBd.getContrasenhaUsuario());
+    }
+
+    @Test
+    void actualizarUsuario_distintoUsuario_lanzaExcepcion() {
+        // preparar usuario en bd
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("paco@gmail.com"); // id 1 es de paco
+
+        User usuarioNuevosDatos = new User();
+
+        // mock de autenticacion como usuario distinto (laura)
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("laura@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ALUMNO"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // ejecutar y comprobar que explota con badrequest
+        assertThrows(BadRequestException.class, () ->
+                userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
+        );
+    }
+
+    @Test
+    void actualizarUsuario_adminIntentaCambiarPassword_lanzaExcepcion() {
+        // preparar datos
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("alumno@gmail.com");
+
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setContrasenhaUsuario("12345"); // admin intentando cambiar pass
+
+        // mock admin
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("admin@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ADMIN"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // comprobar excepcion
+        assertThrows(BadRequestException.class, () ->
+                userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
+        );
+    }
+
+    @Test
+    void actualizarUsuario_adminCambiaRoles_exito() {
+        // preparar datos
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("alumno@gmail.com");
+
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setActivo(true);
+        // admin asigna roles correctamente
+        usuarioNuevosDatos.setRoles(List.of(new com.jorge.sprintdef.Rol()));
+
+        // mock admin
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("admin@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ADMIN"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // ejecutar
+        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+
+        // comprobar
+        assertEquals("Usuario con id 1 editado correctamente", resultado);
+    }
+
+    @Test
+    void actualizarUsuario_usuarioNormalIntentaCambiarRoles_lanzaExcepcion() {
+        // preparar datos
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("paco@gmail.com");
+
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setEmailUsuario("paco@gmail.com");
+        // usuario normal intentando hacerse admin
+        usuarioNuevosDatos.setRoles(List.of(new com.jorge.sprintdef.Rol()));
+
+        // mock usuario normal
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("paco@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ALUMNO"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // comprobar excepcion
+        assertThrows(BadRequestException.class, () ->
+                userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
+        );
+    }
+
+    @Test
+    void actualizarUsuario_usuarioNormalSinCambiarPassword_exito() {
+        // preparar datos
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("paco@gmail.com");
+
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setEmailUsuario("paco@gmail.com");
+        usuarioNuevosDatos.setContrasenhaUsuario(""); // vacio, no intenta cambiar pass
+
+        // mock usuario normal
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("paco@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ALUMNO"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // ejecutar
+        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+
+        // comprobar que NUNCA se llamo a encriptar porque la pass estaba vacia
+        verify(passwordEncoder, never()).encode(anyString());
+        assertEquals("Usuario con id 1 editado correctamente", resultado);
+    }
+
+    @Test
+    void actualizarUsuario_usuarioNoExiste_lanzaExcepcion() {
+        // mock de autenticacion basico
+        Authentication authMock = mock(Authentication.class);
+
+        // simular que la bd no encuentra al usuario
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        // comprobar excepcion notfound
+        assertThrows(NotFoundException.class, () ->
+                userService.actualizarUsuario(1L, new User(), authMock)
+        );
+    }
+
+    @Test
+    void actualizarUsuario_usuarioDesactivado_lanzaExcepcion() {
+        // preparar usuario desactivado
+        User usuarioBd = new User();
+        usuarioBd.setActivo(false); // esto hará saltar el if
+
+        // mock de autenticacion basico
+        Authentication authMock = mock(Authentication.class);
+
+        // simular bd devolviendo usuario desactivado
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // comprobar excepcion conflict
+        assertThrows(ConflictException.class, () ->
+                userService.actualizarUsuario(1L, new User(), authMock)
+        );
+    }
+
+    @Test
+    void actualizarUsuario_adminSinCambiarRoles_exito() {
+        // preparar datos
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("alumno@gmail.com");
+
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setActivo(true);
+        usuarioNuevosDatos.setRoles(null); // el admin manda null, no entra al if
+
+        // mock admin
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("admin@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ADMIN"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // ejecutar
+        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+
+        // comprobar
+        assertEquals("Usuario con id 1 editado correctamente", resultado);
+    }
+
+    @Test
+    void actualizarUsuario_usuarioNormalEnviaRolesVacios_exito() {
+        // preparar datos
+        User usuarioBd = new User();
+        usuarioBd.setActivo(true);
+        usuarioBd.setEmailUsuario("paco@gmail.com");
+
+        User usuarioNuevosDatos = new User();
+        usuarioNuevosDatos.setEmailUsuario("paco@gmail.com");
+        usuarioNuevosDatos.setRoles(List.of()); // manda lista vacia, evalua a false el isEmpty()
+
+        // mock usuario normal
+        Authentication authMock = mock(Authentication.class);
+        given(authMock.getName()).willReturn("paco@gmail.com");
+        doReturn(List.of(new SimpleGrantedAuthority("ALUMNO"))).when(authMock).getAuthorities();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
+
+        // ejecutar
+        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+
+        // comprobar
+        assertEquals("Usuario con id 1 editado correctamente", resultado);
     }
 }

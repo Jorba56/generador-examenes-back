@@ -84,14 +84,14 @@ class RolServiceTest {
 
     @Test
     void rolPorId_Inactivo() {
-        // GIVEN: Un rol que existe pero está desactivado
+        // given: un rol que existe pero está desactivado
         Rol rolInactivo = new Rol();
         rolInactivo.setIdRol(1L);
         rolInactivo.setActivo(false);
 
         given(rolRep.findById(1L)).willReturn(Optional.of(rolInactivo));
 
-        // WHEN & THEN: Forzamos la excepción y comprobamos el mensaje
+        // when & then: forzamos la excepción y comprobamos el mensaje
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
                 () -> rolService.rolPorId(1L)
@@ -188,21 +188,21 @@ class RolServiceTest {
 
     @Test
     void desactivarRol_YaDesactivado() {
-        // GIVEN: Un rol que ya tiene activo=false
+        // given: un rol que ya tiene activo=false
         Rol rolInactivo = new Rol();
         rolInactivo.setIdRol(2L);
         rolInactivo.setActivo(false);
 
         given(rolRep.findById(2L)).willReturn(Optional.of(rolInactivo));
 
-        // WHEN & THEN: Forzamos la excepción
+        // when & then: forzamos la excepción
         ConflictException ex = assertThrows(
                 ConflictException.class,
                 () -> rolService.desactivarRol(2L)
         );
 
         assertEquals("El rol ya está desactivado.", ex.getMessage());
-        // Nos aseguramos de que no ha guardado nada en BD por error
+        // nos aseguramos de que no ha guardado nada en bd por error
         verify(rolRep, never()).save(any(Rol.class));
     }
 
@@ -211,7 +211,7 @@ class RolServiceTest {
         // obligamos a Mockito a devolver vacío
         given(rolRep.findById(99L)).willReturn(Optional.empty());
 
-        // WHEN
+        // when
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
                 () -> rolService.desactivarRol(99L)
@@ -225,34 +225,34 @@ class RolServiceTest {
 
     @Test
     void desactivarRol_ConUsuariosAsignados() {
-        // GIVEN: Un rol activo
+        // un rol activo
         Rol rolActivo = new Rol();
         rolActivo.setIdRol(3L);
         rolActivo.setActivo(true);
 
-        // Simulamos que hay un usuario usando este rol
+        // simulamos que hay un usuario usando este rol
         User usuario = new User();
         usuario.setIdUser(100L);
         List<User> usuariosUsandoRol = List.of(usuario);
 
-        // Educamos a los mocks
+        // educamos a los mocks
         given(rolRep.findById(3L)).willReturn(Optional.of(rolActivo));
         given(rolRep.findUsuariosPorRol(3L)).willReturn(usuariosUsandoRol);
 
-        // WHEN & THEN: Forzamos la excepción de conflicto
+        // forzamos la excepción de conflicto
         ConflictException ex = assertThrows(
                 ConflictException.class,
                 () -> rolService.desactivarRol(3L)
         );
 
         assertEquals("No se puede desactivar un rol que tiene usuarios asignados.", ex.getMessage());
-        // Verificamos que se bloqueó el borrado
+        // verificamos que se bloqueó el borrado
         verify(rolRep, never()).save(any(Rol.class));
     }
 
     @Test
     void userPorRol() {
-        // GIVEN: Preparamos un usuario falso
+        // preparamos un usuario falso
         User usuario = new User();
         usuario.setIdUser(1L);
         usuario.setNombreUsuario("jorge");
@@ -264,29 +264,29 @@ class RolServiceTest {
         given(rolRep.findUsuariosPorRol(2L)).willReturn(List.of(usuario));
         given(userMap.mappingRoles(usuario)).willReturn((userRol));
 
-        // WHEN: Ejecutamos el servicio
+        // ejecutamos el servicio
         List<UserByRol> usuarios = rolService.userPorRol(2L);
 
-        // THEN: Comprobamos resultados
+        // comprobamos resultados
         assertNotNull(usuarios);
         assertFalse(usuarios.isEmpty());
         assertEquals(1, usuarios.size());
         assertEquals("jorge", usuarios.getFirst().getNombreUsuario()); // Comprobamos que es nuestro usuario
 
-        // Verificamos que llamó a la base de datos
+        // verificamos que llamó a la base de datos
         verify(rolRep).findUsuariosPorRol(2L);
         verifyNoMoreInteractions(rolRep);
     }
 
     @Test
     void userPorRolVacio() {
-        // GIVEN: Simulamos que buscamos un rol que no lo tiene nadie (devuelve lista vacía)
+        // simulamos que buscamos un rol que no lo tiene nadie (devuelve lista vacía)
         given(rolRep.findUsuariosPorRol(99L)).willReturn(List.of());
 
-        // WHEN: Ejecutamos el servicio
+        // ejecutamos el servicio
         List<UserByRol> usuarios = rolService.userPorRol(99L);
 
-        // THEN: Comprobamos que devuelve la lista vacía sin fallar
+        // comprobamos que devuelve la lista vacía sin fallar
         assertNotNull(usuarios);
         assertTrue(usuarios.isEmpty());
 

@@ -1,4 +1,8 @@
 com.jorge.sprintdef
+com.jorge.sprintdef.aop
+com.jorge.sprintdef.controller
 com.jorge.sprintdef.dto
+com.jorge.sprintdef.exceptions
 com.jorge.sprintdef.mapping
+com.jorge.sprintdef.security
 com.jorge.sprintdef.services

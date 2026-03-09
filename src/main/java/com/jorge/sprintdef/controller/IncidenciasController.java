@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controlador REST encargado de gestionar las incidencias del sistema.
- * Permite registrar nuevos errores y consultar el historial (solo lectura y creación).
+ * Controlador REST que expone los endpoints para la consulta del registro de incidencias y errores.
+ * Por motivos de seguridad y auditoría, el acceso a estos endpoints está estrictamente restringido
+ * a usuarios con el rol de Administrador.
  */
 @RestController
 @RequestMapping("/incidencias")

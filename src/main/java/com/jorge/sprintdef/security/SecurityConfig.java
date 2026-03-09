@@ -48,7 +48,7 @@ public class SecurityConfig {
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
-                // Le decimos a Spring Security que redirija sus bloqueos hacia el manejador de las excepciones
+                // le decimos a spring security que redirija sus bloqueos hacia el manejador de las excepciones
                 .exceptionHandling(exc -> exc
                         .authenticationEntryPoint((request, response, authException) ->
                                 exceptionResolver.resolveException(request, response, null, authException))

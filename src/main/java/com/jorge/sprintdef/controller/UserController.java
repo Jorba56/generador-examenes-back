@@ -8,7 +8,6 @@ import com.jorge.sprintdef.dto.UsersAllDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-//import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
@@ -34,6 +33,7 @@ public class UserController {
 
     /**
      * Obtiene la lista completa de usuarios activos en el sistema.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Listar todos los usuarios", description = "Obtiene una lista con la información pública de todos los usuarios activos en el sistema.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -44,6 +44,7 @@ public class UserController {
 
     /**
      * Busca y devuelve los datos de un usuario específico mediante su ID.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Buscar usuario por ID", description = "Devuelve los detalles completos de un usuario específico. Solo accesible para administradores.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -53,8 +54,13 @@ public class UserController {
     }
 
     /**
-     * Actualiza la información de un usuario existente.
-     * Requiere el rol del editor para validar permisos de modificación.
+     * Endpoint para actualizar los datos de un usuario en el sistema.
+     * Protegido por autenticación JWT. La lógica de negocio determina los permisos exactos basándose en el token.
+     *
+     * @param id Identificador del usuario a modificar, obtenido de la ruta (URL).
+     * @param usuario Objeto JSON recibido en el cuerpo de la petición con los nuevos datos.
+     * @param authentication Información de sesión inyectada automáticamente por Spring Security.
+     * @return Cadena de texto confirmando la edición exitosa.
      */
     @Operation(summary = "Actualizar usuario", description = "Modifica los datos de un usuario. Bloquea la edición de contraseñas para admins y roles para usuarios normales.")
     @PutMapping("/{id}")
@@ -64,6 +70,7 @@ public class UserController {
 
     /**
      * Realiza un borrado lógico del usuario especificado.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Desactivar usuario", description = "Realiza un borrado lógico del usuario especificado cambiando su estado activo a false.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -74,6 +81,7 @@ public class UserController {
 
     /**
      * Obtiene la lista de roles que tiene asignados un usuario en concreto.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Ver roles de un usuario", description = "Obtiene la lista de los roles de seguridad que tiene asignados un usuario en concreto.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -84,6 +92,7 @@ public class UserController {
 
     /**
      * Asigna un nuevo rol a un usuario existente.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Añadir rol a un usuario", description = "Asigna un nuevo rol a la lista de roles del usuario.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -94,6 +103,7 @@ public class UserController {
 
     /**
      * Revoca (elimina) un rol específico de un usuario.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Revocar rol a un usuario", description = "Elimina la asociación de un rol específico con un usuario.")
     @PreAuthorize("hasAuthority('ADMIN')")

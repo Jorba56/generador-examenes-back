@@ -14,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -44,7 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         // convertimos roles de la bd al formato spring security
                         List<SimpleGrantedAuthority> authorities = usuario.getRoles().stream()
                                 .map(rol -> new SimpleGrantedAuthority(rol.getName().toUpperCase()))
-                                .collect(Collectors.toList());
+                                .toList();
 
                         // metemos los roles en el contexto de seguridad
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null, authorities);

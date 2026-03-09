@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Servicio encargado de gestionar la lógica de negocio relacionada con la autenticación de usuarios.
+ * Interactúa con la base de datos para validar credenciales y utiliza la utilidad JWT para la emisión de tokens.
+ */
 @Service
 public class AuthService {
 
@@ -25,6 +29,13 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
+    /**
+     * Valida las credenciales proporcionadas por el usuario contra la base de datos.
+     * Si las credenciales son correctas, genera y firma un nuevo Token JWT para su uso en futuras peticiones.
+     *
+     * @param loginDto Objeto de transferencia de datos que contiene el correo y la contraseña en texto plano.
+     * @return Mapa clave-valor que contiene el Token JWT generado.
+     */
     public Map<String, String> login(LoginDTO loginDto) {
         User usuario = userRep.findUserByEmailUsuario(loginDto.getEmailUsuario());
 

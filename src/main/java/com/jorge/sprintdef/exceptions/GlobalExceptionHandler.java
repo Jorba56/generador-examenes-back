@@ -26,6 +26,11 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Interceptor global de excepciones (Spring Advice) que captura cualquier error no controlado
+ * lanzado desde los controladores o servicios. Formatea la salida de error en un JSON estándar
+ * y registra la incidencia automáticamente en la base de datos.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -43,21 +48,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
         log.warn("[INCIDENCIA_SEGURIDAD] Intento de acceso bloqueado.");
-        registrarIncidencia(ex);
         return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", "Intento de acceso bloqueado por falta de permisos.");
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex) {
         log.warn("[ALERTA_SEGURIDAD] Intento de acceso sin token o con token inválido.");
-        registrarIncidencia(ex);
         return buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "No estás autenticado o el token proporcionado no es válido.");
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException ex) {
         log.warn("[ALERTA_LOGIN] Credenciales incorrectas.");
-        registrarIncidencia(ex);
+
         return buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Intento de inicio de sesión fallido.");
     }
 
@@ -123,7 +126,7 @@ public class GlobalExceptionHandler {
 
         //extraer id del usuario (si está logueado)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && auth.getPrincipal()!=null && !auth.getPrincipal().equals("anonymousUser")) {
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal()!=null && !"anonymousUser".equals(auth.getPrincipal())) {
             String email = auth.getName();
             User user = userRepository.findUserByEmailUsuario(email);
             if (user != null) {

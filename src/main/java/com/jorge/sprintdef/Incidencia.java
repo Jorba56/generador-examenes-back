@@ -32,7 +32,6 @@ public class Incidencia {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    public Incidencia() {}
 
     // ¡Añade aquí los Getters y Setters correspondientes para todos los campos!
     public Long getIdIncidencia() { return idIncidencia; }

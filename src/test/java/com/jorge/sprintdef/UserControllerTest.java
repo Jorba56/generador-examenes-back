@@ -1,27 +1,52 @@
 package com.jorge.sprintdef;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jorge.sprintdef.controller.UserController;
 import com.jorge.sprintdef.dto.RolPostUser;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.services.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
+
+import org.springframework.http.MediaType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 
 class UserControllerTest {
+
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        // configura el controlador aislado (asegúrate de que tu variable inyectada se llame userController)
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        objectMapper = new ObjectMapper();
+    }
 
     @Mock
     private UserMapper userMap;
@@ -67,26 +92,33 @@ class UserControllerTest {
         assertNotNull(userFind);
         assertEquals(("jorge"), userFind.getNombreUsuario());
     }
-/*
+
     @Test
-     void updateUser(){
+    void updateUser_DatosValidos_DeberiaDevolverMensajeExito() throws Exception {
+        // datos de prueba
+        Long userId = 1L;
+        User usuarioModificado = new User();
+        usuarioModificado.setNombreUsuario("PacoActualizado");
+        usuarioModificado.setEmailUsuario("paco@gmail.com");
 
-            User usuario2=new User();
+        // mock de autenticacion falsa
+        Authentication authenticationMock = mock(Authentication.class);
+        String mensajeEsperado = "Usuario con id 1 editado correctamente";
 
-            usuario2.setNombreUsuario("jorgete");
-            usuario2.setApellidoUsuario("rubio");
-            usuario2.setEmailUsuario("jorbarri@gmail.com");
-            usuario2.setActivo(true);
+        // simular servicio
+        given(userService.actualizarUsuario(eq(userId), any(User.class), any(org.springframework.security.core.Authentication.class)))
+                .willReturn(mensajeEsperado);
 
-            given(userService.actualizarUsuario("admin", 1L, usuario2)).willReturn(("Usuario editado correctamente"));
-
-            //when
-            String salida=(userController.updateUser("admin",1L,usuario2));
-
-            assertNotNull(salida);
-            assertEquals(("Usuario editado correctamente"),salida);
+        // ejecutar peticion y verificar respuesta
+        mockMvc.perform(put("/usuarios/{id}", userId)
+                        .principal((java.security.Principal) authenticationMock)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(usuarioModificado)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(mensajeEsperado));
     }
-*/
+
+
     @Test
      void deleteUser(){
             User usuario=new User();
@@ -102,13 +134,13 @@ class UserControllerTest {
 
     @Test
     void getUserIdNull() {
-        // GIVEN: El servicio no encuentra nada y devuelve null
+        // el servicio no encuentra nada y devuelve null
         given(userService.buscarPorId(99L)).willReturn(null);
 
-        // WHEN
+        // when
         UserIdDTo userFind = userController.getUserId(99L);
 
-        // THEN
+        // then
         assertNull(userFind);
         verify(userService).buscarPorId(99L);
     }
@@ -145,7 +177,6 @@ class UserControllerTest {
     void deleteRolUser() {
         given(userService.deleteRolUser(1L, 2L)).willReturn("Rol eliminado correctamente");
 
-        // Fíjate en el orden de las variables según tengas tu Controller
         String resultado = userController.deleteRolUser(2L, 1L);
 
         assertEquals("Rol eliminado correctamente", resultado);

@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * Controlador REST público que gestiona la autenticación de la aplicación.
+ * Proporciona los endpoints iniciales que no requieren de un Token JWT previo,
+ * permitiendo a los usuarios registrarse y obtener credenciales de acceso.
+ */
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Autenticación", description = "Endpoints públicos para registro y login de usuarios.")

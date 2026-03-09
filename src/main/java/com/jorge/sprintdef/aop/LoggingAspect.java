@@ -28,8 +28,8 @@ public class LoggingAspect {
     public void logDespuesDeSalir(JoinPoint joinPoint, Object resultado) {
         String nombreMetodo = joinPoint.getSignature().getName();
 
-        if (resultado instanceof String) {
-            String respuesta = ((String) resultado).toLowerCase();
+        if (resultado instanceof String string) {
+            String respuesta =  string.toLowerCase();
 
             if (respuesta.contains("error") || respuesta.contains("no encontrado") || respuesta.contains("no válido")) {
                 String mensaje = "Rechazado en " + nombreMetodo + " | Motivo: " + resultado;

@@ -30,6 +30,7 @@ public class RolController{
 
     /**
      * Obtiene el listado de todos los roles disponibles y activos.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Listar todos los roles", description = "Obtiene el listado completo de roles activos disponibles para asignar.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -40,6 +41,7 @@ public class RolController{
 
     /**
      * Busca un rol específico por su identificador.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Buscar rol por ID", description = "Devuelve la información de un rol específico mediante su identificador.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -50,6 +52,7 @@ public class RolController{
 
     /**
      * Crea un nuevo rol en el sistema (por ejemplo, "ADMIN" o "PROFESOR").
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Crear nuevo rol", description = "Registra un nuevo rol (ej: PROFESOR, ADMIN) en la base de datos.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -60,6 +63,7 @@ public class RolController{
 
     /**
      * Modifica el nombre o el estado de un rol existente.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Actualizar rol", description = "Modifica el nombre o el estado de un rol ya existente.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -70,6 +74,7 @@ public class RolController{
 
     /**
      * Realiza el borrado lógico de un rol para que deje de estar disponible.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Desactivar rol", description = "Realiza un borrado lógico del rol. Fallará si el rol tiene usuarios asignados.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -80,6 +85,7 @@ public class RolController{
 
     /**
      * Consulta qué usuarios tienen asignado el rol especificado.
+     * Exclusivo para el administrador.
      */
     @Operation(summary = "Ver usuarios por rol", description = "Devuelve una lista con todos los usuarios que poseen un rol determinado.")
     @PreAuthorize("hasAuthority('ADMIN')")

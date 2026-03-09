@@ -1,15 +1,17 @@
 package com.jorge.sprintdef.dto;
 
-import jakarta.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class LoginDTO {
 
+    @JsonProperty("correo_usuario")
     @NotBlank(message = "El correo no puede estar vacío")
     @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,8}$",message = "El formato del correo no es válido")
     private String emailUsuario;
 
+    @JsonProperty("contrasenha_usuario")
     @NotBlank(message = "La contraseña no puede estar vacía")
     private String contrasenhaUsuario;
 

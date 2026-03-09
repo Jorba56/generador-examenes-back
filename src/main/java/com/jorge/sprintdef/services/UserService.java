@@ -10,9 +10,7 @@ import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.UserRepository;
 
 import com.jorge.sprintdef.exceptions.*;
-import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
-//import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
@@ -42,12 +40,15 @@ public class UserService {
      * @param userMap mapper encargado de transformar entidades de usuario y sus DTOs
      * @param rolRep repositorio para la gestión de la persistencia de roles asociados a usuarios
      */
-    public UserService(UserRepository userRep, UserMapper userMap, RolRepository rolRep, PasswordEncoder passwordEncoder, RolMapper rolMapper) {
+    public UserService(UserRepository userRep, UserMapper userMap, RolRepository rolRep, PasswordEncoder passwordEncoder) {
         this.userRep = userRep;
         this.userMap = userMap;
         this.rolRep = rolRep;
         this.passwordEncoder = passwordEncoder;
     }
+
+    String rolNoEncontrado="El rol introducido no existe en el sistema.";
+    String usuarioNoEncontrado="El usuario introducido no existe en el sistema.";
 
     /**
      * Obtiene todos los usuarios que están activos y los proyecta a {@code UsersAllDTO}.
@@ -96,7 +97,7 @@ public class UserService {
         User usuario2= userMap.userAddDTO(usuario);
         usuario2.setContrasenhaUsuario(passwordEncoder.encode(usuario.getContrasenhaUsuario()));
 
-        Rol rolN=rolRep.findByName(("alumno")).orElseThrow(() -> new NotFoundException("El rol introducido no existe en el sistema."));
+        Rol rolN=rolRep.findByName(("alumno")).orElseThrow(() -> new NotFoundException(rolNoEncontrado));
         roles.add(rolN);
         usuario2.setRoles(roles);
         userRep.save(usuario2);
@@ -104,77 +105,63 @@ public class UserService {
     }
 
     /**
-     * Actualiza los datos de un usuario existente siempre que el editor tenga rol de administrador.
-     * Se consideran válidos los valores de {@code rolEditor} "admin" o "administrador" (ignorando mayúsculas/minúsculas).
-     * Actualiza datos básicos y la colección de roles del usuario.
+     * Actualiza los datos de un usuario existente aplicando control de acceso basado en el rol (ABAC).
+     * Los administradores pueden modificar todos los campos excepto la contraseña.
+     * Los usuarios normales solo pueden modificar su propio perfil, pudiendo cambiar su contraseña pero no sus roles.
      *
-     * @param rolEditor rol de quien solicita la edición, usado para autorizar la operación
-     * @param id identificador del usuario a actualizar
-     * @param usuario entidad con los nuevos valores a aplicar
-     * @return mensaje indicando el resultado: éxito, usuario no encontrado o editor no autorizado
+     * @param id Identificador único del usuario que se va a actualizar en la base de datos.
+     * @param usuario Objeto con los nuevos valores a aplicar.
+     * @param authentication Objeto de Spring Security que contiene los credenciales y roles del usuario que realiza la petición.
+     * @return Mensaje de éxito indicando que el usuario ha sido editado correctamente.
+     * @throws NotFoundException Si el usuario a actualizar no existe en la base de datos.
+     * @throws ConflictException Si el usuario a actualizar está desactivado (borrado lógico).
+     * @throws BadRequestException Si un usuario normal intenta editar a otro, si intenta modificar sus roles, o si un admin intenta cambiar una contraseña.
      */
     public String actualizarUsuario( Long id, User usuario, Authentication authentication) {
-
-        String salida;
-
-        User userUpdate = userRep.findById(id).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
+        User userUpdate = userRep.findById(id).orElseThrow(() -> new NotFoundException(usuarioNoEncontrado));
         if (!userUpdate.getActivo()) {
             throw new ConflictException("No se puede actualizar un usuario desactivado.");
         }
 
         String emailLogueado = authentication.getName();
-
         List<String> rolesAdmin = List.of("ADMIN", "ADMINISTRADOR", "ROLE_ADMIN");
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(auth -> rolesAdmin.contains(auth.getAuthority().toUpperCase()));
-
-        System.out.println("--- DEBUG DE SEGURIDAD ---");
-        System.out.println("Email del Token (Tú): '" + emailLogueado + "'");
-        System.out.println("Email de la BD (El ID de la URL): '" + userUpdate.getEmailUsuario() + "'");
-        System.out.println("¿Es reconocido como Admin?: " + isAdmin);
-        System.out.println("--------------------------");
 
         if (!isAdmin && !userUpdate.getEmailUsuario().equals(emailLogueado)) {
             throw new BadRequestException("No tienes permisos para modificar el perfil de otro usuario.");
         }
 
+        userUpdate.setNombreUsuario(usuario.getNombreUsuario());
+        userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
+        userUpdate.setEmailUsuario(usuario.getEmailUsuario());
+
+        //simplificamos las condiciones para reducir complejidad
+        boolean intentaCambiarPassword = usuario.getContrasenhaUsuario() != null && !usuario.getContrasenhaUsuario().trim().isEmpty();
+        boolean intentaCambiarRoles = usuario.getRoles() != null && !usuario.getRoles().isEmpty();
+
         if (isAdmin) {
-            // un admin no puede tocar contraseñas
-            if (usuario.getContrasenhaUsuario() != null && !usuario.getContrasenhaUsuario().trim().isEmpty()) {
+            if (intentaCambiarPassword) {
                 throw new BadRequestException("Un administrador no puede cambiar la contraseña de un usuario.");
             }
 
-            //actualizamos los datos
-            userUpdate.setNombreUsuario(usuario.getNombreUsuario());
-            userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
-            userUpdate.setEmailUsuario(usuario.getEmailUsuario());
-            userUpdate.setActivo(usuario.getActivo());
+            userUpdate.setActivo(usuario.getActivo()); // Solo el admin toca el estado activo
 
-            // el admin puede actualizar roles
             if (usuario.getRoles() != null) {
                 userUpdate.setRoles(usuario.getRoles());
             }
+
         } else {
-                // REGLA 2: Un usuario NORMAL no puede tocar roles
-                if (usuario.getRoles() != null && !usuario.getRoles().isEmpty()) {
-                    throw new BadRequestException("Un usuario que no es administrador no puede modificar sus roles.");
-                }
-
-                userUpdate.setNombreUsuario(usuario.getNombreUsuario());
-                userUpdate.setApellidoUsuario(usuario.getApellidoUsuario());
-                userUpdate.setEmailUsuario(usuario.getEmailUsuario());
-
-                // El usuario sí puede actualizar su propia contraseña
-                if (usuario.getContrasenhaUsuario() != null && !usuario.getContrasenhaUsuario().trim().isEmpty()) {
-                    // IMPORTANTE: Encriptamos la clave antes de guardarla
-                    userUpdate.setContrasenhaUsuario(passwordEncoder.encode(usuario.getContrasenhaUsuario()));
-                }
+            if (intentaCambiarRoles) {
+                throw new BadRequestException("Un usuario que no es administrador no puede modificar sus roles.");
             }
+            if (intentaCambiarPassword) {
+                userUpdate.setContrasenhaUsuario(passwordEncoder.encode(usuario.getContrasenhaUsuario()));
+            }
+        }
         userRep.save(userUpdate);
         return "Usuario con id " + id + " editado correctamente";
         }
-        //guardamos en la base de datos
-
 
     /**
      * Desactiva (borrado lógico) un usuario estableciendo su campo {@code activo} a {@code false}.
@@ -183,7 +170,7 @@ public class UserService {
      * @return mensaje indicando si el usuario fue desactivado o si no existe
      */
     public String desactivarUsuario (Long id){
-        User userSelect=userRep.findById(id).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
+        User userSelect=userRep.findById(id).orElseThrow(() -> new NotFoundException(usuarioNoEncontrado));
         String salida;
         userSelect.setActivo(false);
         userRep.save(userSelect);
@@ -200,7 +187,7 @@ public class UserService {
      */
     public List<Rol>rolesUser(Long idUser){
         List<Rol> roles;
-        User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
+        User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException(usuarioNoEncontrado));
         roles = encontrado.getRoles();
         return roles;
     }
@@ -214,8 +201,8 @@ public class UserService {
      */
     public String addRolUser(Long idUser, RolPostUser idRol){
         String salida;
-        User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException("El usuario introducido no existe en el sistema."));
-        Rol rolN=rolRep.findById(idRol.getIdRol()).orElseThrow(() -> new NotFoundException("El rol introducido no existe en el sistema."));
+        User encontrado=userRep.findById(idUser).orElseThrow(() -> new NotFoundException(usuarioNoEncontrado));
+        Rol rolN=rolRep.findById(idRol.getIdRol()).orElseThrow(() -> new NotFoundException(rolNoEncontrado));
         List<Rol> roles = encontrado.getRoles();
         for (Rol r:roles){
             if(Objects.equals(r.getIdRol(), idRol.getIdRol())){
@@ -250,7 +237,7 @@ public class UserService {
 
         if (rolBorrado) {
             userRep.save(usuario);
-            return "Rol con id "+idRol+" eliminado correctamente del usuario con id"+idUser;
+            return "Rol con id "+idRol+" eliminado correctamente del usuario con id "+idUser;
         }
         throw new NotFoundException("Error: El usuario no tenía asignado ese rol.");
     }
