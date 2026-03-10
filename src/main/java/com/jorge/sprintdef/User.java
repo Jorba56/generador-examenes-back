@@ -1,6 +1,7 @@
 package com.jorge.sprintdef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,19 +22,23 @@ public class User{
 
     @NotBlank(message = "El nombre no puede estar vacío")
     @Column(name = "nombre_usuario", length = 100)
+    @JsonProperty("nombre_usuario")
     private String nombreUsuario;
 
     @NotBlank(message = "El apellido no puede estar vacío")
     @Column(name = "apellido_usuario", length = 150)
+    @JsonProperty("apellido_usuario")
     private String apellidoUsuario;
 
     @NotBlank(message = "La contraseña no puede estar vacía")
     @Column(name = "contrasenha_usuario", length = 255)
+    @JsonProperty("contrasenha_usuario")
     private String contrasenhaUsuario;
 
     @NotBlank(message = "El correo no puede estar vacío")
     @Email(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,8}$",message = "El formato del correo no es válido")
     @Column(name = "correo_usuario", length = 254, unique = true)
+    @JsonProperty("correo_usuario")
     private String emailUsuario;
 
     @NotNull
