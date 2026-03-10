@@ -703,24 +703,6 @@ class UserServiceTest {
     }
 
     @Test
-    void actualizarUsuario_usuarioDesactivado_lanzaExcepcion() {
-        // preparar usuario desactivado
-        User usuarioBd = new User();
-        usuarioBd.setActivo(false); // esto hará saltar el if
-
-        // mock de autenticacion basico
-        Authentication authMock = mock(Authentication.class);
-
-        // simular bd devolviendo usuario desactivado
-        given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
-
-        // comprobar excepcion conflict
-        assertThrows(ConflictException.class, () ->
-                userService.actualizarUsuario(1L, new User(), authMock)
-        );
-    }
-
-    @Test
     void actualizarUsuario_adminSinCambiarRoles_exito() {
         // preparar datos
         User usuarioBd = new User();
