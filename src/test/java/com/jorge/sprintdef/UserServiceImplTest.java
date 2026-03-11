@@ -1,12 +1,15 @@
 package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.*;
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
 import com.jorge.sprintdef.exceptions.BadRequestException;
-import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.exceptions.DuplicateException;
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.mapping.UserMapper;
-import com.jorge.sprintdef.services.UserService;
+import com.jorge.sprintdef.repository.RolRepository;
+import com.jorge.sprintdef.repository.UserRepository;
+import com.jorge.sprintdef.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 
-class UserServiceTest {
+class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -43,7 +46,7 @@ class UserServiceTest {
     private UserMapper userMap;
 
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @Test
     void getAllUsers() {
@@ -53,7 +56,7 @@ class UserServiceTest {
         given(userRepository.findUsersByActivoIs(true)).willReturn(List.of(usuario));
         given(userMap.mappingADTO(usuario)).willReturn(dtoFalso);
 
-        List<UsersAllDTO> rolList = userService.listarUsuarios();
+        List<UsersAllDTO> rolList = userServiceImpl.listarUsuarios();
 
         assertFalse(rolList.isEmpty());
         assertEquals(1, rolList.size());
@@ -68,7 +71,7 @@ class UserServiceTest {
         given(userRepository.findUsersByActivoIs(true)).willReturn(List.of());
 
 
-        List<UsersAllDTO> rolList = userService.listarUsuarios();
+        List<UsersAllDTO> rolList = userServiceImpl.listarUsuarios();
 
         assertTrue(rolList.isEmpty());
         verify(userRepository).findUsersByActivoIs(true);
@@ -89,7 +92,7 @@ class UserServiceTest {
         given(userMap.userToIdDTO(usuario)).willReturn(dtoEsperado);
 
         //when
-        UserIdDTo userFind = userService.buscarPorId(1L);
+        UserIdDTo userFind = userServiceImpl.buscarPorId(1L);
 
         assertNotNull(userFind);
         assertEquals(("Jorge"), userFind.getNombreUsuario());
@@ -102,7 +105,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.buscarPorId(99L)
+                () -> userServiceImpl.buscarPorId(99L)
         );
 
         assertEquals("Usuario no encontrado con ID: "+99L, ex.getMessage());
@@ -121,14 +124,14 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.buscarPorId(1L)
+                () -> userServiceImpl.buscarPorId(1L)
         );
 
         assertEquals("El usuario con ID 1 está desactivado y no se puede mostrar.", ex.getMessage());
     }
 
     @Test
-    void addUser() {
+    void addUser() throws DuplicateException {
         // preparar dto de entrada (con los datos ya puestos desde el principio)
         UserAddDTO userdto = new UserAddDTO();
         userdto.setEmailUsuario("mbappe09@gmail.com");
@@ -157,7 +160,7 @@ class UserServiceTest {
         given(userMap.mappingADTO(usuarioU)).willReturn(userdto2);
 
         // ejecutamos el metodo del servicio
-        UsersAllDTO respuesta = userService.addUsuario(userdto);
+        UsersAllDTO respuesta = userServiceImpl.addUsuario(userdto);
 
         // 7. Comprobaciones (Aserciones)
         assertNotNull(respuesta);
@@ -182,7 +185,7 @@ class UserServiceTest {
 
         DuplicateException ex = assertThrows(
                 DuplicateException.class,
-                () -> userService.addUsuario(userdto)
+                () -> userServiceImpl.addUsuario(userdto)
         );
 
         assertEquals("El correo electrónico ya está en uso.", ex.getMessage());
@@ -206,7 +209,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.addUsuario(userdto)
+                () -> userServiceImpl.addUsuario(userdto)
         );
 
         assertEquals("El rol introducido no existe en el sistema.", ex.getMessage());
@@ -220,7 +223,7 @@ class UserServiceTest {
 
         given(userRepository.findById(6L)).willReturn(Optional.of(user));
         //when
-        String borrado = userService.desactivarUsuario(6L);
+        String borrado = userServiceImpl.desactivarUsuario(6L);
 
         //asserts
         assertFalse(user.getActivo());
@@ -237,7 +240,7 @@ class UserServiceTest {
         // WHEN
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.desactivarUsuario(99L)
+                () -> userServiceImpl.desactivarUsuario(99L)
         );
 
         assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
@@ -256,7 +259,7 @@ class UserServiceTest {
 
         given(userRepository.findById(6L)).willReturn(Optional.of(user));
 
-        List<Rol> roles = userService.rolesUser(user.getIdUser());
+        List<Rol> roles = userServiceImpl.rolesUser(user.getIdUser());
 
         assertNotNull(roles);
         assertFalse(roles.isEmpty()); // Comprobamos que la lista NO viene vacía
@@ -285,7 +288,7 @@ class UserServiceTest {
         given(rolRep.findById(2L)).willReturn(Optional.of(rolAEliminar));
 
         // Ejecutamos el servicio
-        String resultado = userService.deleteRolUser(1L, 2L);
+        String resultado = userServiceImpl.deleteRolUser(1L, 2L);
 
         //Comprobamos el texto
         assertNotNull(resultado);
@@ -309,7 +312,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.rolesUser(99L)
+                () -> userServiceImpl.rolesUser(99L)
         );
 
         assertEquals("El usuario introducido no existe en el sistema.", ex.getMessage());
@@ -327,7 +330,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.addRolUser(99L, rolPost)
+                () -> userServiceImpl.addRolUser(99L, rolPost)
         );
 
         // THEN: Comprobamos el mensaje de error
@@ -351,7 +354,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.addRolUser(1L, rolDto)
+                () -> userServiceImpl.addRolUser(1L, rolDto)
         );
 
         // Verifica el mensaje de la excepción
@@ -366,7 +369,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.deleteRolUser(99L, 2L)
+                () -> userServiceImpl.deleteRolUser(99L, 2L)
         );
 
         // Verifica el mensaje de la excepción
@@ -386,7 +389,7 @@ class UserServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.deleteRolUser(1L, 99L)
+                () -> userServiceImpl.deleteRolUser(1L, 99L)
         );
 
         // Verifica el mensaje de la excepción
@@ -418,7 +421,7 @@ class UserServiceTest {
         // WHEN
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> userService.deleteRolUser(1L, 2L)
+                () -> userServiceImpl.deleteRolUser(1L, 2L)
         );
 
         // THEN
@@ -427,7 +430,7 @@ class UserServiceTest {
     }
 
     @Test
-    void addRolUser_Exito_ListaVacia() {
+    void addRolUser_Exito_ListaVacia() throws DuplicateException {
         // ESCENARIO 1: Usuario totalmente nuevo sin roles (El bucle FOR se salta)
         User usuario = new User();
         usuario.setIdUser(1L);
@@ -443,14 +446,14 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
         given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
 
-        String resultado = userService.addRolUser(1L, rolPost);
+        String resultado = userServiceImpl.addRolUser(1L, rolPost);
 
         assertEquals("Rol con id 2 añdadido correctamente a usuario con id 1", resultado);
         assertEquals(1, usuario.getRoles().size());
     }
 
     @Test
-    void addRolUser_Exito_ConRolDistinto() {
+    void addRolUser_Exito_ConRolDistinto() throws DuplicateException {
         // ESCENARIO 2: Usuario ya tiene un rol, pero es distinto (El IF da FALSE)
         User usuario = new User();
         usuario.setIdUser(1L);
@@ -471,7 +474,7 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuario));
         given(rolRep.findById(2L)).willReturn(Optional.of(rolNuevo));
 
-        String resultado = userService.addRolUser(1L, rolPost);
+        String resultado = userServiceImpl.addRolUser(1L, rolPost);
 
         assertEquals("Rol con id 2 añdadido correctamente a usuario con id 1", resultado);
         assertEquals(2, usuario.getRoles().size()); // Ahora tiene 2 roles
@@ -501,7 +504,7 @@ class UserServiceTest {
 
         DuplicateException ex = assertThrows(
                 DuplicateException.class,
-                () -> userService.addRolUser(1L, idRolEntrada)
+                () -> userServiceImpl.addRolUser(1L, idRolEntrada)
         );
 
         assertEquals("Error: El usuario ya tiene ese rol.", ex.getMessage());
@@ -509,7 +512,7 @@ class UserServiceTest {
     }
 
     @Test
-    void actualizarUsuario_comoAdmin_exito() {
+    void actualizarUsuario_comoAdmin_exito() throws BadRequestException {
         // preparar usuario en bd
         User usuarioBd = new User();
         usuarioBd.setActivo(true);
@@ -529,7 +532,7 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
 
         // ejecutar
-        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+        String resultado = userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
 
         // comprobar
         assertEquals("Usuario con id 1 editado correctamente", resultado);
@@ -537,7 +540,7 @@ class UserServiceTest {
     }
 
     @Test
-    void actualizarUsuario_mismoUsuario_exito() {
+    void actualizarUsuario_mismoUsuario_exito() throws BadRequestException {
         // preparar usuario en bd
         User usuarioBd = new User();
         usuarioBd.setActivo(true);
@@ -559,7 +562,7 @@ class UserServiceTest {
         given(passwordEncoder.encode("1234")).willReturn("hash1234");
 
         // ejecutar
-        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+        String resultado = userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
 
         // comprobar
         assertEquals("Usuario con id 1 editado correctamente", resultado);
@@ -584,7 +587,7 @@ class UserServiceTest {
 
         // ejecutar y comprobar que explota con badrequest
         assertThrows(BadRequestException.class, () ->
-                userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
+                userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
         );
     }
 
@@ -607,12 +610,12 @@ class UserServiceTest {
 
         // comprobar excepcion
         assertThrows(BadRequestException.class, () ->
-                userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
+                userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
         );
     }
 
     @Test
-    void actualizarUsuario_adminCambiaRoles_exito() {
+    void actualizarUsuario_adminCambiaRoles_exito() throws BadRequestException {
         // preparar datos
         User usuarioBd = new User();
         usuarioBd.setActivo(true);
@@ -621,7 +624,7 @@ class UserServiceTest {
         User usuarioNuevosDatos = new User();
         usuarioNuevosDatos.setActivo(true);
         // admin asigna roles correctamente
-        usuarioNuevosDatos.setRoles(List.of(new com.jorge.sprintdef.Rol()));
+        usuarioNuevosDatos.setRoles(List.of(new Rol()));
 
         // mock admin
         Authentication authMock = mock(Authentication.class);
@@ -631,7 +634,7 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
 
         // ejecutar
-        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+        String resultado = userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
 
         // comprobar
         assertEquals("Usuario con id 1 editado correctamente", resultado);
@@ -647,7 +650,7 @@ class UserServiceTest {
         User usuarioNuevosDatos = new User();
         usuarioNuevosDatos.setEmailUsuario("paco@gmail.com");
         // usuario normal intentando hacerse admin
-        usuarioNuevosDatos.setRoles(List.of(new com.jorge.sprintdef.Rol()));
+        usuarioNuevosDatos.setRoles(List.of(new Rol()));
 
         // mock usuario normal
         Authentication authMock = mock(Authentication.class);
@@ -658,12 +661,12 @@ class UserServiceTest {
 
         // comprobar excepcion
         assertThrows(BadRequestException.class, () ->
-                userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
+                userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock)
         );
     }
 
     @Test
-    void actualizarUsuario_usuarioNormalSinCambiarPassword_exito() {
+    void actualizarUsuario_usuarioNormalSinCambiarPassword_exito() throws BadRequestException {
         // preparar datos
         User usuarioBd = new User();
         usuarioBd.setActivo(true);
@@ -681,7 +684,7 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
 
         // ejecutar
-        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+        String resultado = userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
 
         // comprobar que NUNCA se llamo a encriptar porque la pass estaba vacia
         verify(passwordEncoder, never()).encode(anyString());
@@ -698,12 +701,12 @@ class UserServiceTest {
 
         // comprobar excepcion notfound
         assertThrows(NotFoundException.class, () ->
-                userService.actualizarUsuario(1L, new User(), authMock)
+                userServiceImpl.actualizarUsuario(1L, new User(), authMock)
         );
     }
 
     @Test
-    void actualizarUsuario_adminSinCambiarRoles_exito() {
+    void actualizarUsuario_adminSinCambiarRoles_exito() throws BadRequestException {
         // preparar datos
         User usuarioBd = new User();
         usuarioBd.setActivo(true);
@@ -721,14 +724,14 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
 
         // ejecutar
-        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+        String resultado = userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
 
         // comprobar
         assertEquals("Usuario con id 1 editado correctamente", resultado);
     }
 
     @Test
-    void actualizarUsuario_usuarioNormalEnviaRolesVacios_exito() {
+    void actualizarUsuario_usuarioNormalEnviaRolesVacios_exito() throws BadRequestException {
         // preparar datos
         User usuarioBd = new User();
         usuarioBd.setActivo(true);
@@ -746,7 +749,7 @@ class UserServiceTest {
         given(userRepository.findById(1L)).willReturn(Optional.of(usuarioBd));
 
         // ejecutar
-        String resultado = userService.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
+        String resultado = userServiceImpl.actualizarUsuario(1L, usuarioNuevosDatos, authMock);
 
         // comprobar
         assertEquals("Usuario con id 1 editado correctamente", resultado);

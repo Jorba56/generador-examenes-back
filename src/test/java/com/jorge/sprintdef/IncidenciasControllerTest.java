@@ -1,6 +1,7 @@
 package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.controller.IncidenciasController;
+import com.jorge.sprintdef.entity.Incidencia;
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.services.IncidenciasService;
 import org.junit.jupiter.api.Test;

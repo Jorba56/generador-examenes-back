@@ -1,4 +1,4 @@
-package com.jorge.sprintdef;
+package com.jorge.sprintdef.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -4,7 +4,10 @@ import com.jorge.sprintdef.controller.RolController;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
-import com.jorge.sprintdef.services.RolService;
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
+import com.jorge.sprintdef.exceptions.ConflictException;
+import com.jorge.sprintdef.services.impl.RolServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +25,7 @@ import static org.mockito.Mockito.*;
 class RolControllerTest {
 
     @Mock
-    private RolService rolService;
+    private RolServiceImpl rolServiceImpl;
 
     @InjectMocks
     private RolController rolController;
@@ -34,14 +37,14 @@ class RolControllerTest {
         rol1.setActivo(true);
         rol1.setIdRol(4L);
 
-        given(rolService.listarRoles()).willReturn(List.of(rol1));
+        given(rolServiceImpl.listarRoles()).willReturn(List.of(rol1));
 
         List<Rol> rolList = rolController.getAllRoles();
 
         assertFalse(rolList.isEmpty());
         assertEquals(1, rolList.size());
-        verify(rolService).listarRoles();
-        verifyNoMoreInteractions(rolService);
+        verify(rolServiceImpl).listarRoles();
+        verifyNoMoreInteractions(rolServiceImpl);
     }
 
     @Test
@@ -51,15 +54,15 @@ class RolControllerTest {
         rol1.setActivo(true);
         rol1.setIdRol(4L);
 
-        given(rolService.rolPorId(4L)).willReturn(Optional.of(rol1));
+        given(rolServiceImpl.rolPorId(4L)).willReturn(Optional.of(rol1));
 
         //when
         Optional<Rol> rolSearch = rolController.getRolId(4L);
 
         assertTrue(rolSearch.isPresent());
         assertEquals(rol1.getIdRol(), rolSearch.get().getIdRol());
-        verify(rolService).rolPorId(4L);
-        verifyNoMoreInteractions(rolService);
+        verify(rolServiceImpl).rolPorId(4L);
+        verifyNoMoreInteractions(rolServiceImpl);
     }
 
     @Test
@@ -67,14 +70,14 @@ class RolControllerTest {
         RolDTO rolDTO = new RolDTO();
         rolDTO.setName("nuevo_rol");
 
-        given(rolService.newRol(rolDTO)).willReturn("rol añadido con exito");
+        given(rolServiceImpl.newRol(rolDTO)).willReturn("rol añadido con exito");
 
         String correcto = rolController.addRol(rolDTO);
 
         assertNotNull(correcto);
         assertEquals("rol añadido con exito", correcto);
-        verify(rolService).newRol(rolDTO);
-        verifyNoMoreInteractions(rolService);
+        verify(rolServiceImpl).newRol(rolDTO);
+        verifyNoMoreInteractions(rolServiceImpl);
     }
 
     @Test
@@ -83,19 +86,19 @@ class RolControllerTest {
         rolNuevo.setName("administrador2");
         rolNuevo.setActivo(true);
 
-        given(rolService.actualizarRol(4L, rolNuevo)).willReturn("Rol editado correctamente");
+        given(rolServiceImpl.actualizarRol(4L, rolNuevo)).willReturn("Rol editado correctamente");
 
         String correcto = rolController.updateRol(4L, rolNuevo);
 
         assertNotNull(correcto);
         assertEquals("Rol editado correctamente", correcto);
-        verify(rolService).actualizarRol(4L, rolNuevo);
-        verifyNoMoreInteractions(rolService);
+        verify(rolServiceImpl).actualizarRol(4L, rolNuevo);
+        verifyNoMoreInteractions(rolServiceImpl);
     }
 
     @Test
-    void deleteRol() {
-        given(rolService.desactivarRol(6L)).willReturn("rol borrado con éxito");
+    void deleteRol() throws ConflictException {
+        given(rolServiceImpl.desactivarRol(6L)).willReturn("rol borrado con éxito");
 
         //when
         String borrado = rolController.deleteRol(6L);
@@ -103,18 +106,18 @@ class RolControllerTest {
         //asserts
         assertNotNull(borrado);
         assertEquals("rol borrado con éxito", borrado);
-        verify(rolService).desactivarRol(6L);
-        verifyNoMoreInteractions(rolService);
+        verify(rolServiceImpl).desactivarRol(6L);
+        verifyNoMoreInteractions(rolServiceImpl);
     }
 
     @Test
     void getRolIdNull() {
-        given(rolService.rolPorId(99L)).willReturn(Optional.empty());
+        given(rolServiceImpl.rolPorId(99L)).willReturn(Optional.empty());
 
         Optional<Rol> rolSearch = rolController.getRolId(99L);
 
         assertTrue(rolSearch.isEmpty());
-        verify(rolService).rolPorId(99L);
+        verify(rolServiceImpl).rolPorId(99L);
     }
 
     @Test
@@ -126,13 +129,13 @@ class RolControllerTest {
         UserByRol usuario2 = new UserByRol();
         usuario2.setNombreUsuario("jorge");
 
-        given(rolService.userPorRol(2L)).willReturn(List.of(usuario2));
+        given(rolServiceImpl.userPorRol(2L)).willReturn(List.of(usuario2));
 
         List<UserByRol> usuarios = rolController.userRol(2L);
         UserByRol user1= usuarios.getFirst();
 
         assertFalse(usuarios.isEmpty());
         assertEquals("jorge", user1.getNombreUsuario());
-        verify(rolService).userPorRol(2L);
+        verify(rolServiceImpl).userPorRol(2L);
     }
 }

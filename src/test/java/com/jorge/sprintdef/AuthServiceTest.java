@@ -2,13 +2,16 @@ package com.jorge.sprintdef;
 
 
 import com.jorge.sprintdef.dto.LoginDTO;
+import com.jorge.sprintdef.entity.User;
 import com.jorge.sprintdef.exceptions.BadRequestException;
 
 import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.mapping.UserMapper;
+import com.jorge.sprintdef.repository.UserRepository;
 import com.jorge.sprintdef.security.JwtUtil;
 import com.jorge.sprintdef.services.AuthService;
 
+import com.jorge.sprintdef.services.impl.AuthServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,10 +41,10 @@ class AuthServiceTest {
     @Mock
     private JwtUtil jwtUtil;
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authServiceImpl;
 
     @Test
-    void login(){
+    void login() throws ConflictException, BadRequestException {
         User usuario= new User();
         LoginDTO user= new LoginDTO();
         usuario.setIdUser(1L);
@@ -56,7 +59,7 @@ class AuthServiceTest {
         given(passwordEncoder.matches(user.getContrasenhaUsuario(), usuario.getContrasenhaUsuario())).willReturn(true);
         given(jwtUtil.generarToken("luis@gmail.com")).willReturn("token123");
 
-        Map<String, String> respuesta= authService.login(user);
+        Map<String, String> respuesta= authServiceImpl.login(user);
 
         assertNotNull(respuesta);
         assertEquals("token123", respuesta.get("token"));
@@ -74,7 +77,7 @@ class AuthServiceTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> authService.login(user)
+                () -> authServiceImpl.login(user)
         );
 
         assertEquals("Credenciales de acceso incorrectas.", ex.getMessage());
@@ -95,7 +98,7 @@ class AuthServiceTest {
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> authService.login(user)
+                () -> authServiceImpl.login(user)
         );
 
         assertEquals("Credenciales de acceso incorrectas.", ex.getMessage());
@@ -117,7 +120,7 @@ class AuthServiceTest {
 
         ConflictException ex = assertThrows(
                 ConflictException.class,
-                () -> authService.login(user)
+                () -> authServiceImpl.login(user)
         );
 
         assertEquals("La cuenta de usuario se encuentra desactivada.", ex.getMessage());

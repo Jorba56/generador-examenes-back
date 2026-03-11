@@ -4,8 +4,11 @@ import com.jorge.sprintdef.controller.UserController;
 import com.jorge.sprintdef.dto.RolPostUser;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.dto.UserIdDTo;
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
+import com.jorge.sprintdef.exceptions.DuplicateException;
 import com.jorge.sprintdef.mapping.UserMapper;
-import com.jorge.sprintdef.services.UserService;
+import com.jorge.sprintdef.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +54,7 @@ class UserControllerTest {
     private UserMapper userMap;
 
     @Mock
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @InjectMocks
     private UserController userController;
@@ -63,15 +66,15 @@ class UserControllerTest {
         usuario.setApellidoUsuario("br");
         usuario.setEmailUsuario("jobr@gmail.com");
 
-        given(userService.listarUsuarios()).willReturn(List.of(usuario));
+        given(userServiceImpl.listarUsuarios()).willReturn(List.of(usuario));
 
         //when
         List<UsersAllDTO> userList=userController.getAllUsers();
 
         assertFalse(userList.isEmpty());
         assertEquals((1), userList.size());
-        verify(userService).listarUsuarios();
-        verifyNoMoreInteractions(userService); // ver si no se ejecuta mas veces
+        verify(userServiceImpl).listarUsuarios();
+        verifyNoMoreInteractions(userServiceImpl); // ver si no se ejecuta mas veces
     }
 
     @Test
@@ -83,7 +86,7 @@ class UserControllerTest {
         usuario.setEmailUsuario("jobr@gmail.com");
         usuario.setActivo(true);
 
-        given(userService.buscarPorId(1L)).willReturn((usuario));
+        given(userServiceImpl.buscarPorId(1L)).willReturn((usuario));
 
         //when
         UserIdDTo userFind = userController.getUserId(1L);
@@ -105,7 +108,7 @@ class UserControllerTest {
         String mensajeEsperado = "Usuario con id 1 editado correctamente";
 
         // simular servicio
-        given(userService.actualizarUsuario(eq(userId), any(User.class), any(org.springframework.security.core.Authentication.class)))
+        given(userServiceImpl.actualizarUsuario(eq(userId), any(User.class), any(org.springframework.security.core.Authentication.class)))
                 .willReturn(mensajeEsperado);
 
         // ejecutar peticion y verificar respuesta
@@ -122,7 +125,7 @@ class UserControllerTest {
      void deleteUser(){
             User usuario=new User();
             usuario.setIdUser(1L);
-            given(userService.desactivarUsuario(usuario.getIdUser())).willReturn(("usuario borrado correctamente"));
+            given(userServiceImpl.desactivarUsuario(usuario.getIdUser())).willReturn(("usuario borrado correctamente"));
             //when
             String borrado = userController.deleteUser(usuario.getIdUser());
 
@@ -134,14 +137,14 @@ class UserControllerTest {
     @Test
     void getUserIdNull() {
         // el servicio no encuentra nada y devuelve null
-        given(userService.buscarPorId(99L)).willReturn(null);
+        given(userServiceImpl.buscarPorId(99L)).willReturn(null);
 
         // when
         UserIdDTo userFind = userController.getUserId(99L);
 
         // then
         assertNull(userFind);
-        verify(userService).buscarPorId(99L);
+        verify(userServiceImpl).buscarPorId(99L);
     }
 
     @Test
@@ -150,31 +153,31 @@ class UserControllerTest {
         rol.setIdRol(1L);
         rol.setName("admin");
 
-        given(userService.rolesUser(1L)).willReturn(List.of(rol));
+        given(userServiceImpl.rolesUser(1L)).willReturn(List.of(rol));
 
         List<Rol> roles = userController.rolesUser(1L);
 
         assertFalse(roles.isEmpty());
         assertEquals("admin", roles.getFirst().getName());
-        verify(userService).rolesUser(1L);
+        verify(userServiceImpl).rolesUser(1L);
     }
 
     @Test
-    void userAddRol() {
+    void userAddRol() throws DuplicateException {
         RolPostUser rolPost = new RolPostUser();
         rolPost.setIdRol(2L);
 
-        given(userService.addRolUser(1L, rolPost)).willReturn("rol añdadido a usuario");
+        given(userServiceImpl.addRolUser(1L, rolPost)).willReturn("rol añdadido a usuario");
 
         String resultado = userController.userAddRol(1L, rolPost);
 
         assertEquals("rol añdadido a usuario", resultado);
-        verify(userService).addRolUser(1L, rolPost);
+        verify(userServiceImpl).addRolUser(1L, rolPost);
     }
 
     @Test
     void deleteRolUser() {
-        given(userService.deleteRolUser(1L, 2L)).willReturn("Rol eliminado correctamente");
+        given(userServiceImpl.deleteRolUser(1L, 2L)).willReturn("Rol eliminado correctamente");
 
         String resultado = userController.deleteRolUser(2L, 1L);
 

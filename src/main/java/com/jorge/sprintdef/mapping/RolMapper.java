@@ -1,7 +1,7 @@
 package com.jorge.sprintdef.mapping;
 
 
-import com.jorge.sprintdef.Rol;
+import com.jorge.sprintdef.entity.Rol;
 import com.jorge.sprintdef.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

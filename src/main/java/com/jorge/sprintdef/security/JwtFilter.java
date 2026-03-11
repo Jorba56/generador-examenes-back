@@ -1,7 +1,7 @@
 package com.jorge.sprintdef.security;
 
-import com.jorge.sprintdef.User;
-import com.jorge.sprintdef.UserRepository;
+import com.jorge.sprintdef.entity.User;
+import com.jorge.sprintdef.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

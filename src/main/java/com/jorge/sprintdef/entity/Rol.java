@@ -1,4 +1,4 @@
-package com.jorge.sprintdef;
+package com.jorge.sprintdef.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

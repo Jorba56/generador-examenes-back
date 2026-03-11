@@ -1,7 +1,10 @@
 package com.jorge.sprintdef;
 
+import com.jorge.sprintdef.entity.Incidencia;
 import com.jorge.sprintdef.exceptions.NotFoundException;
+import com.jorge.sprintdef.repository.IncidenciasRepository;
 import com.jorge.sprintdef.services.IncidenciasService;
+import com.jorge.sprintdef.services.impl.IncidenciasServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,13 +20,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class IncidenciasServiceTest {
+class IncidenciasServiceImplTest {
 
     @Mock
     private IncidenciasRepository incidenciaRepository;
 
     @InjectMocks
-    private IncidenciasService incidenciasService;
+    private IncidenciasServiceImpl  incidenciasService;
 
     // metodos generales
 

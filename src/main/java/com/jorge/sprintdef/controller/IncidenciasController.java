@@ -1,6 +1,6 @@
 package com.jorge.sprintdef.controller;
 
-import com.jorge.sprintdef.Incidencia;
+import com.jorge.sprintdef.entity.Incidencia;
 import com.jorge.sprintdef.services.IncidenciasService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

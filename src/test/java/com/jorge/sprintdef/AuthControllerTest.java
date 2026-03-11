@@ -6,7 +6,7 @@ import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 import com.jorge.sprintdef.security.AuthController;
 import com.jorge.sprintdef.services.AuthService;
-import com.jorge.sprintdef.services.UserService;
+import com.jorge.sprintdef.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,10 +34,10 @@ class AuthControllerTest {
 
 
     @Mock
-    private AuthService authService;
+    private AuthService authServiceImpl;
 
     @Mock
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @InjectMocks
     private AuthController authController;
@@ -63,7 +63,7 @@ class AuthControllerTest {
         respuestaEsperada.put("token", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIi...TokenFalso");
 
 
-        given(authService.login(any(LoginDTO.class))).willReturn(respuestaEsperada);
+        given(authServiceImpl.login(any(LoginDTO.class))).willReturn(respuestaEsperada);
 
         //ejecución y verificación (when y then)
         mockMvc.perform(post("/auth/login")
@@ -88,7 +88,7 @@ class AuthControllerTest {
         usuarioCreado.setEmailUsuario("paco@gmail.com");
 
         // simulamos el comportamiento del userservice
-        given(userService.addUsuario(any(UserAddDTO.class))).willReturn(usuarioCreado);
+        given(userServiceImpl.addUsuario(any(UserAddDTO.class))).willReturn(usuarioCreado);
 
         //ejecución y verificación (when y then)
         mockMvc.perform(post("/auth/register")

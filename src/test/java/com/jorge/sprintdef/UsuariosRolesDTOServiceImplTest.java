@@ -1,7 +1,10 @@
 package com.jorge.sprintdef;
 
 import com.jorge.sprintdef.dto.UsuarioRolesDTO;
-import com.jorge.sprintdef.services.UsuariosRolesDTOService;
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
+import com.jorge.sprintdef.repository.UserRepository;
+import com.jorge.sprintdef.services.impl.UsuariosRolesDTOServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,13 +19,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class UsuariosRolesDTOServiceTest {
+class UsuariosRolesDTOServiceImplTest {
 
     @Mock
     private UserRepository userRep;
 
     @InjectMocks
-    private UsuariosRolesDTOService urService;
+    private UsuariosRolesDTOServiceImpl urService;
 
     @Test
     void listaUsuariosRoles_ConUsuarios() {

@@ -1,5 +1,7 @@
-package com.jorge.sprintdef;
+package com.jorge.sprintdef.repository;
 
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;

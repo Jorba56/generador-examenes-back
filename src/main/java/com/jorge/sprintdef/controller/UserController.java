@@ -1,20 +1,20 @@
 package com.jorge.sprintdef.controller;
 
-import com.jorge.sprintdef.Rol;
-import com.jorge.sprintdef.User;
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
 import com.jorge.sprintdef.dto.RolPostUser;
 import com.jorge.sprintdef.dto.UserIdDTo;
 import com.jorge.sprintdef.dto.UsersAllDTO;
 
+import com.jorge.sprintdef.exceptions.BadRequestException;
+import com.jorge.sprintdef.exceptions.DuplicateException;
+import com.jorge.sprintdef.services.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import java.util.List;
-
-
-import com.jorge.sprintdef.services.UserService;
 
 /**
  * Controlador REST encargado de gestionar las peticiones HTTP relacionadas con los Usuarios.
@@ -25,10 +25,10 @@ import com.jorge.sprintdef.services.UserService;
 @Tag(name = "Usuarios", description = "Endpoints para el CRUD de usuarios y la gestión de sus roles asignados.")
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
     /**
@@ -39,7 +39,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public List<UsersAllDTO> getAllUsers() {
-        return userService.listarUsuarios();
+        return userServiceImpl.listarUsuarios();
     }
 
     /**
@@ -50,7 +50,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}")
     public UserIdDTo getUserId(@PathVariable Long id) {
-        return userService.buscarPorId(id);
+        return userServiceImpl.buscarPorId(id);
     }
 
     /**
@@ -64,8 +64,8 @@ public class UserController {
      */
     @Operation(summary = "Actualizar usuario", description = "Modifica los datos de un usuario. Bloquea la edición de contraseñas para admins y roles para usuarios normales.")
     @PutMapping("/{id}")
-    public String updateUser(@PathVariable Long id, @RequestBody User usuario, Authentication authentication) {
-        return userService.actualizarUsuario(id, usuario, authentication);
+    public String updateUser(@PathVariable Long id, @RequestBody User usuario, Authentication authentication) throws BadRequestException {
+        return userServiceImpl.actualizarUsuario(id, usuario, authentication);
     }
 
     /**
@@ -76,7 +76,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public String deleteUser (@PathVariable Long id){
-        return userService.desactivarUsuario(id);
+        return userServiceImpl.desactivarUsuario(id);
     }
 
     /**
@@ -87,7 +87,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}/roles")
     public List<Rol> rolesUser(@PathVariable Long id){
-        return userService.rolesUser(id);
+        return userServiceImpl.rolesUser(id);
     }
 
     /**
@@ -97,8 +97,8 @@ public class UserController {
     @Operation(summary = "Añadir rol a un usuario", description = "Asigna un nuevo rol a la lista de roles del usuario.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/{id}/roles")
-    public String userAddRol(@PathVariable Long id, @RequestBody RolPostUser idRol){
-        return userService.addRolUser(id,idRol);
+    public String userAddRol(@PathVariable Long id, @RequestBody RolPostUser idRol) throws DuplicateException {
+        return userServiceImpl.addRolUser(id,idRol);
     }
 
     /**
@@ -109,6 +109,6 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{idUsuario}/roles/{idRol}") //Quitarle un rol a un usuario
     public String deleteRolUser (@PathVariable Long idRol, @PathVariable Long idUsuario) {
-        return userService.deleteRolUser(idUsuario, idRol );
+        return userServiceImpl.deleteRolUser(idUsuario, idRol );
     }
 }

@@ -1,10 +1,11 @@
 package com.jorge.sprintdef.controller;
 
-import com.jorge.sprintdef.Rol;
+import com.jorge.sprintdef.entity.Rol;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
-import com.jorge.sprintdef.services.RolService;
+import com.jorge.sprintdef.exceptions.ConflictException;
+import com.jorge.sprintdef.services.impl.RolServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,11 +22,11 @@ import java.util.Optional;
 @Tag(name = "Roles", description = "Endpoints para la creación, modificación y listado de los niveles de acceso del sistema.")
 public class RolController{
 
-    private final RolService rolService;
+    private final RolServiceImpl rolServiceImpl;
 
 
-    public RolController(RolService rolService) {
-        this.rolService = rolService;
+    public RolController(RolServiceImpl rolServiceImpl) {
+        this.rolServiceImpl = rolServiceImpl;
     }
 
     /**
@@ -36,7 +37,7 @@ public class RolController{
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public List<Rol> getAllRoles(){
-        return rolService.listarRoles();
+        return rolServiceImpl.listarRoles();
     }
 
     /**
@@ -47,7 +48,7 @@ public class RolController{
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}")
     public Optional<Rol> getRolId (@PathVariable Long id){
-        return rolService.rolPorId(id);
+        return rolServiceImpl.rolPorId(id);
     }
 
     /**
@@ -58,7 +59,7 @@ public class RolController{
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("")
     public String addRol (@RequestBody RolDTO rol){
-        return rolService.newRol(rol);
+        return rolServiceImpl.newRol(rol);
     }
 
     /**
@@ -69,7 +70,7 @@ public class RolController{
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public String updateRol(@PathVariable Long id, @RequestBody RolPutDTO rolNuevo) {
-        return rolService.actualizarRol(id, rolNuevo);
+        return rolServiceImpl.actualizarRol(id, rolNuevo);
     }
 
     /**
@@ -79,8 +80,8 @@ public class RolController{
     @Operation(summary = "Desactivar rol", description = "Realiza un borrado lógico del rol. Fallará si el rol tiene usuarios asignados.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
-    public String deleteRol (@PathVariable Long id){
-        return rolService.desactivarRol(id);
+    public String deleteRol (@PathVariable Long id) throws ConflictException {
+        return rolServiceImpl.desactivarRol(id);
     }
 
     /**
@@ -91,7 +92,7 @@ public class RolController{
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{idRol}/usuarios")
     public List<UserByRol> userRol(@PathVariable Long idRol){
-        return rolService.userPorRol(idRol);
+        return rolServiceImpl.userPorRol(idRol);
     }
 
 }

@@ -1,8 +1,8 @@
 package com.jorge.sprintdef.exceptions;
 
-import com.jorge.sprintdef.Incidencia;
-import com.jorge.sprintdef.User;
-import com.jorge.sprintdef.UserRepository;
+import com.jorge.sprintdef.entity.Incidencia;
+import com.jorge.sprintdef.entity.User;
+import com.jorge.sprintdef.repository.UserRepository;
 import com.jorge.sprintdef.services.IncidenciasService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

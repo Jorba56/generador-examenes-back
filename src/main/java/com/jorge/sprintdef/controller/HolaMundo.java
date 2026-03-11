@@ -1,4 +1,4 @@
-package com.jorge.sprintdef;
+package com.jorge.sprintdef.controller;
 
 
 import org.springframework.web.bind.annotation.GetMapping;

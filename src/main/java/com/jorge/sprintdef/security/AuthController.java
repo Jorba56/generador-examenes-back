@@ -4,8 +4,11 @@ package com.jorge.sprintdef.security;
 import com.jorge.sprintdef.dto.LoginDTO;
 import com.jorge.sprintdef.dto.UserAddDTO;
 import com.jorge.sprintdef.dto.UsersAllDTO;
+import com.jorge.sprintdef.exceptions.BadRequestException;
+import com.jorge.sprintdef.exceptions.ConflictException;
+import com.jorge.sprintdef.exceptions.DuplicateException;
 import com.jorge.sprintdef.services.AuthService;
-import com.jorge.sprintdef.services.UserService;
+import com.jorge.sprintdef.services.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,21 +28,21 @@ import java.util.Map;
 @RequestMapping("/auth")
 @Tag(name = "Autenticación", description = "Endpoints públicos para registro y login de usuarios.")
 public class AuthController {
-    private final AuthService authService;
-    private final UserService userService;
+    private final AuthService authServiceImpl;
+    private final UserServiceImpl userServiceImpl;
 
-    public AuthController(AuthService authService, UserService userService){
-        this.userService = userService;
-        this.authService=authService;
+    public AuthController(AuthService authServiceImpl, UserServiceImpl userServiceImpl){
+        this.userServiceImpl = userServiceImpl;
+        this.authServiceImpl = authServiceImpl;
     }
     @Operation(summary = "Iniciar sesión", description = "Valida las credenciales del usuario y devuelve un token JWT para acceder a los endpoints protegidos.")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginDTO loginDto) {
-        return ResponseEntity.ok(authService.login(loginDto));
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginDTO loginDto) throws ConflictException, BadRequestException {
+        return ResponseEntity.ok(authServiceImpl.login(loginDto));
     }
     @Operation(summary = "Registrar nuevo usuario", description = "Crea un usuario en el sistema, encripta su contraseña y le asigna el rol ALUMNO por defecto.")
     @PostMapping("/register")
-    public ResponseEntity<UsersAllDTO> registro(@Valid @RequestBody UserAddDTO dto) {
-        return ResponseEntity.ok(userService.addUsuario(dto));
+    public ResponseEntity<UsersAllDTO> registro(@Valid @RequestBody UserAddDTO dto) throws DuplicateException {
+        return ResponseEntity.ok(userServiceImpl.addUsuario(dto));
     }
 }

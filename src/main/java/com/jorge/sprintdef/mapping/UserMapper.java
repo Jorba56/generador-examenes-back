@@ -1,6 +1,6 @@
 package com.jorge.sprintdef.mapping;
 
-import com.jorge.sprintdef.User;
+import com.jorge.sprintdef.entity.User;
 import com.jorge.sprintdef.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

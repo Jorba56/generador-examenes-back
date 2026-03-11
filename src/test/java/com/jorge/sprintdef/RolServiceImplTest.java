@@ -3,11 +3,14 @@ package com.jorge.sprintdef;
 import com.jorge.sprintdef.dto.RolDTO;
 import com.jorge.sprintdef.dto.RolPutDTO;
 import com.jorge.sprintdef.dto.UserByRol;
+import com.jorge.sprintdef.entity.Rol;
+import com.jorge.sprintdef.entity.User;
 import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.mapping.RolMapper;
 import com.jorge.sprintdef.mapping.UserMapper;
-import com.jorge.sprintdef.services.RolService;
+import com.jorge.sprintdef.repository.RolRepository;
+import com.jorge.sprintdef.services.impl.RolServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +26,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 
-class RolServiceTest {
+class RolServiceImplTest {
 
     @Mock
     private RolRepository rolRep;
@@ -35,7 +38,7 @@ class RolServiceTest {
     private RolMapper rolMap;
 
     @InjectMocks
-    private RolService rolService;
+    private RolServiceImpl rolServiceImpl;
 
     @Test
      void getAllRoles(){
@@ -46,7 +49,7 @@ class RolServiceTest {
 
         given(rolRep.findRolsByActivoIs(true)).willReturn(List.of(rol1));
 
-        List <Rol> rolList=rolService.listarRoles();
+        List <Rol> rolList= rolServiceImpl.listarRoles();
 
         assertFalse(rolList.isEmpty());
         assertEquals(1,rolList.size());
@@ -58,7 +61,7 @@ class RolServiceTest {
     void getAllRolesVacio(){
         given(rolRep.findRolsByActivoIs(true)).willReturn(List.of());
 
-        List <Rol> rolList=rolService.listarRoles();
+        List <Rol> rolList= rolServiceImpl.listarRoles();
 
         assertTrue(rolList.isEmpty());
         verify(rolRep).findRolsByActivoIs(true);
@@ -74,7 +77,7 @@ class RolServiceTest {
 
         given(rolRep.findById(rol1.getIdRol())).willReturn(Optional.of(rol1));
 
-        Rol rolSearch=rolService.rolPorId(rol1.getIdRol()).orElse(null);
+        Rol rolSearch= rolServiceImpl.rolPorId(rol1.getIdRol()).orElse(null);
 
         assertNotNull(rolSearch);
         assertEquals(rol1.getIdRol(),rolSearch.getIdRol());
@@ -94,7 +97,7 @@ class RolServiceTest {
         // when & then: forzamos la excepción y comprobamos el mensaje
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> rolService.rolPorId(1L)
+                () -> rolServiceImpl.rolPorId(1L)
         );
 
         assertEquals("El rol se encuentra desactivado.", ex.getMessage());
@@ -106,7 +109,7 @@ class RolServiceTest {
 
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> rolService.rolPorId(5L)
+                () -> rolServiceImpl.rolPorId(5L)
         );
 
         assertEquals("Rol no encontrado con ID: "+5L, ex.getMessage());
@@ -117,10 +120,10 @@ class RolServiceTest {
     @Test
      void addRol(){
         RolDTO rol=new RolDTO();
-        Rol rol1= rolService.mappingARol(rol);
+        Rol rol1= rolServiceImpl.mappingARol(rol);
         given(rolRep.save(any(Rol.class))).willReturn(rol1);
 
-        String correcto=rolService.newRol(rol);
+        String correcto= rolServiceImpl.newRol(rol);
 
         assertNotNull(correcto);
         assertEquals(("Rol añadido con exito"),correcto);
@@ -146,7 +149,7 @@ class RolServiceTest {
         given(rolRep.findById(4L)).willReturn(Optional.of(rol1));
         given(rolMap.mappingPutReverse(rol2)).willReturn((rolMapeado));
 
-        String correcto=rolService.actualizarRol(4L,rol2);
+        String correcto= rolServiceImpl.actualizarRol(4L,rol2);
 
         assertNotNull(correcto);
         assertEquals(("Rol con id"+4L+" editado correctamente"),correcto);
@@ -163,21 +166,21 @@ class RolServiceTest {
 
         given(rolRep.findById(99L)).willReturn(Optional.empty());
 
-        String fallo=rolService.actualizarRol(99L,rol2);
+        String fallo= rolServiceImpl.actualizarRol(99L,rol2);
 
         assertNotNull(fallo);
         assertEquals(("Error: Rol no encontrado"),fallo);
     }
 
     @Test
-     void deleteRol(){
+     void deleteRol() throws ConflictException {
         Rol rol=new Rol();
         rol.setIdRol(6L);
         rol.setActivo(true);// no necesito más
 
         given(rolRep.findById(6L)).willReturn(Optional.of(rol));
         //when
-        String borrado = rolService.desactivarRol(6L);
+        String borrado = rolServiceImpl.desactivarRol(6L);
 
         //asserts
         assertFalse(rol.getActivo());
@@ -198,7 +201,7 @@ class RolServiceTest {
         // when & then: forzamos la excepción
         ConflictException ex = assertThrows(
                 ConflictException.class,
-                () -> rolService.desactivarRol(2L)
+                () -> rolServiceImpl.desactivarRol(2L)
         );
 
         assertEquals("El rol ya está desactivado.", ex.getMessage());
@@ -214,7 +217,7 @@ class RolServiceTest {
         // when
         NotFoundException ex = assertThrows(
                 NotFoundException.class,
-                () -> rolService.desactivarRol(99L)
+                () -> rolServiceImpl.desactivarRol(99L)
         );
 
         assertEquals("Rol no encontrado con ID: "+99L, ex.getMessage());
@@ -242,7 +245,7 @@ class RolServiceTest {
         // forzamos la excepción de conflicto
         ConflictException ex = assertThrows(
                 ConflictException.class,
-                () -> rolService.desactivarRol(3L)
+                () -> rolServiceImpl.desactivarRol(3L)
         );
 
         assertEquals("No se puede desactivar un rol que tiene usuarios asignados.", ex.getMessage());
@@ -265,7 +268,7 @@ class RolServiceTest {
         given(userMap.mappingRoles(usuario)).willReturn((userRol));
 
         // ejecutamos el servicio
-        List<UserByRol> usuarios = rolService.userPorRol(2L);
+        List<UserByRol> usuarios = rolServiceImpl.userPorRol(2L);
 
         // comprobamos resultados
         assertNotNull(usuarios);
@@ -284,7 +287,7 @@ class RolServiceTest {
         given(rolRep.findUsuariosPorRol(99L)).willReturn(List.of());
 
         // ejecutamos el servicio
-        List<UserByRol> usuarios = rolService.userPorRol(99L);
+        List<UserByRol> usuarios = rolServiceImpl.userPorRol(99L);
 
         // comprobamos que devuelve la lista vacía sin fallar
         assertNotNull(usuarios);
