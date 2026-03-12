@@ -1,14 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage('Descargar de GitHub') {
-            steps {
-
-                git branch: 'main',
-                credentialsId: 'credenciales-github',
-                url: 'https://github.com/Jorba56/generador-examenes-back.git'
-            }
-        }
         stage('Preparar Entorno') {
             steps {
 
