@@ -40,7 +40,7 @@ services:
     container_name: sprint3-jenkins
     user: root
     ports:
-      - "8080:8080"
+      - "8090:8080"
     volumes:
       - ./jenkins_data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock # ruta para poder borrar y actualizar dockers

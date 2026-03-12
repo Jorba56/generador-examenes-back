@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.4
+Build-Jdk-Spec: 17
+Specification-Title: Jenkins Git client plugin
+Specification-Version: 6.5
+Implementation-Title: Jenkins Git client plugin
+Implementation-Version: 6.5.0
+Group-Id: org.jenkins-ci.plugins
+Artifact-Id: git-client
+Short-Name: git-client
+Long-Name: Jenkins Git client plugin
+Url: https://github.com/jenkinsci/git-client-plugin
+Plugin-Version: 6.5.0
+Hudson-Version: 2.504.3
+Jenkins-Version: 2.504.3
+Plugin-Dependencies: mina-sshd-api-common:2.16.0-167.va_269f38cc024,mina
+ -sshd-api-core:2.16.0-167.va_269f38cc024,commons-lang3-api:3.20.0-109.v
+ e43756e2d2b_4,gson-api:2.13.2-173.va_a_092315913c,configuration-as-code
+ :2006.v001a_2ca_6b_574;resolution:=optional,apache-httpcomponents-clien
+ t-4-api:4.5.14-269.vfa_2321039a_83,credentials:1453.v9b_a_29777a_b_fd,s
+ cript-security:1385.v7d2d9ec4d909,ssh-credentials:361.vb_f6760818e8c,st
+ ructs:362.va_b_695ef4fdf9
+Plugin-Developers: 
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/git-client-pl
+ ugin
+Plugin-ScmTag: git-client-6.5.0
+Plugin-ScmUrl: https://github.com/jenkinsci/git-client-plugin
+Implementation-Build: b152618d5b3e717e4df1243327944a05558c0078
+

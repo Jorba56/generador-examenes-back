@@ -3,26 +3,35 @@ pipeline {
     stages {
         stage('Descargar de GitHub') {
             steps {
-                git 'https://github.com/tu-usuario/tu-repositorio.git'
+
+                git branch: 'main',
+                credentialsId: 'credenciales-github',
+                url: 'https://github.com/Jorba56/generador-examenes-back.git'
+            }
+        }
+        stage('Preparar Entorno') {
+            steps {
+
+                sh 'chmod +x mvnw'
             }
         }
         stage('Test y SonarQube') {
             steps {
-                // Aquí va tu comando de Maven con el token de Sonar
-                sh './mvnw clean verify sonar:sonar ...'
+
+                sh './mvnw clean verify sonar:sonar -Dsonar.projectKey=generador-examenes-back -Dsonar.projectName=generador-examenes-back -Dsonar.host.url=http://sprint3-sonarqube:9000 -Dsonar.token=squ_1f0ffbe31c6276884d2a7db4c097ec8116026f86'
             }
         }
-        stage('Crear Docker') {
+        stage('Construir Imagen Docker') {
             steps {
-                // Construye la imagen nueva
+
                 sh 'docker build -t generador-examenes-img .'
             }
         }
-        stage('Desplegar') {
+        stage('Desplegar Aplicación') {
             steps {
-                // Borra el viejo y levanta el nuevo
-                sh 'docker rm -f generador-examenes-app || true'
-                sh 'docker run -d -p 8080:8080 --name generador-examenes-app generador-examenes-img'
+
+                sh 'docker rm -f app-backend || true'
+                sh 'docker run -d -p 8080:8080 --name app-backend generador-examenes-img'
             }
         }
     }
