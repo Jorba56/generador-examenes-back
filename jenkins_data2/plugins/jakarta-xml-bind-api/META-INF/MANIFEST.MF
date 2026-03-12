@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.4
+Build-Jdk-Spec: 21
+Specification-Title: Jakarta XML Binding API
+Specification-Version: 4.0
+Implementation-Title: Jakarta XML Binding API
+Implementation-Version: 4.0.6-12.vb_1833c1231d3
+Group-Id: io.jenkins.plugins
+Artifact-Id: jakarta-xml-bind-api
+Short-Name: jakarta-xml-bind-api
+Long-Name: Jakarta XML Binding API
+Url: https://github.com/jenkinsci/jakarta-xml-bind-api-plugin
+Plugin-Version: 4.0.6-12.vb_1833c1231d3
+Hudson-Version: 2.479.1
+Jenkins-Version: 2.479.1
+Plugin-Dependencies: jakarta-activation-api:2.1.3-2
+Plugin-Developers: 
+Support-Dynamic-Loading: true
+Plugin-License-Name: The 3-Clause BSD License
+Plugin-License-Url: https://opensource.org/license/bsd-3-clause
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/jakarta-xml-b
+ ind-api-plugin.git
+Plugin-ScmTag: b1833c1231d3cd65ab95f13e3ed6d099aa10e996
+Plugin-ScmUrl: https://github.com/jenkinsci/jakarta-xml-bind-api-plugin
+Implementation-Build: b1833c1231d3cd65ab95f13e3ed6d099aa10e996
+

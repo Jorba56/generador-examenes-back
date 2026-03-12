@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.4
+Build-Jdk-Spec: 17
+Specification-Title: Pipeline: SCM Step
+Specification-Version: 0.0
+Implementation-Title: Pipeline: SCM Step
+Implementation-Version: 466.va_d69e602552b_
+Group-Id: org.jenkins-ci.plugins.workflow
+Artifact-Id: workflow-scm-step
+Short-Name: workflow-scm-step
+Long-Name: Pipeline: SCM Step
+Url: https://github.com/jenkinsci/workflow-scm-step-plugin
+Plugin-Version: 466.va_d69e602552b_
+Hudson-Version: 2.504.3
+Jenkins-Version: 2.504.3
+Plugin-Dependencies: workflow-step-api:710.v3e456cc85233,scm-api:712.v88
+ 46fdd68c88
+Plugin-Developers: 
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/workflow-scm-
+ step-plugin.git
+Plugin-ScmTag: ad69e602552b84fb4612f26f24e14d425349b226
+Plugin-ScmUrl: https://github.com/jenkinsci/workflow-scm-step-plugin
+Implementation-Build: ad69e602552b84fb4612f26f24e14d425349b226
+

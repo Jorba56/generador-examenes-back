@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.4
+Build-Jdk-Spec: 17
+Specification-Title: Pipeline: Input Step
+Specification-Version: 0.0
+Implementation-Title: Pipeline: Input Step
+Implementation-Version: 540.v14b_100d754dd
+Group-Id: org.jenkins-ci.plugins
+Artifact-Id: pipeline-input-step
+Short-Name: pipeline-input-step
+Long-Name: Pipeline: Input Step
+Url: https://github.com/jenkinsci/pipeline-input-step-plugin
+Plugin-Version: 540.v14b_100d754dd
+Hudson-Version: 2.479.1
+Jenkins-Version: 2.479.1
+Plugin-Dependencies: workflow-api:1336.vee415d95c521,workflow-step-api:6
+ 78.v3ee58b_469476,workflow-support:936.v9fa_77211ca_e1,credentials:1405
+ .vb_cda_74a_f8974,structs:338.v848422169819
+Plugin-Developers: 
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/pipeline-inpu
+ t-step-plugin.git
+Plugin-ScmTag: 14b100d754ddfbea9bd13672fa6269fa31dcf72e
+Plugin-ScmUrl: https://github.com/jenkinsci/pipeline-input-step-plugin
+Implementation-Build: 14b100d754ddfbea9bd13672fa6269fa31dcf72e
+

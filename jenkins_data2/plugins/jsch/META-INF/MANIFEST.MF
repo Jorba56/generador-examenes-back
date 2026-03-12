@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.0
+Build-Jdk-Spec: 17
+Specification-Title: Jenkins JSch dependency plugin
+Specification-Version: 0.2
+Implementation-Title: Jenkins JSch dependency plugin
+Implementation-Version: 0.2.16-95.v3eecb_55fa_b_78
+Group-Id: org.jenkins-ci.plugins
+Artifact-Id: jsch
+Short-Name: jsch
+Long-Name: Jenkins JSch dependency plugin
+Url: https://github.com/jenkinsci/jsch-plugin
+Plugin-Version: 0.2.16-95.v3eecb_55fa_b_78
+Hudson-Version: 2.479.1
+Jenkins-Version: 2.479.1
+Plugin-Dependencies: ssh-credentials:349.vb_8b_6b_9709f5b_,trilead-api:2
+ .147.vb_73cc728a_32e
+Plugin-Developers: Lukasz Jader:ljader:,Zoran Regvart:zregvart:,Brandon 
+ Pedersen:bpedman:,Oleg Nenashev:oleg_nenashev:
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/jsch-plugin.g
+ it
+Plugin-ScmTag: 3eecb55fab782f6d3a05aae5dfdb88ded0c65d19
+Plugin-ScmUrl: https://github.com/jenkinsci/jsch-plugin
+Implementation-Build: 3eecb55fab782f6d3a05aae5dfdb88ded0c65d19
+

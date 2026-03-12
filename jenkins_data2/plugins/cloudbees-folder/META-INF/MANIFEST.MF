@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.6
+Java-Version: 17
+Build-Jdk-Spec: 21
+Specification-Title: Folders Plugin
+Specification-Version: 0.0
+Implementation-Title: Folders Plugin
+Implementation-Version: 6.1079.vc0975c2de294
+Group-Id: org.jenkins-ci.plugins
+Artifact-Id: cloudbees-folder
+Short-Name: cloudbees-folder
+Long-Name: Folders Plugin
+Url: https://github.com/jenkinsci/cloudbees-folder-plugin/
+Compatible-Since-Version: 5.2
+Plugin-Version: 6.1079.vc0975c2de294
+Hudson-Version: 2.528.1
+Jenkins-Version: 2.528.1
+Plugin-Dependencies: ionicons-api:94.vcc3065403257,credentials:1447.v4cb
+ _b_539b_5321;resolution:=optional
+Plugin-Developers: 
+Plugin-License-Name: MIT
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/cloudbees-fol
+ der-plugin.git
+Plugin-ScmTag: c0975c2de29411abcd62bfe36b85640490b7aeca
+Plugin-ScmUrl: https://github.com/jenkinsci/cloudbees-folder-plugin
+Implementation-Build: c0975c2de29411abcd62bfe36b85640490b7aeca
+

@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.4
+Build-Jdk-Spec: 21
+Specification-Title: Pipeline: Groovy Libraries
+Specification-Version: 0.0
+Implementation-Title: Pipeline: Groovy Libraries
+Implementation-Version: 787.ve2fef0efdca_6
+Group-Id: io.jenkins.plugins
+Artifact-Id: pipeline-groovy-lib
+Short-Name: pipeline-groovy-lib
+Long-Name: Pipeline: Groovy Libraries
+Url: https://github.com/jenkinsci/pipeline-groovy-lib-plugin
+Plugin-Version: 787.ve2fef0efdca_6
+Hudson-Version: 2.504.3
+Jenkins-Version: 2.504.3
+Plugin-Dependencies: workflow-api:1384.vdc05a_48f535f,workflow-cps:4209.
+ v83c4e257f1e9,workflow-multibranch:821.vc3b_4ea_780798;resolution:=opti
+ onal,workflow-scm-step:452.vdf1ca_c8d3a_87,workflow-step-api:710.v3e456
+ cc85233,branch-api:2.1255.v2f5fe203584a_;resolution:=optional,cloudbees
+ -folder:6.1053.vd62fb_b_f7367b_,scm-api:712.v8846fdd68c88,script-securi
+ ty:1378.vf25626395f49,structs:362.va_b_695ef4fdf9,variant:70.va_d9f17f8
+ 59e0
+Plugin-Developers: 
+Plugin-License-Name: MIT License
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-ScmConnection: scm:git:https://github.com/jenkinsci/pipeline-groo
+ vy-lib-plugin.git
+Plugin-ScmTag: e2fef0efdca602870f83f6e26c99552b9fa6e91e
+Plugin-ScmUrl: https://github.com/jenkinsci/pipeline-groovy-lib-plugin
+Implementation-Build: e2fef0efdca602870f83f6e26c99552b9fa6e91e
+
