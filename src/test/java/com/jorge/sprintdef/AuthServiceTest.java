@@ -9,7 +9,6 @@ import com.jorge.sprintdef.exceptions.ConflictException;
 import com.jorge.sprintdef.mapping.UserMapper;
 import com.jorge.sprintdef.repository.UserRepository;
 import com.jorge.sprintdef.security.JwtUtil;
-import com.jorge.sprintdef.services.AuthService;
 
 import com.jorge.sprintdef.services.impl.AuthServiceImpl;
 import org.junit.jupiter.api.Test;

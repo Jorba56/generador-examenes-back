@@ -4,20 +4,39 @@ import com.jorge.sprintdef.controller.IncidenciasController;
 import com.jorge.sprintdef.entity.Incidencia;
 import com.jorge.sprintdef.exceptions.NotFoundException;
 import com.jorge.sprintdef.services.IncidenciasService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IncidenciasControllerTest {
+
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        // configura el controlador aislado (asegúrate de que tu variable inyectada se llame userController)
+        mockMvc = MockMvcBuilders.standaloneSetup(incidenciasController).build();
+    }
 
     @Mock
     private IncidenciasService incidenciasService;
@@ -126,5 +145,26 @@ class IncidenciasControllerTest {
         );
 
         assertEquals("No se han encontrado incidencias para el usuario con ID: 99", ex.getMessage());
+    }
+
+    @Test
+    void getIncidenciasByClaseTest() throws Exception {
+        // 1. Preparamos los datos de mentira (Mock)
+        String claseBuscada = "UserService";
+        Incidencia incidenciaMock = new Incidencia();
+        // incidenciaMock.setId(1L); // Opcional: setear algún dato si lo necesitas
+        List<Incidencia> listaFalsa = List.of(incidenciaMock);
+
+        // Le decimos al servicio falso lo que tiene que devolver
+        when(incidenciasService.obtenerPorClase(claseBuscada)).thenReturn(listaFalsa);
+
+        mockMvc.perform(get("/incidencias/clase/{clase}", claseBuscada)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.size()").value(1));
+
+        // 4. Verificamos que el controlador llamó al servicio correctamente
+        verify(incidenciasService, times(1)).obtenerPorClase(claseBuscada);
     }
 }

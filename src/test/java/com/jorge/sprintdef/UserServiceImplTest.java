@@ -695,13 +695,14 @@ class UserServiceImplTest {
     void actualizarUsuario_usuarioNoExiste_lanzaExcepcion() {
         // mock de autenticacion basico
         Authentication authMock = mock(Authentication.class);
+        User usuario = new User();
 
         // simular que la bd no encuentra al usuario
         given(userRepository.findById(1L)).willReturn(Optional.empty());
 
         // comprobar excepcion notfound
         assertThrows(NotFoundException.class, () ->
-                userServiceImpl.actualizarUsuario(1L, new User(), authMock)
+                userServiceImpl.actualizarUsuario(1L, usuario, authMock)
         );
     }
 

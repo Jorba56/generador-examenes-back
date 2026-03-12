@@ -32,12 +32,14 @@
         <sonar.coverage.exclusions>
             **/entity/**,
             **/model/**,
+            **/aop/**,
             **/dto/**,
             **/exceptions/**,
             **/security/**,
             **/mapping/**,
             **/repository/**,
-            **/*Application.java
+            **/*Application.java,
+            **/HolaMundo.java
         </sonar.coverage.exclusions>
     </properties>
     <dependencies>

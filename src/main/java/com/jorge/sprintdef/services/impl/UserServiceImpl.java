@@ -124,9 +124,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public String actualizarUsuario(Long id, User usuario, Authentication authentication) throws BadRequestException {
         User userUpdate = userRep.findById(id).orElseThrow(() -> new NotFoundException(usuarioNoEncontrado));
-        /*if (!userUpdate.getActivo()) {
-            throw new ConflictException("No se puede actualizar un usuario desactivado.");
-        }*/
 
         String emailLogueado = authentication.getName();
         List<String> rolesAdmin = List.of("ADMIN", "ADMINISTRADOR", "ROLE_ADMIN");
@@ -151,10 +148,6 @@ public class UserServiceImpl implements UserService {
             }
 
             userUpdate.setActivo(usuario.getActivo()); // Solo el admin toca el estado activo
-            /*
-            if (usuario.getRoles() != null) {
-                userUpdate.setRoles(usuario.getRoles());
-            }*/
 
         } else {
             if (intentaCambiarRoles) {
