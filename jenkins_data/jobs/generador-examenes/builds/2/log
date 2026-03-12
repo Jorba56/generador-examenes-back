@@ -1,0 +1,327 @@
+Started by user [8mha:////4CzxAKiuKy+7beuT4lf1hPhIIpPqEwSTmLnGapLX1r33AAAAlx+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAzhEgZu/dLi1CL9rPyi9FQAaUz+9cAAAAA=[0mJorge Barriga Rubio
+Obtained Jenkinsfile from git https://github.com/Jorba56/generador-examenes-back.git
+[8mha:////4HWJlt+ndWiiyqpUyH0PNylTCJKCJ6Gz0KdWvZ8uozqIAAAAoh+LCAAAAAAAAP9tjTEOwjAQBM8BClpKHuFItIiK1krDC0x8GCfWnbEdkooX8TX+gCESFVvtrLSa5wtWKcKBo5UdUu8otU4GP9jS5Mixv3geZcdn2TIl9igbHBs2eJyx4YwwR1SwULBGaj0nRzbDRnX6rmuvydanHMu2V1A5c4MHCFXMWcf8hSnC9jqYxPTz/BXAFEIGsfuclm8zQVqFvQAAAA==[0m[Pipeline] Start of Pipeline
+[8mha:////4Fah/mnpEggJhts8zrH+NUBvCyY+jGGgoeeLxecNQNlJAAAApR+LCAAAAAAAAP9tjTEOwjAUQ3+KOrAycohUghExsUZZOEFIQkgb/d8mKe3EibgadyBQiQlLlmxL1nu+oE4RjhQdby12HpP2vA+jK4lPFLtroIm3dOGaMFGwXNpJkrGnpUrKFhaxClYC1hZ1oOTRZdiIVt1VExS65pxj2Q4CKm8GeAAThZxVzN8yR9jeRpMIf5y/AJj7DGxXvP/86jduZBmjwAAAAA==[0m[Pipeline] node
+Running on [8mha:////4DLUpTtUIXJhZFWd76JY0CakEu5j2/rU2kyMoK7qGzjYAAAAoR+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAz2EgZR/eT83ILSktQifY2k0sycEt3MPE19AHHxbH3KAAAA[0mJenkins in /var/jenkins_home/workspace/generador-examenes
+[8mha:////4N4mcqcVu0iZwxABuMGGZ1YryOVB43YgCZta3t8FtkcuAAAApR+LCAAAAAAAAP9tjTEOwjAUQ3+KOrAycoh0gA0xsUZZOEFIQkgb/d8mKe3EibgadyBQiQlLlmxL1nu+oE4RjhQdby12HpP2vA+jK4lPFLtroIm3dOGaMFGwXNpJkrGnpUrKFhaxClYC1hZ1oOTRZdiIVt1VExS65pxj2Q4CKm8GeAAThZxVzN8yR9jeRpMIf5y/AJj7DGxXvP/86jfoP95RwAAAAA==[0m[Pipeline] {
+[8mha:////4NwbamJqz1ks39q0VU5dheG5s43GXhGLGr4eTCEFuImUAAAApR+LCAAAAAAAAP9tjTEOwjAUQ3+KOrAycoh0gQkxsUZZOEFIQkgb/d8mKe3EibgadyBQiQlLlmxL1nu+oE4RjhQdby12HpP2vA+jK4lPFLtroIm3dOGaMFGwXNpJkrGnpUrKFhaxClYC1hZ1oOTRZdiIVt1VExS65pxj2Q4CKm8GeAAThZxVzN8yR9jeRpMIf5y/AJj7DGxXvP/86jc09154wAAAAA==[0m[Pipeline] stage
+[8mha:////4OhYFZLh/zE6NqnxHCmddph30LDsf7ezTIAhMNrJG8HwAAAApR+LCAAAAAAAAP9tjTEOwjAUQ3+KOrAycoh0ggUxsUZZOEFIQkgb/d8mKe3EibgadyBQiQlLlmxL1nu+oE4RjhQdby12HpP2vA+jK4lPFLtroIm3dOGaMFGwXNpJkrGnpUrKFhaxClYC1hZ1oOTRZdiIVt1VExS65pxj2Q4CKm8GeAAThZxVzN8yR9jeRpMIf5y/AJj7DGxXvP/86jek7ggRwAAAAA==[0m[Pipeline] { (Declarative: Checkout SCM)
+[8mha:////4AACeEVXNYV9kPqgF8fm4ZpJmgnPDpRSelUklIMsWhn3AAAAoh+LCAAAAAAAAP9tjTEOAiEURD9rLGwtPQTbaWGsbAmNJ0AWEZb8zwLrbuWJvJp3kLiJlZNMMm+a93rDOic4UbLcG+wdZu14DKOti0+U+lugiXu6ck2YKRguzSSpM+cFJRUDS1gDKwEbgzpQdmgLbIVXD9UGhba9lFS/o4DGdQM8gYlqLiqVL8wJdvexy4Q/z18BzLEA29ce4gfg7KmOvAAAAA==[0m[Pipeline] checkout
+The recommended git tool is: git
+using credential git
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/generador-examenes/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/Jorba56/generador-examenes-back.git # timeout=10
+Fetching upstream changes from https://github.com/Jorba56/generador-examenes-back.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.47.3'
+using GIT_ASKPASS to set credentials github
+ > git fetch --tags --force --progress -- https://github.com/Jorba56/generador-examenes-back.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 6c8830f50ace47581c680fb87510818089ecb5ab (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 6c8830f50ace47581c680fb87510818089ecb5ab # timeout=10
+Commit message: "ahora es cuando"
+ > git rev-list --no-walk 6c8830f50ace47581c680fb87510818089ecb5ab # timeout=10
+[8mha:////4G4qEHW3ZcOw+RJAeI/jUrR9WI2048wg+zt9R6rj4pzmAAAAoh+LCAAAAAAAAP9tjTEOAiEURD9rLGwtPQTbGRNjZUtoPAGyiLDkfxZYdytP5NW8g8RNrJxkknnTvNcb1jnBiZLl3mDvMGvHYxhtXXyi1N8CTdzTlWvCTMFwaSZJnTkvKKkYWMIaWAnYGNSBskNbYCu8eqg2KLTtpaT6HQU0rhvgCUxUc1GpfGFOsLuPXSb8ef4KYI6xADvU7j9Dg2gqvAAAAA==[0m[Pipeline] }
+[8mha:////4FTm2m3z+ws+0p/zdvUUFkH903DuMd1dFw4mVzjzGNJIAAAAoh+LCAAAAAAAAP9tjTEOAiEURD9rLGwtPQRbWRhjZUtoPAGyiLDkfxZYdytP5NW8g8RNrJxkknnTvNcb1jnBiZLl3mDvMGvHYxhtXXyi1N8CTdzTlWvCTMFwaSZJnTkvKKkYWMIaWAnYGNSBskNbYCu8eqg2KLTtpaT6HQU0rhvgCUxUc1GpfGFOsLuPXSb8ef4KYI6xADvU7j9J+wGOvAAAAA==[0m[Pipeline] // stage
+[8mha:////4JYPpaZTYSpK/zKXAg9jBZ8S2aMvqJjy0wD30l23XymnAAAAph+LCAAAAAAAAP9tjTEOwjAQBM9BKWgpeYQDEh2iorXc8AITG+PEugv2haTiRXyNPxCIRMVWOyut5vmCMic4UPKycdgGzHWQXez91ORAqb1EGmRDZ1kTZopOajdosu44oyZ2MEcUsFCwdFhHygE9w0o15m6qaNBXJ07TtldQBHuDBwg1mdkk/sKYYH3tbSb8ef4KYOwYxI6h2G4+x/INtuQqUcEAAAA=[0m[Pipeline] withEnv
+[8mha:////4PDCwWsuzf3auFclllcNvBFfiK4gMyHOT9VS2JEosHAKAAAApR+LCAAAAAAAAP9tjTEOwjAUQ3+DOrAycoiUzoiJNerCCUITQtLo/zZJSSdOxNW4Ay2VmPBg2Zas93pDGQOcKBjuNHYWY2t570czJ54pdDdPmTu68pYwkte80bkhpc9rbShpWFUw2AjYamw9RYsmwU44+ZCVl2iqSwrzdhTArBrgCYWYyUmG9C1TgP19VJHwx/kLgKlPwOrDYvXyLD8BobDcwgAAAA==[0m[Pipeline] {
+[8mha:////4DBf4WfWoE1NnXh9PtNWpfGePqyUPj59sIFSS2H503dWAAAAph+LCAAAAAAAAP9tjTEOwjAUQ3+LOrAycohUZUVMrFEWThCaEJJG/7dJSjpxIq7GHWipxIQHy7ZkvdcbqhjgRMEwp7GzGFvLej+aObFMobt5yszRlbWEkbxmQmdBSp/XKihpWFWUsOGw1dh6ihZNgh138iFrL9HUlxTm7cihtGqAJxR8JicZ0rdMAfb3UUXCH+cvAKY+Qdk0ix2WZ/UBbwyqm8IAAAA=[0m[Pipeline] stage
+[8mha:////4G+FIVOhZLokTos62lOsPuIcLD17CqXDoxic2iAbS5trAAAAph+LCAAAAAAAAP9tjTEOwjAUQ3+LOrAycohUwIiYukZZOEFoQkgb/V9+UtqJE3E17kBLJSY8WLYl673eUESGE7ETjcXWY6y96ELvpiQG4vYaaBANXURNGClYoeygyNhqqYqShUVZDisJa4t1oOjRJdjIRj90GTS68px42o4Scm/u8IRMTuSkOX3LyLC99SYS/jh/ATB2CfLdfrbD/Cw+y7kUycIAAAA=[0m[Pipeline] { (Preparar Entorno)
+[8mha:////4I0oO6UURLln8yIua8zu9cTZpXQvkIAZ7pr94nAd6IiiAAAApB+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPOIiBB2iSmu54QUmNsaJdWdsh6TiRXyNPxCIRMUWq51t5vmCZYpw5GixNdQ5So3D4Hs7LRw4dhfPA7Z8xoYpsTcozSBZm3pGydnAnKKEhYCVocZzcmQzrEWr7qryimx1ynH6DgJKp2/wgEJM5qxi/sIYYXPtdWL6ef4KYAwZyu3uU/vwBgq0rvS+AAAA[0m[Pipeline] sh
++ chmod +x mvnw
+[8mha:////4J9qVXNDi9gmO/J37qgFn1D3Zd0HzDKQokB0Gv8ttzJvAAAApB+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPOIihKgQVVrLDS8wsTFOrDtjOyQVL+Jr/IFAJCq2WO1sM88XLFOEI0eLraHOUWocBt/baeHAsbt4HrDlMzZMib1BaQbJ2tQzSs4G5hQlLASsDDWekyObYS1adVeVV2SrU47TdxBQOn2DBxRiMmcV8xfGCJtrrxPTz/NXAGMIGcrt/lO7N7BnLt++AAAA[0m[Pipeline] }
+[8mha:////4PwpyMFZDWujBQKzTQXiS3AAxcYCE2pSKwta9ftjWErWAAAApB+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPOIiKGgQVVrLDS8wsTFOrDtjOyQVL+Jr/IFAJCq2WO1sM88XLFOEI0eLraHOUWocBt/baeHAsbt4HrDlMzZMib1BaQbJ2tQzSs4G5hQlLASsDDWekyObYS1adVeVV2SrU47TdxBQOn2DBxRiMmcV8xfGCJtrrxPTz/NXAGMIGcrt/lO7N4glvS6+AAAA[0m[Pipeline] // stage
+[8mha:////4NojUCTmruEawBTLF6dKiTEfuL2fLtTK/IFJqnmUIb9RAAAApx+LCAAAAAAAAP9tjTEOwjAUQ3+LOrAycohUnRgQE2uUhROEJoSk0f9tkpJOnIircQdaKjHhwbItWe/1hioGOFEwzGnsLMbWst6PZk4sU+hunjJzdGUtYSSvmdBZkNLntQpKGlYVJWw4bDW2nqJFk2DHnXzI2ks09SWFeTtyKK0a4AkFn8lJhvQtU4D9fVSR8Mf5C4CpT1A2zWKH5Vl9ANydZ8vCAAAA[0m[Pipeline] stage
+[8mha:////4AGMUMoq5FP0xzp8TR89v17Uq2MsgB395UBkPjZ7BhDjAAAApx+LCAAAAAAAAP9tjTEOwjAUQ3+LOrAycohUTCAhpq5RFk4QmhDSRv+Xn5R24kRcjTvQUokJD5ZtyXqvNxSR4UTsRGOx9RhrL7rQuymJgbi9BhpEQxdRE0YKVig7KDK2WqqiZGFRlsNKwtpiHSh6dAk2stEPXQaNrjwnnrajhNybOzwhkxM5aU7fMjJsb72JhD/OXwCMXYJ8t5/tMD+LD0rlhNLCAAAA[0m[Pipeline] { (Test y SonarQube)
+[8mha:////4A9n1AnFJaeQxhMg9AHsy8IZsvIGNvobpdsIQG1erB63AAAApB+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPOIiOhCiSmu54QUmNsaJdWdsh6TiRXyNPxCIRMUWq51t5vmCZYpw5GixNdQ5So3D4Hs7LRw4dhfPA7Z8xoYpsTcozSBZm3pGydnAnKKEhYCVocZzcmQzrEWr7qryimx1ynH6DgJKp2/wgEJM5qxi/sIYYXPtdWL6ef4KYAwZyu3uU/vwBr2eB0O+AAAA[0m[Pipeline] sh
++ ./mvnw clean verify sonar:sonar -Dsonar.projectKey=generador-examenes-back -Dsonar.projectName=generador-examenes-back -Dsonar.host.url=http://sprint3-sonarqube:9000 -Dsonar.token=squ_1f0ffbe31c6276884d2a7db4c097ec8116026f86
+[INFO] Scanning for projects...
+[WARNING] The artifact org.codehaus.mojo:sonar-maven-plugin:jar:4.0.0.4121 has been relocated to org.sonarsource.scanner.maven:sonar-maven-plugin:jar:4.0.0.4121: SonarQube plugin was moved to SonarSource organisation
+[INFO] 
+[INFO] ------------------------< com.jorge:sprintDef >-------------------------
+[INFO] Building sprintDef 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ sprintDef ---
+[INFO] Deleting /var/jenkins_home/workspace/generador-examenes/target
+[INFO] 
+[INFO] --- jacoco:0.8.11:prepare-agent (default) @ sprintDef ---
+[INFO] argLine set to -javaagent:/root/.m2/repository/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar=destfile=/var/jenkins_home/workspace/generador-examenes/target/jacoco.exec
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ sprintDef ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ sprintDef ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 44 source files with javac [debug parameters release 21] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ sprintDef ---
+[INFO] skip non existing resourceDirectory /var/jenkins_home/workspace/generador-examenes/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ sprintDef ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 11 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ sprintDef ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.jorge.sprintdef.AuthControllerTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+15:49:17.908 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.0.1.Final
+15:49:24.404 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:24.423 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:24.464 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 37 ms
+15:49:30.642 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:30.642 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:30.643 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 40.57 s -- in com.jorge.sprintdef.AuthControllerTest
+[INFO] Running com.jorge.sprintdef.AuthServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.120 s -- in com.jorge.sprintdef.AuthServiceTest
+[INFO] Running com.jorge.sprintdef.IncidenciasControllerTest
+15:49:32.277 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:32.277 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:32.278 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:32.388 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:32.388 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:32.389 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:32.560 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:32.560 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:32.561 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:33.009 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:33.009 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:33.010 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:33.096 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:33.096 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:33.097 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:33.176 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:33.176 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:33.176 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:33.274 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:33.275 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:33.275 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:33.357 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:33.357 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:33.358 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:33.442 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:33.443 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:33.443 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.417 s -- in com.jorge.sprintdef.IncidenciasControllerTest
+[INFO] Running com.jorge.sprintdef.IncidenciasServiceImplTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.365 s -- in com.jorge.sprintdef.IncidenciasServiceImplTest
+[INFO] Running com.jorge.sprintdef.RolControllerTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.289 s -- in com.jorge.sprintdef.RolControllerTest
+[INFO] Running com.jorge.sprintdef.RolServiceImplTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.580 s -- in com.jorge.sprintdef.RolServiceImplTest
+[INFO] Running com.jorge.sprintdef.SprintDefApplicationTests
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.jorge.sprintdef.SprintDefApplicationTests
+[INFO] Running com.jorge.sprintdef.UserControllerTest
+15:49:35.152 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:35.153 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:35.155 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:35.299 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:35.299 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:35.300 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:35.533 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:35.534 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:35.535 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:35.776 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:35.776 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:35.776 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+15:49:36.264 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:36.264 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:36.265 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:36.649 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:36.649 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:36.650 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+15:49:36.857 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:36.857 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:36.859 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 2 ms
+15:49:37.036 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+15:49:37.036 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+15:49:37.037 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.730 s -- in com.jorge.sprintdef.UserControllerTest
+[INFO] Running com.jorge.sprintdef.UserServiceImplTest
+[INFO] Tests run: 31, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.598 s -- in com.jorge.sprintdef.UserServiceImplTest
+[INFO] Running com.jorge.sprintdef.UsuariosRolesDTOControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.265 s -- in com.jorge.sprintdef.UsuariosRolesDTOControllerTest
+[INFO] Running com.jorge.sprintdef.UsuariosRolesDTOServiceImplTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.jorge.sprintdef.UsuariosRolesDTOServiceImplTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 89, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jacoco:0.8.11:report (report) @ sprintDef ---
+[INFO] Loading execution data file /var/jenkins_home/workspace/generador-examenes/target/jacoco.exec
+[INFO] Analyzed bundle 'sprintDef' with 35 classes
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ sprintDef ---
+[INFO] Building jar: /var/jenkins_home/workspace/generador-examenes/target/sprintDef-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.0.2:repackage (repackage) @ sprintDef ---
+[INFO] Replacing main artifact /var/jenkins_home/workspace/generador-examenes/target/sprintDef-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /var/jenkins_home/workspace/generador-examenes/target/sprintDef-0.0.1-SNAPSHOT.jar.original
+[INFO] 
+[INFO] ------------------------< com.jorge:sprintDef >-------------------------
+[INFO] Building sprintDef 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- sonar:4.0.0.4121:sonar (default-cli) @ sprintDef ---
+[WARNING] 15:50:22.147 Using an unspecified version instead of an explicit plugin version may introduce breaking analysis changes at an unwanted time. It is highly recommended to use an explicit version, e.g. 'org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121'.
+[INFO] 15:50:22.209 Java 21.0.9 Eclipse Adoptium (64-bit)
+[INFO] 15:50:22.212 Linux 6.6.87.2-microsoft-standard-WSL2 (amd64)
+[INFO] 15:50:23.060 User cache: /root/.sonar/cache
+[INFO] 15:50:25.501 Communicating with SonarQube Server 26.1.0.118079
+[WARNING] Plugin is modifying testCompileSourceRoots through iterator.remove(), which will not work in Maven 4.0.0. Use MavenProject.addTestCompileSourceRoot()/removeTestCompileSourceRoot() methods instead. If using a plugin, please upgrade to the latest version or report the issue to the plugin maintainer. To disable these warnings, set -Dmaven.project.sourceRoots.warningsDisabled=true on the command line, in the .mvn/maven.config file, or in project POM properties.
+[INFO] 15:50:25.624 Default locale: "en", source code encoding: "UTF-8"
+[INFO] 15:50:27.758 Load global settings
+[INFO] 15:50:28.061 Load global settings (done) | time=305ms
+[INFO] 15:50:28.104 Server id: 147B411E-AZzdsKhIrQtvum8jFTz4
+[INFO] 15:50:28.128 Loading required plugins
+[INFO] 15:50:28.130 Load plugins index
+[INFO] 15:50:28.246 Load plugins index (done) | time=116ms
+[INFO] 15:50:28.248 Load/download plugins
+[INFO] 15:50:29.225 Load/download plugins (done) | time=977ms
+[INFO] 15:50:30.413 Process project properties
+[INFO] 15:50:30.473 Process project properties (done) | time=60ms
+[INFO] 15:50:30.512 Project key: generador-examenes-back
+[INFO] 15:50:30.513 Base dir: /var/jenkins_home/workspace/generador-examenes
+[INFO] 15:50:30.515 Working dir: /var/jenkins_home/workspace/generador-examenes/target/sonar
+[INFO] 15:50:30.564 Load project settings for component key: 'generador-examenes-back'
+[INFO] 15:50:30.672 Load project settings for component key: 'generador-examenes-back' (done) | time=109ms
+[INFO] 15:50:30.803 Load quality profiles
+[INFO] 15:50:31.661 Load quality profiles (done) | time=858ms
+[INFO] 15:50:31.749 Auto-configuring with CI 'Jenkins'
+[INFO] 15:50:31.957 Load active rules
+[INFO] 15:50:34.379 Load active rules (done) | time=2422ms
+[INFO] 15:50:34.404 Load analysis cache
+[INFO] 15:50:34.496 Load analysis cache (2.7 kB) | time=93ms
+[INFO] 15:50:34.797 Preprocessing files...
+[INFO] 15:50:44.797 Preprocessed 0 files
+[INFO] 15:50:54.798 Preprocessed 0 files
+[INFO] 15:51:04.800 Preprocessed 0 files
+[INFO] 15:51:14.798 Preprocessed 0 files
+[INFO] 15:51:24.800 Preprocessed 0 files
+[INFO] 15:51:34.801 Preprocessed 0 files
+[INFO] 15:51:44.798 Preprocessed 0 files
+[INFO] 15:51:54.802 Preprocessed 0 files
+[INFO] 15:52:04.805 Preprocessed 0 files
+[INFO] 15:52:14.803 Preprocessed 0 files
+[INFO] 15:52:24.805 Preprocessed 0 files
+[INFO] 15:52:26.481 2 languages detected in 56 preprocessed files (done) | time=111681ms
+[INFO] 15:52:26.484 0 files ignored because of scm ignore settings
+[INFO] 15:52:26.490 Loading plugins for detected languages
+[INFO] 15:52:26.492 Load/download plugins
+[INFO] 15:52:27.305 Load/download plugins (done) | time=812ms
+[INFO] 15:52:28.015 Load project repositories
+[INFO] 15:52:28.623 Load project repositories (done) | time=608ms
+[INFO] 15:52:28.759 Indexing files...
+[INFO] 15:52:28.762 Project configuration:
+[INFO] 15:52:28.768   Excluded sources for coverage: **/entity/**, **/model/**, **/aop/**, **/dto/**, **/exceptions/**, **/security/**, **/mapping/**, **/repository/**, **/*Application.java, **/HolaMundo.java
+[INFO] 15:52:30.802 56 files indexed (done) | time=2040ms
+[INFO] 15:52:30.807 Quality profile for java: Sonar way
+[INFO] 15:52:30.808 Quality profile for xml: Sonar way
+[INFO] 15:52:30.809 ------------- Run sensors on module generador-examenes-back
+[INFO] 15:52:31.019 Load metrics repository
+[INFO] 15:52:31.104 Load metrics repository (done) | time=85ms
+[INFO] 15:52:35.844 Sensor JavaSensor [java]
+[INFO] 15:52:35.895 Configured Java source version (sonar.java.source): 21, preview features enabled (sonar.java.enablePreview): false
+[INFO] 15:52:36.168 Server-side caching is enabled. The Java analyzer will not try to leverage data from a previous analysis.
+[INFO] 15:52:36.253 Using ECJ batch to parse 44 Main java source files with batch size 102 KB.
+[INFO] 15:52:42.262 Starting batch processing.
+[INFO] 15:52:46.501 The Java analyzer cannot skip unchanged files in this context. A full analysis is performed for all files.
+[INFO] 15:52:52.265 54% analyzed
+[INFO] 15:53:02.272 87% analyzed
+[INFO] 15:53:12.272 94% analyzed
+[INFO] 15:53:14.642 Slowest analyzed files (batch mode enabled):
+    src/main/java/com/jorge/sprintdef/exceptions/GlobalExceptionHandler.java (4880ms, 7963B)
+    src/main/java/com/jorge/sprintdef/services/impl/UserServiceImpl.java (2003ms, 11399B)
+    src/main/java/com/jorge/sprintdef/services/impl/RolServiceImpl.java (1761ms, 5836B)
+    src/main/java/com/jorge/sprintdef/dto/RolDTO.java (1326ms, 250B)
+    src/main/java/com/jorge/sprintdef/repository/IncidenciasRepository.java (1257ms, 465B)
+[INFO] 15:53:14.647 100% analyzed
+[INFO] 15:53:14.649 Batch processing: Done.
+[INFO] 15:53:14.657 Did not optimize analysis for any files, performed a full analysis for all 44 files.
+[INFO] 15:53:14.666 Using ECJ batch to parse 11 Test java source files with batch size 102 KB.
+[INFO] 15:53:15.400 Starting batch processing.
+[INFO] 15:53:23.426 100% analyzed
+[INFO] 15:53:23.430 Batch processing: Done.
+[INFO] 15:53:23.434 Did not optimize analysis for any files, performed a full analysis for all 11 files.
+[INFO] 15:53:23.436 No "Generated" source files to scan.
+[INFO] 15:53:23.456 Sensor JavaSensor [java] (done) | time=47613ms
+[INFO] 15:53:23.460 Sensor SurefireSensor [java]
+[INFO] 15:53:23.471 parsing [/var/jenkins_home/workspace/generador-examenes/target/surefire-reports]
+[INFO] 15:53:27.094 Sensor SurefireSensor [java] (done) | time=3634ms
+[INFO] 15:53:27.097 Sensor XML Sensor [xml]
+[INFO] 15:53:27.122 1 source file to be analyzed
+[INFO] 15:53:27.853 1/1 source file has been analyzed
+[INFO] 15:53:27.856 Sensor XML Sensor [xml] (done) | time=759ms
+[INFO] 15:53:27.858 Sensor JaCoCo XML Report Importer [jacoco]
+[INFO] 15:53:27.864 'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+[INFO] 15:53:27.889 Importing 1 report(s). Turn your logs in debug mode in order to see the exhaustive list.
+[INFO] 15:53:28.575 Sensor JaCoCo XML Report Importer [jacoco] (done) | time=717ms
+[INFO] 15:53:28.578 Sensor IaC hadolint report Sensor [iac]
+[INFO] 15:53:28.582 Sensor IaC hadolint report Sensor [iac] (done) | time=4ms
+[INFO] 15:53:28.585 Sensor Java Config Sensor [iac]
+[INFO] 15:53:28.617 There are no files to be analyzed for the Java language
+[INFO] 15:53:28.618 Sensor Java Config Sensor [iac] (done) | time=33ms
+[INFO] 15:53:28.620 Sensor IaC Docker Sensor [iac]
+[INFO] 15:53:28.633 There are no files to be analyzed for the Docker language
+[INFO] 15:53:28.635 Sensor IaC Docker Sensor [iac] (done) | time=15ms
+[INFO] 15:53:28.637 Sensor TextAndSecretsSensor [text]
+[INFO] 15:53:28.719 Available processors: 8
+[INFO] 15:53:28.721 Using 8 threads for analysis.
+[INFO] 15:53:30.530 Start fetching files for the text and secrets analysis
+[INFO] 15:53:30.561 Using Git CLI to retrieve untracked files
+[WARNING] 15:54:00.568 Retrieving only language associated files, make sure to run the analysis inside a git repository to make use of inclusions specified via "sonar.text.inclusions"
+[INFO] 15:54:00.573 Starting the text and secrets analysis
+[INFO] 15:54:00.581 56 source files to be analyzed for the text and secrets analysis
+[INFO] 15:54:00.861 56/56 source files have been analyzed for the text and secrets analysis
+[INFO] 15:54:00.868 Sensor TextAndSecretsSensor [text] (done) | time=32230ms
+[INFO] 15:54:00.879 ------------- Run sensors on project
+[INFO] 15:54:01.270 Sensor JavaProjectSensor [java]
+[INFO] 15:54:01.275 Sensor JavaProjectSensor [java] (done) | time=5ms
+[INFO] 15:54:01.277 Sensor Zero Coverage Sensor
+[INFO] 15:54:01.306 Sensor Zero Coverage Sensor (done) | time=29ms
+[INFO] 15:54:01.307 Sensor Java CPD Block Indexer
+[INFO] 15:54:02.162 Sensor Java CPD Block Indexer (done) | time=855ms
+[INFO] 15:54:02.163 ------------- Gather SCA dependencies on project
+[INFO] 15:54:02.177 Dependency analysis skipped
+[INFO] 15:54:02.721 CPD Executor 20 files had no CPD blocks
+[INFO] 15:54:02.723 CPD Executor Calculating CPD for 24 files
+[INFO] 15:54:03.005 CPD Executor CPD calculation finished (done) | time=278ms
+[INFO] 15:54:03.018 SCM revision ID '6c8830f50ace47581c680fb87510818089ecb5ab'
+[INFO] 15:54:08.852 Analysis report generated in 3042ms, dir size=541.1 kB
+[INFO] 15:54:32.046 Analysis report compressed in 23182ms, zip size=179.3 kB
+[INFO] 15:54:32.213 Analysis report uploaded in 166ms
+[INFO] 15:54:32.231 ANALYSIS SUCCESSFUL, you can find the results at: http://sprint3-sonarqube:9000/dashboard?id=generador-examenes-back
+[INFO] 15:54:32.232 Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+[INFO] 15:54:32.234 More about the report processing at http://sprint3-sonarqube:9000/api/ce/task?id=0edd5873-322e-400c-a7c3-1f4a5fae4930
+[INFO] 15:54:35.743 Analysis total time: 4:06.313 s
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  06:43 min
+[INFO] Finished at: 2026-03-12T15:54:35Z
+[INFO] ------------------------------------------------------------------------
+[8mha:////4AhjSMqLqV9iba51bDWakui5LK2YFYoZCn29o5Lad6UXAAAApR+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPOICVEgoFa3lhheYxBgn1l2wHZyKF/E1/oBFJCq2WO1sM683LIOHmr3BTlNvKTQWBzeavDCx76+OE3Z8wYYpsNModZLc6tOMkqOGOUUJCwErTY3jYMlEWItOPVTlFJnqHH3+jgJK297hCYXI5qh8/MLkYXMb28D08/wVwDQMEcr9Ntfu8AEWNdkpvgAAAA==[0m[Pipeline] }
+[8mha:////4OX6nQ3ICDEWb90WHXqvFS0d77idR75H3ErnXVC1mqWZAAAApR+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPOKi0FAgqrRWGl5gYmOcWHfGdkgqXsTX+AMWkajYYrWzzbzesI4BThwM9poGS7Gz6N1o8sKJw3B1PGHPF+yYIjuNrZ5aVrpZsOWkYUlRwkrARlPnOFoyCbailw9ZOUmmOqeQv6OA0qo7PKEQ2ZxkSF+YA+xuo4pMP89fAczeJyj3da768AEi+zpyvgAAAA==[0m[Pipeline] // stage
+[8mha:////4K5Ya8BI8eS0zkeAEcqhWqQYeIMRbQz8QYp1nETyGSouAAAApB+LCAAAAAAAAP9tjTEOwjAQBC9BFLSUPMJR0iIqWisNLzCxMU6sO8e+kFS8iK/xBywiUbHFamebeb1hmyKcKFrRGxwcps6J4Cebl5gpDjdPs+jpKjrCRN6I1swtaXNesSU2sKYoYSNhZ7DzlBxahr3s1UNVXqGtLhzzd5RQOj3CEwqZzawif2GJcLhPOhH+PH8FsITAUDZNrrr+ALkszR2+AAAA[0m[Pipeline] }
+[8mha:////4PoTIkTpT0XC1I7tlk+IUSiQMSs/qS1kqluG8eq8FPt7AAAApB+LCAAAAAAAAP9tjTsOwjAQRDdBFLSUHGLDp0SpaC03nMAkxjixdoPt4FSciKtxBywiUTHFaN407/WGZfBQszfYaeothcbi4EaTFyb2/dVxwo4v2DAFdhqlTpJbfZpRctQwpyhhIWClqXEcLJkIa9Gph6qcIlOdo8/fUUBp2zs8oRDZHJWPX5g8bG5jG5h+nr8CmIYhQrk/5NptP4rPlqG+AAAA[0m[Pipeline] // withEnv
+[8mha:////4GyhL/rhHYSIjcYdT8Ua5DXx1RvWA/s2J2rfXqSYVId8AAAAox+LCAAAAAAAAP9tjbEOgjAURS8YB1dHP6Ikhs04uTYsfkGFWgvNe9g+hMkv8tf8B4kkTt7pnrOc1xvrFHHk6FRrqfOUaq/6MLj5qZFjdw08qpYvqmZKHKyq7FhxY08LViwWy7IcK42NpTpw8uQEW92ahymCIVecJc7uoJH75o4nMj2XxUT5whSxuw1NYvp1/gYw9b0g35eCrPwA6/9Rob0AAAA=[0m[Pipeline] }
+[8mha:////4Dudx11XPQg6z6bXFeV+RweAmqnsIVivrnyEOFaKp2HyAAAAox+LCAAAAAAAAP9tjTEOwjAQBDdBFLSUPMKRQFSIitZKwwtMYowT6y7YF5KKF/E1/kBEJCq22plmXm8sU8SRo1ONpdZTqrzqQu+mpwaO7TXwoBq+qIopcbCqtEPJtT3NWLJYzMtyLDRWlqrAyZMTrHVjHqYIhlxxlji5g0bu6zueyPRUFhPlC2PE5tbXienX+RvA2HWCfLsXZLsP+ENVAr0AAAA=[0m[Pipeline] // node
+[8mha:////4KiMSdhoz8KPi51yr68wGiXlnRJUk7zMXMOnUvqPeGZPAAAAox+LCAAAAAAAAP9tjbEOgjAURS8YB1dHP6IkDC7GybVh8Qsq1Fpo3sP2IUx+kb/mP0gkcfJO95zlvN5Yp4gjR6daS52nVHvVh8HNT40cu2vgUbV8UTVT4mBVZceKG3tasGKxWJblWGlsLNWBkycn2OrWPEwRDLniLHF2B43cN3c8kem5LCbKF6aI3W1oEtOv8zeAqe8FebkXZOUHvgnyMr0AAAA=[0m[Pipeline] End of Pipeline
+Finished: SUCCESS
