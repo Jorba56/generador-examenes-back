@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
-
+/**
+ * Objeto de Transferencia de Datos (DTO) diseñado para proporcionar
+ * una vista plana que relaciona directamente el ID de un usuario con los IDs de sus roles.
+ */
 public class UsuarioRolesDTO {
     @NotNull
     @JsonProperty("id_rol")

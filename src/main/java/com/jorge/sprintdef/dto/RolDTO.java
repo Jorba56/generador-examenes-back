@@ -2,7 +2,10 @@ package com.jorge.sprintdef.dto;
 
 import jakarta.validation.constraints.NotNull;
 
-
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para la creación
+ * y recepción de la información básica de un nuevo rol.
+ */
 public class RolDTO {
 
     @NotNull

@@ -2,7 +2,10 @@ package com.jorge.sprintdef.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
-
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para listar
+ * la información pública y esencial de los usuarios, ocultando datos sensibles como contraseñas.
+ */
 public class UsersAllDTO {
 
     @NotNull

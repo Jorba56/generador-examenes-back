@@ -3,7 +3,10 @@ package com.jorge.sprintdef.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para capturar
+ * y validar las credenciales del usuario durante el inicio de sesión.
+ */
 public class LoginDTO {
 
     @JsonProperty("correo_usuario")

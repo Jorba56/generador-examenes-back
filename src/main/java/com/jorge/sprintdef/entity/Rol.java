@@ -3,6 +3,10 @@ package com.jorge.sprintdef.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * Entidad que representa los niveles de acceso o permisos dentro del sistema.
+ * Mapea la tabla "rol" en la base de datos.
+ */
 @Entity
 @Table(name="rol")
 public class Rol {

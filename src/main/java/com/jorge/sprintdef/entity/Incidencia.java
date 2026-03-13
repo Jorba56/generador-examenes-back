@@ -3,6 +3,10 @@ package com.jorge.sprintdef.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad que representa un registro de error o excepción capturada en el sistema.
+ * Mapea la tabla "incidencias" en la base de datos para mantener un historial de auditoría.
+ */
 @Entity
 @Table(name = "incidencias")
 public class Incidencia {

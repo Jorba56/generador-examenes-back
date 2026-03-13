@@ -10,7 +10,11 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Data
+/**
+ * Entidad que representa a un usuario dentro del sistema.
+ * Mapea la tabla "usuarios" en la base de datos y gestiona las relaciones
+ * con sus roles y su historial de incidencias.
+ */
 @Entity
 @Table(name = "usuarios")
 public class User{

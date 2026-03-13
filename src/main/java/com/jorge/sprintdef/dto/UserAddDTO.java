@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para la recepción
+ * y validación de los datos necesarios al registrar un nuevo usuario en el sistema.
+ */
 public class UserAddDTO {
 
     @JsonProperty("nombre_usuario")

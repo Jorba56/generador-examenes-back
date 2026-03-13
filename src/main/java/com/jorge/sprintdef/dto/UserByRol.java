@@ -2,7 +2,10 @@ package com.jorge.sprintdef.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
-
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para mostrar
+ * un resumen de la información de un usuario cuando se filtra el listado por roles.
+ */
 public class UserByRol{
 
     @NotNull
