@@ -19,9 +19,6 @@ import java.util.logging.Logger;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Se utiliza el logger nativo de Java para evitar dependencias externas como slf4j o log4j
-    private static final Logger log = Logger.getLogger(GlobalExceptionHandler.class.getName());
-
     private final IncidenciasService incidenciaService;
 
     // Solo inyectamos IncidenciasService (aquí no existe UserRepository)

@@ -36,6 +36,7 @@ public class GlobalExceptionHandler {
     private final UserRepository userRepository; // para sacar el id
 
     String badR = "Bad Request";
+    String unauthorized = "Unauthorized";
 
     public GlobalExceptionHandler(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -50,14 +51,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex) {
         log.warn("[ALERTA_SEGURIDAD] Intento de acceso sin token o con token inválido.");
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "No estás autenticado o el token proporcionado no es válido.");
+        return buildResponse(HttpStatus.UNAUTHORIZED, unauthorized, "No estás autenticado o el token proporcionado no es válido.");
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException ex) {
         log.warn("[ALERTA_LOGIN] Credenciales incorrectas.");
 
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Intento de inicio de sesión fallido.");
+        return buildResponse(HttpStatus.UNAUTHORIZED, unauthorized, "Intento de inicio de sesión fallido.");
     }
 
     @ExceptionHandler(NotFoundException.class)
