@@ -16,7 +16,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/incidencias")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:8082"})
 @Tag(name = "Incidencias", description = "Endpoints para consultar el registro de errores y excepciones del sistema.")
 public class IncidenciasController {
 
@@ -35,9 +35,6 @@ public class IncidenciasController {
     public List<Incidencia> getAllIncidencias() {
         return incidenciasService.obtenerTodas();
     }
-    /**
-     * Busca los detalles de una incidencia específica por su ID.
-     */
 
     /**
      * Registra una nueva incidencia (error de login, registro, examen, etc.) en el sistema.
@@ -49,6 +46,9 @@ public class IncidenciasController {
         return "Incidencia guardada correctamente.";
     }
 
+    /**
+     * Busca los detalles de una incidencia específica por su ID.
+     */
     @Operation(summary = "Buscar incidencia por ID", description = "Obtiene los detalles de una única incidencia buscada por su identificador.")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('ADMINISTRADOR')")
     @GetMapping("/{id}")
