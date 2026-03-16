@@ -1,46 +1,26 @@
 version: '3.8'
 
 services:
-  # 1. Nuestro contenedor de Base de Datos
-  mysqldb:
-    image: mysql:8.0
-    container_name: sprint3-mysql
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_DATABASE=usuarios # <-- Pon aquí el nombre exacto de tu BBDD
-      - MYSQL_ROOT_PASSWORD=12345
-    command: --default-authentication-plugin=mysql_native_password
 
-  # 2. Nuestro contenedor de la Aplicación Java
-  backend:
-    build: . # Le dice a Docker que busque tu Dockerfile en esta misma carpeta
-    container_name: sprint3-backend
+  incidencias-service:
+    build: ./incidencias-service
+    container_name: sprint3-incidencias
     ports:
-      - "8080:8080"
+      - "8082:8082"
+    networks:
+      - red-generador
+
+  # 3. Microservicio de Usuarios (Arranca después y se conecta a Incidencias y BD)
+  usuarios-service:
+    build: ./usuarios-service
+    container_name: sprint3-usuarios
+    ports:
+      - "8081:8081"
     depends_on:
-      - mysqldb # Espera a que la BD exista antes de arrancar Java
-    environment:
-      # Estos parámetros sobreescriben tu application.properties para que se conecte a Docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/usuarios?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=12345
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - incidencias-service
+    networks:
+      - red-generador
 
-  sonarqube:
-    image: sonarqube:26.1.0.118079-community
-    container_name: sprint3-sonarqube
-    ports:
-      - "9000:9000"
-    environment:
-      - SONAR_FORCEAUTHENTICATION=false
-
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: sprint3-jenkins
-    user: root
-    ports:
-      - "8090:8080"
-    volumes:
-      - ./jenkins_data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # ruta para poder borrar y actualizar dockers
+networks:
+  red-generador:
+      driver: bridge

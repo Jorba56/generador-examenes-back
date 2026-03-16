@@ -201,7 +201,7 @@ public class GlobalExceptionHandler {
         // la magia de microservicios: hacemos una petición post al otro microservicio
         org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
         try {
-            restTemplate.postForObject("http://localhost:8082/incidencias", incidenciaJson, String.class);
+            restTemplate.postForObject("http://host.docker.internal:8082/incidencias", incidenciaJson, String.class);
         } catch (Exception e) {
             // Usamos logger nativo para asegurar la compilación
             java.util.logging.Logger.getLogger(this.getClass().getName())
