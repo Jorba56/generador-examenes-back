@@ -1,2 +1,0 @@
-import{u as a,j as e,U as u,q as i}from"./assets/tree-api-CPRY4GcH.js";import{a as c,S as m}from"./assets/stages-CJiyN9PS.js";function d(){const t=document.getElementById("graph"),n=t?.dataset.currentRunPath,o=t?.dataset.previousRunPath,{run:s}=a({currentRunPath:n,previousRunPath:o});return e.jsx(u,{children:e.jsx(c,{stages:s.stages,stageViewPosition:m.TOP,onRunPage:!0})})}const r=document.getElementById("graph");if(!r)throw new Error("Failed to find the 'graph' element");const g=i.createRoot(r);g.render(e.jsx(d,{}));
-//# sourceMappingURL=pipeline-graph-view-bundle.js.map
