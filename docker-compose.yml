@@ -21,6 +21,17 @@ services:
     networks:
       - red-generador
 
+  api-gateway:
+    build: ./api-gateway
+    container_name: sprint3-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - usuarios-service
+      - incidencias-service
+    networks:
+      - red-generador
+
 networks:
   red-generador:
       driver: bridge

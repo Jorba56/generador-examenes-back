@@ -3,6 +3,7 @@ package com.jorge.usuarios.security;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // ¡IMPORTANTE AÑADIR ESTE IMPORT!
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,7 +23,6 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final HandlerExceptionResolver exceptionResolver;
 
-    // HandlerExceptionResolver (el motor de GlobalExceptionHandler)
     public SecurityConfig(JwtFilter jwtFilter, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) {
         this.jwtFilter = jwtFilter;
         this.exceptionResolver = exceptionResolver;
@@ -38,6 +38,8 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // ¡LA LÍNEA MÁGICA! Dejamos pasar la comprobación CORS del navegador
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -45,10 +47,9 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/error"
-                                ).permitAll()
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                // le decimos a spring security que redirija sus bloqueos hacia el manejador de las excepciones
                 .exceptionHandling(exc -> exc
                         .authenticationEntryPoint((request, response, authException) ->
                                 exceptionResolver.resolveException(request, response, null, authException))
