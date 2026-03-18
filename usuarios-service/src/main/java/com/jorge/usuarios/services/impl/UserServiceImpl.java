@@ -118,7 +118,6 @@ public class UserServiceImpl implements UserService {
      * @param authentication Objeto de Spring Security que contiene los credenciales y roles del usuario que realiza la petición.
      * @return Mensaje de éxito indicando que el usuario ha sido editado correctamente.
      * @throws NotFoundException Si el usuario a actualizar no existe en la base de datos.
-     * @throws ConflictException Si el usuario a actualizar está desactivado (borrado lógico).
      * @throws BadRequestException Si un usuario normal intenta editar a otro, si intenta modificar sus roles, o si un admin intenta cambiar una contraseña.
      */
     @Override

@@ -15,6 +15,11 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Interceptor global de excepciones (Spring Advice) que captura cualquier error no controlado
+ * lanzado desde los controladores o servicios. Formatea la salida de error en un JSON estándar
+ * y registra la incidencia automáticamente en la base de datos.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,12 +30,26 @@ public class GlobalExceptionHandler {
         this.incidenciaService = incidenciaService;
     }
 
+    /**
+     * Captura cualquier excepción genérica (Exception) no controlada por otros manejadores.
+     * Registra el error en la base de datos y devuelve una respuesta HTTP 500 (Internal Server Error).
+     *
+     * @param ex La excepción capturada.
+     * @return Respuesta estandarizada en formato JSON.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAll(Exception ex) {
         registrarIncidencia(ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error Interno", "Ha ocurrido un error inesperado.");
     }
 
+    /**
+     * Maneja las excepciones personalizadas de tipo NotFoundException.
+     * Registra el suceso y devuelve una respuesta HTTP 404 (Not Found).
+     *
+     * @param ex La excepción NotFoundException capturada.
+     * @return Respuesta estandarizada detallando el recurso no encontrado.
+     */
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFound(NotFoundException ex) {
         registrarIncidencia(ex);
@@ -45,6 +64,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, status);
     }
 
+    /**
+     * Extrae de forma reflexiva los metadatos de la excepción (endpoint, clase, método y stacktrace).
+     * Limpia los nombres de clases generadas dinámicamente o lambdas para una mayor legibilidad,
+     * trunca la traza a 2000 caracteres para evitar desbordamientos y persiste la incidencia.
+     *
+     * @param ex La excepción de la cual se extraerá el contexto.
+     */
     private void registrarIncidencia(Exception ex) {
         String endpoint = "Desconocido";
 

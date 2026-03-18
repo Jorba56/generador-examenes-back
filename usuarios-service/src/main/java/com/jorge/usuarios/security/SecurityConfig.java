@@ -15,6 +15,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+/**
+ * Clase de configuración principal de Spring Security.
+ * Establece las políticas de seguridad del microservicio, definiendo el manejo de sesiones sin estado (stateless),
+ * las rutas públicas/privadas, la integración con CORS y la gestión centralizada de excepciones de seguridad.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -28,11 +33,24 @@ public class SecurityConfig {
         this.exceptionResolver = exceptionResolver;
     }
 
+    /**
+     * Define el algoritmo de encriptación utilizado para las contraseñas en el sistema.
+     * * @return Una instancia de {@link BCryptPasswordEncoder}.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configura la cadena de filtros de seguridad (Security Filter Chain).
+     * Desactiva CSRF (innecesario en APIs REST stateless), permite las peticiones OPTIONS preflight (CORS),
+     * libera las rutas de Swagger/Auth y protege el resto de endpoints, inyectando el {@link JwtFilter}
+     * antes del filtro de autenticación estándar.
+     *
+     * @param http Objeto HttpSecurity para construir la configuración de seguridad.
+     * @return La cadena de filtros de seguridad configurada.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http.csrf(AbstractHttpConfigurer::disable)

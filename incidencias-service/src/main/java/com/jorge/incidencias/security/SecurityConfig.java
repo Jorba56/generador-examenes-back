@@ -10,6 +10,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Clase de configuración principal de Spring Security.
+ * Establece las políticas de seguridad del microservicio, definiendo el manejo de sesiones sin estado (stateless),
+ * las rutas públicas/privadas, la integración con CORS y la gestión centralizada de excepciones de seguridad.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

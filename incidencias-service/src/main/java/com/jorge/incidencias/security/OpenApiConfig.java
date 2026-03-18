@@ -11,9 +11,23 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * Clase de configuración para la documentación de la API mediante OpenAPI (Swagger 3).
+ * Define los metadatos de la aplicación, el esquema de seguridad basado en JWT
+ * y fuerza el enrutamiento a través del API Gateway para evitar problemas de CORS.
+ */
 @Configuration
 public class OpenApiConfig {
     String bearer="bearerAuth";
+
+    /**
+     * Construye y configura el objeto OpenAPI (Swagger).
+     * Establece el título y descripción de la API, requiere autenticación mediante token Bearer
+     * y fija estáticamente la URL del servidor al Gateway (localhost:8080) para asegurar
+     * que las pruebas desde la interfaz gráfica se envíen por la red pública.
+     *
+     * @return Un objeto {@link OpenAPI} completamente configurado.
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
