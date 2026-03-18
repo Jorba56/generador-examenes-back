@@ -47,6 +47,17 @@ services:
       timeout: 5s
       retries: 5
 
+  examen-service:
+    build: ./examenes-service
+    container_name: sprint4-examenes
+    ports:
+      - "8083:8083"
+    depends_on:
+      - usuarios-service
+      - eureka-server
+    networks:
+      - red-generador
+
 networks:
   red-generador:
       driver: bridge

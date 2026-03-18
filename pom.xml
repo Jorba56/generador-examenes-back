@@ -37,6 +37,7 @@
         <module>incidencias-service</module>
         <module>api-gateway</module>
         <module>eureka-server</module>
+        <module>examenes-service</module>
     </modules>
 
     <dependencyManagement>
