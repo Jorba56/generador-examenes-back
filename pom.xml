@@ -36,6 +36,7 @@
         <module>usuarios-service</module>
         <module>incidencias-service</module>
         <module>api-gateway</module>
+        <module>eureka-server</module>
     </modules>
 
     <dependencyManagement>
