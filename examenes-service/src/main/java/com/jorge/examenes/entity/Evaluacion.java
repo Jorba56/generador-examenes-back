@@ -10,8 +10,9 @@ public class Evaluacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_usuario")
-    private Long idUsuario;
+    // Cambiamos el idUsuario por el correo
+    @Column(name = "correo_usuario")
+    private String correoUsuario;
 
     @Column(name = "id_examen")
     private Long idExamen;
@@ -19,43 +20,18 @@ public class Evaluacion {
     private Double nota;
     private LocalDateTime fecha;
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getCorreoUsuario() { return correoUsuario; }
+    public void setCorreoUsuario(String correoUsuario) { this.correoUsuario = correoUsuario; }
 
-    public LocalDateTime getFecha() {
-        return fecha;
-    }
+    public Long getIdExamen() { return idExamen; }
+    public void setIdExamen(Long idExamen) { this.idExamen = idExamen; }
 
-    public void setFecha(LocalDateTime fecha) {
-        this.fecha = fecha;
-    }
+    public Double getNota() { return nota; }
+    public void setNota(Double nota) { this.nota = nota; }
 
-    public Double getNota() {
-        return nota;
-    }
-
-    public void setNota(Double nota) {
-        this.nota = nota;
-    }
-
-    public Long getIdExamen() {
-        return idExamen;
-    }
-
-    public void setIdExamen(Long idExamen) {
-        this.idExamen = idExamen;
-    }
-
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
+    public LocalDateTime getFecha() { return fecha; }
+    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
 }
