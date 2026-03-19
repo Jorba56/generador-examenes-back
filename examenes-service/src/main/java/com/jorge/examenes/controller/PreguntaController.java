@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/preguntas")
-@CrossOrigin(origins = "*")
 @Tag(name = "Preguntas", description = "CRUD para la gestión del banco global de preguntas")
 public class PreguntaController {
 

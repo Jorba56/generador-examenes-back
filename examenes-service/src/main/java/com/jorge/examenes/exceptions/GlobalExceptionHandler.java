@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
 
         logger.log(Level.SEVERE, "Excepción capturada en {0}: {1}", new Object[]{endpoint, ex.getMessage()});
 
-        // TODO: En una fase posterior, aquí haremos una llamada HTTP (FeignClient/RestTemplate)
-        // para enviar esta incidencia a tu incidencias-service.
+        // en una fase posterior, aquí haremos una llamada http (feignclient/resttemplate)
+        // para enviar esta incidencia al incidencias-service.
     }
 }

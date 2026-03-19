@@ -87,6 +87,7 @@ class PreguntaServiceImplTest {
 
         assertEquals("Nuevo", preguntaMock.getEnunciado());
         assertEquals("X", preguntaMock.getOpcionA());
+        assertEquals("Nuevo", resultado.getEnunciado());
         verify(preguntaRepository, times(1)).save(preguntaMock);
     }
 

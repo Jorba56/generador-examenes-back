@@ -2,6 +2,7 @@ package com.jorge.examenes.services.impl;
 
 import com.jorge.examenes.entity.Examen;
 import com.jorge.examenes.entity.Pregunta;
+import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.repository.ExamenRepository;
 import com.jorge.examenes.repository.PreguntaRepository;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class ExamenServiceImpl {
 
         // 2. Comprobación de seguridad (por si piden 50 y solo hay 10 creadas)
         if (preguntasAleatorias.size() < numPreguntas) {
-            throw new RuntimeException("No hay suficientes preguntas en la base de datos para generar este examen.");
+            throw new NotFoundException("No hay suficientes preguntas en la base de datos para generar este examen.");
         }
 
         // 3. Vinculamos las preguntas al examen

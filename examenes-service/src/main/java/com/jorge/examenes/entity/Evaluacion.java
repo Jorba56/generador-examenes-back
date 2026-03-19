@@ -19,8 +19,6 @@ public class Evaluacion {
     private Double nota;
     private LocalDateTime fecha;
 
-    // TODO: Generar Getters y Setters
-
     public Long getId() {
         return id;
     }

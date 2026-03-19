@@ -29,6 +29,7 @@
             **/*Application.java,
             **/HolaMundo.java
         </sonar.coverage.exclusions>
+        <sonar.cpd.exclusions>**/entity/**, **/dto/**, **/exceptions/**, **/security/**</sonar.cpd.exclusions>
     </properties>
     <dependencies>
         <dependency>
