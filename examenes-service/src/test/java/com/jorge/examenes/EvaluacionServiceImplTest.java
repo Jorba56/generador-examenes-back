@@ -61,7 +61,7 @@ class EvaluacionServiceImplTest {
         // limpiamos el contexto de seguridad después de cada test
         SecurityContextHolder.clearContext();
     }
-
+    @SuppressWarnings("java:S1130")
     @Test
     void deberiaCorregirExamenCorrectamente() throws BadRequestException {
         // preparamos los datos simulados (Un examen con 3 preguntas)
