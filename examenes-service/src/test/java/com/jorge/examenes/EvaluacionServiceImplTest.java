@@ -1,5 +1,6 @@
 package com.jorge.examenes;
 
+import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
 import com.jorge.examenes.entity.Evaluacion;
@@ -7,6 +8,7 @@ import com.jorge.examenes.entity.Examen;
 import com.jorge.examenes.entity.Pregunta;
 import com.jorge.examenes.exceptions.BadRequestException;
 import com.jorge.examenes.exceptions.NotFoundException;
+import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
 import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
@@ -36,15 +38,18 @@ class EvaluacionServiceImplTest {
     @Mock
     private ExamenRepository examenRepository;
 
+    @Mock
+    private EvaluacionMapper evaluacionMapper;
+
     @InjectMocks
     private EvaluacionServiceImpl evaluacionService;
 
     @BeforeEach
     void setUp() {
-        // Simulamos un usuario logueado en el contexto de seguridad de Spring
+        // simulamos un usuario logueado en el contexto de seguridad de spring
         Authentication authentication = mock(Authentication.class);
 
-        // Añadimos lenient() para que Mockito no se queje si un test no llega a usar esto
+        // añadimos lenient() para que mockito no se queje si un test no llega a usar esto
         lenient().when(authentication.getName()).thenReturn("alumno@test.com");
 
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -72,30 +77,27 @@ class EvaluacionServiceImplTest {
 
         when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
 
-        // preparamos las respuestas del alumno (1 acierto, 1 fallo, 1 en blanco)
         ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
         Map<Integer, String> respuestas = new HashMap<>();
         respuestas.put(1, "A"); // acierto
         respuestas.put(2, "C"); // fallo (era la b)
-        // la 3 la dejamos sin enviar (en blanco)
+        // la 3 la dejamos sin enviar (en bl
         submitDTO.setRespuestas(respuestas);
 
         EvaluacionResultDTO resultado = evaluacionService.corregirExamen(1L, submitDTO);
 
-        // Verificamos los resultados (1/3 aciertos = 3.33 sobre 10)
         assertNotNull(resultado);
         assertEquals(1, resultado.getAciertos());
         assertEquals(1, resultado.getFallos());
         assertEquals(1, resultado.getEnBlanco());
         assertEquals(3.33, resultado.getNotaFinal());
 
-        // Verificamos que se guardó en la base de datos
         verify(evaluacionRepository, times(1)).save(any(Evaluacion.class));
     }
 
     @Test
     void corregirExamen_DeberiaContarRespuestasNulasOVaciasComoEnBlanco() throws Exception {
-        // 1. Preparamos examen con 2 preguntas
+
         Examen examen = new Examen();
         examen.setId(1L);
         Pregunta p1 = new Pregunta(); p1.setId(10L); p1.setCorrecta("A");
@@ -104,19 +106,17 @@ class EvaluacionServiceImplTest {
 
         when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
 
-        // 2. Preparamos las respuestas tramposas
         ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
         Map<Integer, String> respuestas = new HashMap<>();
 
-        // La pregunta 1 NO la metemos en el map. Al hacer get(1) devolverá 'null'
-        // La pregunta 2 la metemos como espacios en blanco. Cumplirá el 'trim().isEmpty()'
+        //la pregunta 1 no la metemos en el map. al hacer get(1) devolverá 'null'
+        //la pregunta 2 la metemos como espacios en blanco. cumplirá el 'trim().isempty()'
         respuestas.put(2, "   ");
         submitDTO.setRespuestas(respuestas);
 
-        // 3. Ejecutamos
+
         EvaluacionResultDTO resultado = evaluacionService.corregirExamen(1L, submitDTO);
 
-        // 4. Verificamos que ambas se han contado como en blanco
         assertNotNull(resultado);
         assertEquals(2, resultado.getEnBlanco());
         assertEquals(0, resultado.getAciertos());
@@ -150,5 +150,39 @@ class EvaluacionServiceImplTest {
         assertThrows(BadRequestException.class, () -> {
             evaluacionService.corregirExamen(1L, new ExamenSubmitDTO());
         });
+    }
+
+    @Test
+    void obtenerMisNotas_DeberiaDevolverHistorial() throws Exception {
+
+        List<Evaluacion> misEvaluaciones = Arrays.asList(new Evaluacion(), new Evaluacion());
+        List<EvaluacionHistorialDTO> dtosEsperados = Arrays.asList(new EvaluacionHistorialDTO(), new EvaluacionHistorialDTO());
+
+
+        when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc("alumno@test.com"))
+                .thenReturn(misEvaluaciones);
+        when(evaluacionMapper.toHistorialDTOList(misEvaluaciones))
+                .thenReturn(dtosEsperados);
+
+
+        List<EvaluacionHistorialDTO> resultado = evaluacionService.obtenerMisNotas();
+
+
+        assertNotNull(resultado);
+        assertEquals(2, resultado.size());
+        verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc("alumno@test.com");
+        verify(evaluacionMapper).toHistorialDTOList(misEvaluaciones);
+    }
+
+    @Test
+    void obtenerMisNotas_DeberiaLanzarBadRequestSiNoHayUsuario() {
+
+        SecurityContextHolder.clearContext();
+
+        assertThrows(com.jorge.examenes.exceptions.BadRequestException.class, () ->
+                evaluacionService.obtenerMisNotas()
+        );
+
+        verify(evaluacionRepository, never()).findByCorreoUsuarioOrderByFechaDesc(anyString());
     }
 }

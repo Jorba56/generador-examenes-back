@@ -1,5 +1,6 @@
 package com.jorge.examenes.services.impl;
 
+import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
 import com.jorge.examenes.entity.Evaluacion;
@@ -7,12 +8,14 @@ import com.jorge.examenes.entity.Examen;
 import com.jorge.examenes.entity.Pregunta;
 import com.jorge.examenes.exceptions.BadRequestException;
 import com.jorge.examenes.exceptions.NotFoundException;
+import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -20,10 +23,12 @@ public class EvaluacionServiceImpl {
 
     private final EvaluacionRepository evaluacionRepository;
     private final ExamenRepository examenRepository;
+    private final EvaluacionMapper evaluacionMapper;
 
-    public EvaluacionServiceImpl(EvaluacionRepository evaluacionRepository, ExamenRepository examenRepository) {
+    public EvaluacionServiceImpl(EvaluacionRepository evaluacionRepository, ExamenRepository examenRepository, EvaluacionMapper evaluacionMapper) {
         this.evaluacionRepository = evaluacionRepository;
         this.examenRepository = examenRepository;
+        this.evaluacionMapper = evaluacionMapper;
     }
 
     public EvaluacionResultDTO corregirExamen(Long idExamen, ExamenSubmitDTO submitDTO) throws BadRequestException {
@@ -76,5 +81,22 @@ public class EvaluacionServiceImpl {
         evaluacionRepository.save(evaluacion);
 
         return new EvaluacionResultDTO(aciertos, fallos, enBlanco, notaFinal);
+    }
+
+    public List<EvaluacionHistorialDTO> obtenerMisNotas() throws BadRequestException {
+        // extraemos el usuario del token (igual que hicimos al corregir)
+        org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new BadRequestException("No hay un usuario logueado en el sistema.");
+        }
+
+        String correoUsuario = authentication.getName();
+
+        // buscamos sus evaluaciones en la base de datos
+        List<Evaluacion> misEvaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correoUsuario);
+
+
+        return evaluacionMapper.toHistorialDTOList(misEvaluaciones);
     }
 }

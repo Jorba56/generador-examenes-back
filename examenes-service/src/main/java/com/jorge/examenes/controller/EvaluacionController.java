@@ -1,5 +1,6 @@
 package com.jorge.examenes.controller;
 
+import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
 import com.jorge.examenes.exceptions.BadRequestException;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/evaluaciones")
@@ -39,5 +42,19 @@ public class EvaluacionController {
 
         EvaluacionResultDTO resultado = evaluacionService.corregirExamen(id, submitDTO);
         return ResponseEntity.ok(resultado);
+    }
+
+    @Operation(summary = "Ver mi historial de notas",
+            description = "Devuelve todas las evaluaciones del alumno logueado ordenadas por fecha descendente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Historial devuelto con éxito"),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos")
+    })
+    @PreAuthorize("hasAuthority('ALUMNO')") // Solo los alumnos deberían ver "sus" notas aquí
+    @GetMapping("/mis-notas")
+    public ResponseEntity<List<EvaluacionHistorialDTO>> verMisNotas() throws Exception {
+
+        List<EvaluacionHistorialDTO> historial = evaluacionService.obtenerMisNotas();
+        return ResponseEntity.ok(historial);
     }
 }

@@ -23,4 +23,6 @@ public interface EvaluacionRepository  extends JpaRepository<Evaluacion, Long> {
      * Muy útil para lanzar una excepción si intenta repetir un examen que ya entregó.
      */
     boolean existsByCorreoUsuarioAndIdExamen(String correoUsuario, Long idExamen);
+
+    List<Evaluacion> findByCorreoUsuarioOrderByFechaDesc(String correoUsuario);
 }

@@ -42,17 +42,14 @@ class ExamenServiceImplTest {
 
     @Test
     void obtenerTodosResumen_DeberiaDevolverLista() {
-        // Arrange
         List<Examen> examenes = Arrays.asList(new Examen(), new Examen());
         List<ExamenGetDTO> dtos = Arrays.asList(new ExamenGetDTO(), new ExamenGetDTO());
 
         when(examenRepository.findAll()).thenReturn(examenes);
         when(examenMapper.toResumenDTOList(examenes)).thenReturn(dtos);
 
-        // Act
         List<ExamenGetDTO> resultado = examenService.obtenerTodosResumen();
 
-        // Assert
         assertEquals(2, resultado.size());
         verify(examenRepository).findAll();
     }
@@ -158,33 +155,30 @@ class ExamenServiceImplTest {
         ExamenDetalleDTO resultado = examenService.anadirPreguntas(1L, List.of(20L));
 
         assertNotNull(resultado);
-        assertEquals(2, examen.getPreguntas().size()); // La vieja + la nueva
+        assertEquals(2, examen.getPreguntas().size()); // la vieja + la nueva
         verify(examenRepository).save(examen);
     }
 
     @Test
     void actualizarPreguntasDeExamen_DeberiaActualizarYQuitarDuplicados() {
-        // 1. Preparamos el examen
+        // preparamos el examen
         Examen examen = new Examen();
         examen.setId(1L);
 
-        // 2. SOLUCIÓN: Creamos UNA SOLA pregunta, pero la metemos dos veces en la lista
+        // creamos una sola pregunta, pero la metemos dos veces en la lista
         Pregunta p1 = new Pregunta();
         p1.setId(10L);
-        List<Pregunta> nuevasPreguntasConDuplicados = Arrays.asList(p1, p1); // <-- La misma referencia dos veces
+        List<Pregunta> nuevasPreguntasConDuplicados = Arrays.asList(p1, p1); // <-- la misma referencia dos veces
 
         ExamenDetalleDTO dto = new ExamenDetalleDTO();
 
-        // 3. Configuramos los Mocks
         when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
         when(preguntaRepository.findAllById(anyList())).thenReturn(nuevasPreguntasConDuplicados);
         when(examenRepository.save(any(Examen.class))).thenReturn(examen);
         when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
 
-        // 4. Ejecutamos
         ExamenDetalleDTO resultado = examenService.actualizarPreguntasDeExamen(1L, Arrays.asList(10L, 10L));
 
-        // 5. Verificamos que el Set hizo su magia y solo dejó 1 pregunta
         assertNotNull(resultado);
         assertEquals(1, examen.getPreguntas().size());
         verify(examenRepository).save(examen);
@@ -194,13 +188,15 @@ class ExamenServiceImplTest {
     void actualizarPreguntasDeExamen_DeberiaLanzarNotFoundSiExamenNoExiste() {
         when(examenRepository.findById(99L)).thenReturn(Optional.empty());
 
+        // creación de la lista fuera de la lambda
+        List<Long> idsNuevasPreguntas = List.of(10L);
+
         assertThrows(NotFoundException.class, () ->
-                examenService.actualizarPreguntasDeExamen(99L, Arrays.asList(10L))
+                examenService.actualizarPreguntasDeExamen(99L, idsNuevasPreguntas)
         );
 
         verify(examenRepository, never()).save(any());
     }
-
     @Test
     void actualizarDetallesExamen_DeberiaIgnorarTituloNull() {
         Examen examen = new Examen();
@@ -212,10 +208,10 @@ class ExamenServiceImplTest {
         when(examenRepository.save(any(Examen.class))).thenReturn(examen);
         when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
 
-        // Pasamos null en el título (falla la primera condición del &&)
+        // pasamos null en el título (falla la primera condición del &&)
         examenService.actualizarDetallesExamen(1L, null, "Nueva Desc");
 
-        assertEquals("Original", examen.getTitulo()); // Comprobamos que no ha cambiado
+        assertEquals("Original", examen.getTitulo()); // comprobamos que no ha cambiado
         verify(examenRepository).save(examen);
     }
 
@@ -230,16 +226,15 @@ class ExamenServiceImplTest {
         when(examenRepository.save(any(Examen.class))).thenReturn(examen);
         when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
 
-        // Pasamos "" en el título (pasa la primera, pero falla la segunda condición del &&)
         examenService.actualizarDetallesExamen(1L, "", "Nueva Desc");
 
-        assertEquals("Original", examen.getTitulo()); // Comprobamos que no ha cambiado
+        assertEquals("Original", examen.getTitulo());
         verify(examenRepository).save(examen);
     }
 
     @Test
     void actualizarDetallesExamen_IgnorarNulosYVacios() {
-        // 1. Preparamos un examen que ya tiene datos
+        //preparamos un examen que ya tiene datos
         Examen examen = new Examen();
         examen.setId(1L);
         examen.setTitulo("Titulo Original");
@@ -251,10 +246,8 @@ class ExamenServiceImplTest {
         when(examenRepository.save(any(Examen.class))).thenReturn(examen);
         when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
 
-        // 2. Ejecutamos pasándole título vacío y descripción null
         ExamenDetalleDTO resultado = examenService.actualizarDetallesExamen(1L, "", null);
 
-        // 3. Verificamos que los datos no se han modificado porque saltaron los 'if'
         assertNotNull(resultado);
         assertEquals("Titulo Original", examen.getTitulo());
         assertEquals("Desc Original", examen.getDescripcion());
