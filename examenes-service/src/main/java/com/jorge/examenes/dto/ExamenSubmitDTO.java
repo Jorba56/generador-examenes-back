@@ -7,7 +7,7 @@ import java.util.Map;
 public class ExamenSubmitDTO {
 
     @Schema(description = "Mapa de respuestas. La clave (izquierda) es el ID real de la pregunta, y el valor (derecha) es la letra de la opción marcada.",
-            example = "{\"1\": \"A\", \"2\": \"C\", \"5\": \"B\", \"12\": \"A\"}")
+            example = "{\"1\": \"A\", \"2\": \"C\", \"3\": \"B\", \"4\": \"A\"}")
     private Map<Integer, String> respuestas;
 
     public ExamenSubmitDTO() { /*this constructor is empty */ }

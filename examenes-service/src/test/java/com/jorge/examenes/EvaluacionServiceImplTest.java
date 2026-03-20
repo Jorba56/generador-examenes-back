@@ -21,11 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,6 +91,37 @@ class EvaluacionServiceImplTest {
 
         // Verificamos que se guardó en la base de datos
         verify(evaluacionRepository, times(1)).save(any(Evaluacion.class));
+    }
+
+    @Test
+    void corregirExamen_DeberiaContarRespuestasNulasOVaciasComoEnBlanco() throws Exception {
+        // 1. Preparamos examen con 2 preguntas
+        Examen examen = new Examen();
+        examen.setId(1L);
+        Pregunta p1 = new Pregunta(); p1.setId(10L); p1.setCorrecta("A");
+        Pregunta p2 = new Pregunta(); p2.setId(11L); p2.setCorrecta("B");
+        examen.setPreguntas(Arrays.asList(p1, p2));
+
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+
+        // 2. Preparamos las respuestas tramposas
+        ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
+        Map<Integer, String> respuestas = new HashMap<>();
+
+        // La pregunta 1 NO la metemos en el map. Al hacer get(1) devolverá 'null'
+        // La pregunta 2 la metemos como espacios en blanco. Cumplirá el 'trim().isEmpty()'
+        respuestas.put(2, "   ");
+        submitDTO.setRespuestas(respuestas);
+
+        // 3. Ejecutamos
+        EvaluacionResultDTO resultado = evaluacionService.corregirExamen(1L, submitDTO);
+
+        // 4. Verificamos que ambas se han contado como en blanco
+        assertNotNull(resultado);
+        assertEquals(2, resultado.getEnBlanco());
+        assertEquals(0, resultado.getAciertos());
+        assertEquals(0, resultado.getFallos());
+        assertEquals(0.0, resultado.getNotaFinal());
     }
 
     @Test

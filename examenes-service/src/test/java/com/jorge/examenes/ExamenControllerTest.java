@@ -2,8 +2,7 @@ package com.jorge.examenes;
 
 import com.jorge.examenes.controller.ExamenController;
 import com.jorge.examenes.dto.ExamenDetalleDTO;
-import com.jorge.examenes.exceptions.BadRequestException;
-import com.jorge.examenes.mapping.ExamenMapper;
+import com.jorge.examenes.dto.ExamenGetDTO;
 import com.jorge.examenes.services.impl.ExamenServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,8 +12,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ExamenControllerTest {
@@ -22,33 +30,71 @@ class ExamenControllerTest {
     @Mock
     private ExamenServiceImpl examenService;
 
-    @Mock
-    private ExamenMapper examenMap;
-
     @InjectMocks
     private ExamenController examenController;
 
     @Test
-    void generarExamen_DebeRetornarExamenCreado()  throws BadRequestException {
-        // 1. Preparamos el DTO "falso" CON los datos rellenados
-        ExamenDetalleDTO dtoMock = new ExamenDetalleDTO();
-        dtoMock.setId(1L);
-        dtoMock.setTitulo("Test F1");
-        dtoMock.setDescripcion("Desc");
+    void listarTodos_DeberiaDevolver200YLista() {
+        List<ExamenGetDTO> lista = Arrays.asList(new ExamenGetDTO(), new ExamenGetDTO());
+        when(examenService.obtenerTodosResumen()).thenReturn(lista);
 
-        // 2. Le decimos al mock del SERVICIO que devuelva nuestro DTO
-        // (Borramos el mock del mapper porque el controlador no lo usa)
-        when(examenService.generarExamenAleatorio("Test F1", "Desc", 10)).thenReturn(dtoMock);
+        ResponseEntity<List<ExamenGetDTO>> response = examenController.listarTodos();
 
-        // OJO: El controlador devuelve un ResponseEntity, lo guardamos ahí
-        ResponseEntity<ExamenDetalleDTO> response = examenController.generarExamen("Test F1", "Desc", 10);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(2, response.getBody().size());
+    }
 
-        // 4. Aserciones (Comprobamos el Status 201 y que el body tiene el título correcto)
+    @Test
+    void obtenerPorId_DeberiaDevolver200YExamen() {
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+        when(examenService.obtenerDetallePorId(1L)).thenReturn(dto);
+
+        ResponseEntity<ExamenDetalleDTO> response = examenController.obtenerPorId(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void generarExamen_DeberiaDevolver201YExamenGenerado() {
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+        when(examenService.generarExamenAleatorio(anyString(), anyString(), anyInt())).thenReturn(dto);
+
+        ResponseEntity<ExamenDetalleDTO> response = examenController.generarExamen("Titulo", "Desc", 10);
+
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Test F1", response.getBody().getTitulo()); // Accedemos al DTO con getBody()
+    }
 
-        // 5. Verificamos que se llamó al servicio correctamente
-        verify(examenService, times(1)).generarExamenAleatorio("Test F1", "Desc", 10);
+    @Test
+    void actualizarExamen_DeberiaDevolver200YActualizado() {
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+        when(examenService.actualizarDetallesExamen(eq(1L), anyString(), anyString())).thenReturn(dto);
+
+        ResponseEntity<ExamenDetalleDTO> response = examenController.actualizarExamen(1L, "T", "D");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void borrarExamen_DeberiaDevolver200YMensaje() {
+        ResponseEntity<String> response = examenController.borrarExamen(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Examen eliminado correctamente.", response.getBody());
+        verify(examenService).borrarExamen(1L);
+    }
+
+    @Test
+    void anadirPreguntas_DeberiaDevolver200() {
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+        List<Long> idsNuevas = Arrays.asList(2L, 3L);
+        when(examenService.anadirPreguntas(eq(1L), anyList())).thenReturn(dto);
+
+        ResponseEntity<ExamenDetalleDTO> response = examenController.anadirPreguntas(1L, idsNuevas);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 }

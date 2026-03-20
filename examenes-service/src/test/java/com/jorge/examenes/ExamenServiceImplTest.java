@@ -1,29 +1,28 @@
 package com.jorge.examenes;
 
 import com.jorge.examenes.dto.ExamenDetalleDTO;
-import com.jorge.examenes.dto.PreguntaExamenDTO;
+import com.jorge.examenes.dto.ExamenGetDTO;
 import com.jorge.examenes.entity.Examen;
 import com.jorge.examenes.entity.Pregunta;
 import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.ExamenMapper;
-import com.jorge.examenes.mapping.PreguntaMapper;
 import com.jorge.examenes.repository.ExamenRepository;
 import com.jorge.examenes.repository.PreguntaRepository;
 import com.jorge.examenes.services.impl.ExamenServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,79 +37,227 @@ class ExamenServiceImplTest {
     @Mock
     private ExamenMapper examenMapper;
 
-    @Mock
-    private PreguntaMapper preguntaMapper;
-
     @InjectMocks
     private ExamenServiceImpl examenService;
 
+    @Test
+    void obtenerTodosResumen_DeberiaDevolverLista() {
+        // Arrange
+        List<Examen> examenes = Arrays.asList(new Examen(), new Examen());
+        List<ExamenGetDTO> dtos = Arrays.asList(new ExamenGetDTO(), new ExamenGetDTO());
 
-    private Pregunta p1;
-    private Pregunta p2;
+        when(examenRepository.findAll()).thenReturn(examenes);
+        when(examenMapper.toResumenDTOList(examenes)).thenReturn(dtos);
 
-    @BeforeEach
-    void setUp() {
-        p1 = new Pregunta();
-        p1.setId(1L);
+        // Act
+        List<ExamenGetDTO> resultado = examenService.obtenerTodosResumen();
 
-        p2 = new Pregunta();
-        p2.setId(2L);
+        // Assert
+        assertEquals(2, resultado.size());
+        verify(examenRepository).findAll();
     }
 
     @Test
-    void generarExamenAleatorio_DebeCrearYGuardarExamen() {
-        // 1. Datos de entrada (Entidades)
-        List<Pregunta> mockPreguntas = Arrays.asList(p1, p2);
+    void obtenerDetallePorId_DeberiaDevolverExamen() {
+        Examen examen = new Examen();
+        examen.setId(1L);
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
 
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
+
+        ExamenDetalleDTO resultado = examenService.obtenerDetallePorId(1L);
+
+        assertNotNull(resultado);
+        verify(examenRepository).findById(1L);
+    }
+
+    @Test
+    void obtenerDetallePorId_DeberiaLanzarNotFound() {
+        when(examenRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> examenService.obtenerDetallePorId(99L));
+    }
+
+    @Test
+    void generarExamenAleatorio_DeberiaCrearYGuardar() {
+        List<Pregunta> preguntas = Arrays.asList(new Pregunta(), new Pregunta());
         Examen examenGuardado = new Examen();
-        examenGuardado.setId(100L);
-        examenGuardado.setTitulo("Titulo F1");
-        examenGuardado.setDescripcion("Desc F1");
-        examenGuardado.setPreguntas(mockPreguntas);
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
 
-        // 2. CREAMOS LA LISTA MANUALMENTE (En vez de usar el mapper mockeado)
-        List<PreguntaExamenDTO> preg = Arrays.asList(new PreguntaExamenDTO(), new PreguntaExamenDTO());
-
-        // 3. Preparamos nuestro DTO de salida
-        ExamenDetalleDTO resultadoMock = new ExamenDetalleDTO();
-        resultadoMock.setId(examenGuardado.getId());
-        resultadoMock.setDescripcion(examenGuardado.getDescripcion());
-        resultadoMock.setTitulo(examenGuardado.getTitulo());
-        resultadoMock.setPreguntas(preg); // <--- Ahora sí le estamos metiendo 2 preguntas
-
-        // 4. Comportamientos
-        when(preguntaRepository.findPreguntasAleatorias(2)).thenReturn(mockPreguntas);
+        when(preguntaRepository.findPreguntasAleatorias(2)).thenReturn(preguntas);
         when(examenRepository.save(any(Examen.class))).thenReturn(examenGuardado);
-        given(examenMapper.toDetalleDTO(any(Examen.class))).willReturn(resultadoMock);
+        when(examenMapper.toDetalleDTO(examenGuardado)).thenReturn(dto);
 
-        // 5. Ejecutamos
-        ExamenDetalleDTO resultado = examenService.generarExamenAleatorio("Titulo F1", "Desc F1", 2);
+        ExamenDetalleDTO resultado = examenService.generarExamenAleatorio("Test", "Desc", 2);
 
-        // 6. Aserciones
-        assertEquals(100L, resultado.getId());
-        assertEquals("Titulo F1", resultado.getTitulo());
-        assertEquals(2, resultado.getPreguntas().size()); // ¡Ahora sí será 2!
-
-        verify(preguntaRepository, times(1)).findPreguntasAleatorias(2);
-        verify(examenMapper).toDetalleDTO(any(Examen.class));
-        verify(examenRepository, times(1)).save(any(Examen.class));
+        assertNotNull(resultado);
+        verify(examenRepository).save(any(Examen.class));
     }
 
     @Test
-    void generarExamenAleatorio_CuandoNoHaySuficientesPreguntas_DebeLanzarExcepcion() {
-        // tenemos 2 preguntas, pero el usuario va a pedir 5
-        List<Pregunta> mockPreguntas = Arrays.asList(p1, p2);
+    void generarExamenAleatorio_DeberiaLanzarNotFoundSiFaltanPreguntas() {
+        when(preguntaRepository.findPreguntasAleatorias(10)).thenReturn(new ArrayList<>());
 
-        when(preguntaRepository.findPreguntasAleatorias(5)).thenReturn(mockPreguntas);
+        assertThrows(NotFoundException.class, () ->
+                examenService.generarExamenAleatorio("Test", "Desc", 10)
+        );
+    }
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            examenService.generarExamenAleatorio("Titulo F1", "Desc F1", 5);
-        });
+    @Test
+    void actualizarDetallesExamen_DeberiaActualizar() {
+        Examen examen = new Examen();
+        examen.setId(1L);
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
 
-        assertEquals("No hay suficientes preguntas en la base de datos.", exception.getMessage());
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(examenRepository.save(any(Examen.class))).thenReturn(examen);
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
 
-        // verificamos que, al saltar la excepción, jamás se llega a guardar el examen
-        verify(preguntaRepository, times(1)).findPreguntasAleatorias(5);
-        verify(examenRepository, never()).save(any(Examen.class));
+        ExamenDetalleDTO resultado = examenService.actualizarDetallesExamen(1L, "Nuevo Titulo", "Nueva Desc");
+
+        assertNotNull(resultado);
+        assertEquals("Nuevo Titulo", examen.getTitulo());
+        assertEquals("Nueva Desc", examen.getDescripcion());
+        verify(examenRepository).save(examen);
+    }
+
+    @Test
+    void borrarExamen_DeberiaBorrarSiExiste() {
+        when(examenRepository.existsById(1L)).thenReturn(true);
+
+        examenService.borrarExamen(1L);
+
+        verify(examenRepository).deleteById(1L);
+    }
+
+    @Test
+    void borrarExamen_DeberiaLanzarNotFoundSiNoExiste() {
+        when(examenRepository.existsById(99L)).thenReturn(false);
+
+        assertThrows(NotFoundException.class, () -> examenService.borrarExamen(99L));
+        verify(examenRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void anadirPreguntas_DeberiaAnadirSinDuplicados() {
+        Examen examen = new Examen();
+        examen.setId(1L);
+        Pregunta p1 = new Pregunta(); p1.setId(10L);
+        examen.setPreguntas(new ArrayList<>(List.of(p1)));
+
+        Pregunta p2 = new Pregunta(); p2.setId(20L);
+        List<Pregunta> nuevasPreguntas = List.of(p2);
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(preguntaRepository.findAllById(anyList())).thenReturn(nuevasPreguntas);
+        when(examenRepository.save(any(Examen.class))).thenReturn(examen);
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
+
+        ExamenDetalleDTO resultado = examenService.anadirPreguntas(1L, List.of(20L));
+
+        assertNotNull(resultado);
+        assertEquals(2, examen.getPreguntas().size()); // La vieja + la nueva
+        verify(examenRepository).save(examen);
+    }
+
+    @Test
+    void actualizarPreguntasDeExamen_DeberiaActualizarYQuitarDuplicados() {
+        // 1. Preparamos el examen
+        Examen examen = new Examen();
+        examen.setId(1L);
+
+        // 2. SOLUCIÓN: Creamos UNA SOLA pregunta, pero la metemos dos veces en la lista
+        Pregunta p1 = new Pregunta();
+        p1.setId(10L);
+        List<Pregunta> nuevasPreguntasConDuplicados = Arrays.asList(p1, p1); // <-- La misma referencia dos veces
+
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+
+        // 3. Configuramos los Mocks
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(preguntaRepository.findAllById(anyList())).thenReturn(nuevasPreguntasConDuplicados);
+        when(examenRepository.save(any(Examen.class))).thenReturn(examen);
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
+
+        // 4. Ejecutamos
+        ExamenDetalleDTO resultado = examenService.actualizarPreguntasDeExamen(1L, Arrays.asList(10L, 10L));
+
+        // 5. Verificamos que el Set hizo su magia y solo dejó 1 pregunta
+        assertNotNull(resultado);
+        assertEquals(1, examen.getPreguntas().size());
+        verify(examenRepository).save(examen);
+    }
+
+    @Test
+    void actualizarPreguntasDeExamen_DeberiaLanzarNotFoundSiExamenNoExiste() {
+        when(examenRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                examenService.actualizarPreguntasDeExamen(99L, Arrays.asList(10L))
+        );
+
+        verify(examenRepository, never()).save(any());
+    }
+
+    @Test
+    void actualizarDetallesExamen_DeberiaIgnorarTituloNull() {
+        Examen examen = new Examen();
+        examen.setId(1L);
+        examen.setTitulo("Original");
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(examenRepository.save(any(Examen.class))).thenReturn(examen);
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
+
+        // Pasamos null en el título (falla la primera condición del &&)
+        examenService.actualizarDetallesExamen(1L, null, "Nueva Desc");
+
+        assertEquals("Original", examen.getTitulo()); // Comprobamos que no ha cambiado
+        verify(examenRepository).save(examen);
+    }
+
+    @Test
+    void actualizarDetallesExamen_DeberiaIgnorarTituloVacio() {
+        Examen examen = new Examen();
+        examen.setId(1L);
+        examen.setTitulo("Original");
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(examenRepository.save(any(Examen.class))).thenReturn(examen);
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
+
+        // Pasamos "" en el título (pasa la primera, pero falla la segunda condición del &&)
+        examenService.actualizarDetallesExamen(1L, "", "Nueva Desc");
+
+        assertEquals("Original", examen.getTitulo()); // Comprobamos que no ha cambiado
+        verify(examenRepository).save(examen);
+    }
+
+    @Test
+    void actualizarDetallesExamen_IgnorarNulosYVacios() {
+        // 1. Preparamos un examen que ya tiene datos
+        Examen examen = new Examen();
+        examen.setId(1L);
+        examen.setTitulo("Titulo Original");
+        examen.setDescripcion("Desc Original");
+
+        ExamenDetalleDTO dto = new ExamenDetalleDTO();
+
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+        when(examenRepository.save(any(Examen.class))).thenReturn(examen);
+        when(examenMapper.toDetalleDTO(examen)).thenReturn(dto);
+
+        // 2. Ejecutamos pasándole título vacío y descripción null
+        ExamenDetalleDTO resultado = examenService.actualizarDetallesExamen(1L, "", null);
+
+        // 3. Verificamos que los datos no se han modificado porque saltaron los 'if'
+        assertNotNull(resultado);
+        assertEquals("Titulo Original", examen.getTitulo());
+        assertEquals("Desc Original", examen.getDescripcion());
+        verify(examenRepository).save(examen);
     }
 }

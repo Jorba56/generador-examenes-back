@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS examen_pregunta (
 -- 4. Tabla para registrar las notas de los alumnos (Intento/Evaluación)
 CREATE TABLE IF NOT EXISTS evaluaciones (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                            id_usuario BIGINT NOT NULL,
+                                            corre_usuario VARCHAR(200) NOT NULL,
                                             id_examen BIGINT NOT NULL,
                                             nota DOUBLE NOT NULL,
                                             fecha DATETIME NOT NULL
