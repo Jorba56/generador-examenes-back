@@ -2,6 +2,7 @@ package com.jorge.examenes;
 
 import com.jorge.examenes.controller.ExamenController;
 import com.jorge.examenes.dto.ExamenDetalleDTO;
+import com.jorge.examenes.exceptions.BadRequestException;
 import com.jorge.examenes.mapping.ExamenMapper;
 import com.jorge.examenes.services.impl.ExamenServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class ExamenControllerTest {
     private ExamenController examenController;
 
     @Test
-    void generarExamen_DebeRetornarExamenCreado() {
+    void generarExamen_DebeRetornarExamenCreado()  throws BadRequestException {
         // 1. Preparamos el DTO "falso" CON los datos rellenados
         ExamenDetalleDTO dtoMock = new ExamenDetalleDTO();
         dtoMock.setId(1L);

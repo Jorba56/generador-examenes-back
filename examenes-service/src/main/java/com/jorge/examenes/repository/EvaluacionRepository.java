@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface EvaluacionRepository  extends JpaRepository<Evaluacion, Long> {
     /**
-     * Devuelve todo el historial de exámenes de un alumno en concreto.
+     * Devuelve el historial de exámenes de un alumno en concreto.
      * Ideal para hacer una pantalla de "Mis Notas".
      */
     List<Evaluacion> findByCorreoUsuario(String correoUsuario);

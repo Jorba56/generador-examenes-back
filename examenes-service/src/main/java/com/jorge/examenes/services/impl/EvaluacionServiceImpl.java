@@ -5,6 +5,7 @@ import com.jorge.examenes.dto.ExamenSubmitDTO;
 import com.jorge.examenes.entity.Evaluacion;
 import com.jorge.examenes.entity.Examen;
 import com.jorge.examenes.entity.Pregunta;
+import com.jorge.examenes.exceptions.BadRequestException;
 import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
@@ -25,7 +26,7 @@ public class EvaluacionServiceImpl {
         this.examenRepository = examenRepository;
     }
 
-    public EvaluacionResultDTO corregirExamen(Long idExamen, ExamenSubmitDTO submitDTO) {
+    public EvaluacionResultDTO corregirExamen(Long idExamen, ExamenSubmitDTO submitDTO) throws BadRequestException {
         Examen examen = examenRepository.findById(idExamen)
                 .orElseThrow(() -> new NotFoundException("Examen no encontrado con ID: " + idExamen));
 
@@ -51,12 +52,20 @@ public class EvaluacionServiceImpl {
         }
 
         int totalPreguntas = examen.getPreguntas().size();
+
         double notaFinal = totalPreguntas > 0 ? ((double) aciertos / totalPreguntas) * 10.0 : 0.0;
         notaFinal = Math.round(notaFinal * 100.0) / 100.0;
+        // 1. Extraemos el objeto de autenticación de forma segura
 
-        // magia: extraemos el correo del usuario directamente del token
-        String correoUsuarioLogueado = SecurityContextHolder.getContext().getAuthentication().getName();
+        org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        // 2. Paracaídas para SonarQube: Comprobamos que no sea nulo antes de sacar el nombre
+        if (authentication == null) {
+            throw new BadRequestException("El contexto de seguridad está vacío. No se puede identificar al usuario.");
+        }
+
+        // 3. Magia segura: Extraemos el correo
+        String correoUsuarioLogueado = authentication.getName();
         // Guardamos la evaluación
         Evaluacion evaluacion = new Evaluacion();
         evaluacion.setCorreoUsuario(correoUsuarioLogueado);

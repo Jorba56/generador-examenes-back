@@ -18,7 +18,7 @@ public class SecurityConfig {
 
     @Bean
     @SuppressWarnings("squid:S4502") // deshabilitamos csrf para sonar
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http){
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

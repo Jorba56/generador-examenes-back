@@ -10,7 +10,7 @@ public class ExamenSubmitDTO {
             example = "{\"1\": \"A\", \"2\": \"C\", \"5\": \"B\", \"12\": \"A\"}")
     private Map<Integer, String> respuestas;
 
-    public ExamenSubmitDTO() {}
+    public ExamenSubmitDTO() { /*this constructor is empty */ }
 
     public Map<Integer, String> getRespuestas() { return respuestas; }
     public void setRespuestas(Map<Integer, String> respuestas) { this.respuestas = respuestas; }

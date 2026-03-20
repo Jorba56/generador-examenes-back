@@ -2,6 +2,7 @@ package com.jorge.examenes.controller;
 
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
+import com.jorge.examenes.exceptions.BadRequestException;
 import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,7 +35,7 @@ public class EvaluacionController {
     @PostMapping("/{id}")
     public ResponseEntity<EvaluacionResultDTO> evaluarExamen(
             @PathVariable Long id,
-            @RequestBody ExamenSubmitDTO submitDTO) {
+            @RequestBody ExamenSubmitDTO submitDTO) throws BadRequestException{
 
         EvaluacionResultDTO resultado = evaluacionService.corregirExamen(id, submitDTO);
         return ResponseEntity.ok(resultado);
