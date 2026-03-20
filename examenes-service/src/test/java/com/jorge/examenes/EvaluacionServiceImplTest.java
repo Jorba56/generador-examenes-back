@@ -45,16 +45,17 @@ class EvaluacionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // simulamos un usuario logueado en el contexto de seguridad de Spring
+        // Simulamos un usuario logueado en el contexto de seguridad de Spring
         Authentication authentication = mock(Authentication.class);
-        when(authentication.getName()).thenReturn("alumno@test.com");
+
+        // Añadimos lenient() para que Mockito no se queje si un test no llega a usar esto
+        lenient().when(authentication.getName()).thenReturn("alumno@test.com");
 
         SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(authentication);
+        lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
 
         SecurityContextHolder.setContext(securityContext);
     }
-
     @AfterEach
     void tearDown() {
         // limpiamos el contexto de seguridad después de cada test
