@@ -8,6 +8,7 @@ public class EvaluacionHistorialDTO {
     private Long idExamen;
     private double nota;
     private LocalDateTime fecha;
+    private String correoUsuario;
 
     public EvaluacionHistorialDTO() {}
 
@@ -17,6 +18,8 @@ public class EvaluacionHistorialDTO {
         this.nota = nota;
         this.fecha = fecha;
     }
+    public String getCorreoUsuario() { return correoUsuario; }
+    public void setCorreoUsuario(String correoUsuario) { this.correoUsuario = correoUsuario; }
 
     public Long getIdEvaluacion() { return idEvaluacion; }
     public void setIdEvaluacion(Long idEvaluacion) { this.idEvaluacion = idEvaluacion; }

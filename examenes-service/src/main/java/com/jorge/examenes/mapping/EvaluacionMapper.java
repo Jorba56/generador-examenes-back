@@ -14,4 +14,5 @@ public interface EvaluacionMapper {
     EvaluacionHistorialDTO toHistorialDTO(Evaluacion evaluacion);
 
     List<EvaluacionHistorialDTO> toHistorialDTOList(List<Evaluacion> evaluaciones);
+
 }

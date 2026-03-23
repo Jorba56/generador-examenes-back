@@ -1,6 +1,7 @@
 package com.jorge.examenes;
 
 import com.jorge.examenes.controller.EvaluacionController;
+import com.jorge.examenes.dto.EstadisticasAlumnoDTO;
 import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +36,7 @@ class EvaluacionControllerTest {
     private EvaluacionController evaluacionController;
 
     @Test
-    void deberiaEvaluarExamenYDevolver200OK()  throws BadRequestException{
+    void deberiaEvaluarExamenYDevolver200OK() throws BadRequestException {
 
         Long idExamen = 1L;
         ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
@@ -88,5 +90,38 @@ class EvaluacionControllerTest {
         assertEquals(1, respuesta.getBody().size());
 
         verify(evaluacionService).obtenerNotasDeAlumnoEnExamen(1L, "alumno@test.com");
+    }
+
+    @Test
+    void obtenerEstadisticas_CorreoValido_DeberiaDevolver200YEstadisticas() {
+        // Arrange (Preparación)
+        String correo = "alumno@gmail.com";
+
+        EstadisticasAlumnoDTO estadisticasEsperadas = new EstadisticasAlumnoDTO();
+        estadisticasEsperadas.setCorreoAlumno(correo);
+        estadisticasEsperadas.setTotalExamenesRealizados(4);
+        estadisticasEsperadas.setNotaMedia(7.25);
+        estadisticasEsperadas.setExamenesAprobados(3);
+        estadisticasEsperadas.setExamenesSuspendidos(1);
+
+        when(evaluacionService.obtenerEstadisticasAlumno(correo))
+                .thenReturn(estadisticasEsperadas);
+
+        // Act (Ejecución llamando directamente al método de Java)
+        ResponseEntity<EstadisticasAlumnoDTO> respuesta = evaluacionController.obtenerEstadisticas(correo);
+
+        // Assert (Verificaciones HTTP y de contenido)
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+
+        // Verificamos que los datos del cuerpo son los que tocan
+        assertEquals(correo, respuesta.getBody().getCorreoAlumno());
+        assertEquals(4, respuesta.getBody().getTotalExamenesRealizados());
+        assertEquals(7.25, respuesta.getBody().getNotaMedia());
+        assertEquals(3, respuesta.getBody().getExamenesAprobados());
+        assertEquals(1, respuesta.getBody().getExamenesSuspendidos());
+
+        // Verificamos que el controlador ha llamado al servicio correcto
+        verify(evaluacionService).obtenerEstadisticasAlumno(correo);
     }
 }

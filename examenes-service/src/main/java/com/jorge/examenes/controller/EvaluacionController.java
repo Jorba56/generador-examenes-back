@@ -3,16 +3,23 @@ package com.jorge.examenes.controller;
 import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
+import com.jorge.examenes.dto.EstadisticasAlumnoDTO;
 import com.jorge.examenes.exceptions.BadRequestException;
 import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
+import com.jorge.examenes.utils.EvaluacionExcelExporter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -52,7 +59,7 @@ public class EvaluacionController {
     })
     @PreAuthorize("hasAuthority('ALUMNO')") // solo los alumnos deberían ver sus notas aquí
     @GetMapping("/mis-notas")
-    public ResponseEntity<List<EvaluacionHistorialDTO>> verMisNotas() throws Exception {
+    public ResponseEntity<List<EvaluacionHistorialDTO>> verMisNotas() throws BadRequestException {
 
         List<EvaluacionHistorialDTO> historial = evaluacionService.obtenerMisNotas();
         return ResponseEntity.ok(historial);
@@ -72,5 +79,58 @@ public class EvaluacionController {
 
         List<EvaluacionHistorialDTO> notas = evaluacionService.obtenerNotasDeAlumnoEnExamen(idExamen, correoAlumno);
         return ResponseEntity.ok(notas);
+    }@Operation(summary = "Obtener las estadísticas (media, aprobados...) de un alumno")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estadísticas calculadas con éxito"),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos (Solo ADMIN o PROFESOR)")
+    })
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
+    @GetMapping("/estadisticas/{correo:.+}")
+    public ResponseEntity<EstadisticasAlumnoDTO> obtenerEstadisticas(@PathVariable String correo) {
+        EstadisticasAlumnoDTO estadisticas = evaluacionService.obtenerEstadisticasAlumno(correo);
+        return ResponseEntity.ok(estadisticas);
     }
+
+    @Operation(summary = "Ver el historial completo de exámenes de un alumno ordenable")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR', 'ALUMNO')")
+    @GetMapping("/alumno/{correo:.+}")
+    public ResponseEntity<List<EvaluacionHistorialDTO>> listarHistorialAlumno(
+            @PathVariable String correo,
+            @RequestParam(value = "sortBy", defaultValue = "fecha", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+
+        return ResponseEntity.ok(evaluacionService.obtenerHistorialAlumno(correo, sortBy, sortDir));
+    }
+
+    @Operation(summary = "Ver las notas de todos los alumnos en un examen concreto (Ranking)")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
+    @GetMapping("/examen/{idExamen}")
+    public ResponseEntity<List<EvaluacionHistorialDTO>> listarNotasDeExamen(
+            @PathVariable Long idExamen,
+            @RequestParam(value = "sortBy", defaultValue = "nota", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+
+        return ResponseEntity.ok(evaluacionService.obtenerNotasExamen(idExamen, sortBy, sortDir));
+    }
+
+    @Operation(summary = "Exportar ranking de un examen a Excel", description = "Descarga un archivo .xlsx con las notas de los alumnos para un examen concreto.")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
+    @GetMapping("/examen/{idExamen}/exportar/excel")
+    public void exportarNotasAExcel(@PathVariable Long idExamen, HttpServletResponse response) throws IOException {
+
+        response.setContentType("application/octet-stream");
+        DateFormat formateador = new SimpleDateFormat("yyyy-MM-dd_HH:mm");
+        String fechaActual = formateador.format(new Date());
+
+        String cabeceraClave = "Content-Disposition";
+        String cabeceraValor = "attachment; filename=notas_examen_" + idExamen + "_" + fechaActual + ".xlsx";
+        response.setHeader(cabeceraClave, cabeceraValor);
+
+        // Obtenemos las notas ordenadas de mayor a menor (desc)
+        List<EvaluacionHistorialDTO> notas = evaluacionService.obtenerNotasExamen(idExamen, "nota", "desc");
+
+        EvaluacionExcelExporter exportador = new EvaluacionExcelExporter(notas);
+        exportador.exportar(response);
+    }
+
 }

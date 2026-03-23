@@ -1,5 +1,6 @@
 package com.jorge.examenes;
 
+import com.jorge.examenes.dto.EstadisticasAlumnoDTO;
 import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
@@ -27,6 +28,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -222,5 +224,98 @@ class EvaluacionServiceImplTest {
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
         verify(evaluacionRepository).findByIdExamenAndCorreoUsuarioOrderByFechaDesc(1L, "alumno@test.com");
+    }
+
+    @Test
+    void obtenerEstadisticasAlumno_ConExamenes_DeberiaCalcularMediaYAprobados() {
+        // preparación de datos (given)
+        String correo = "alumno@gmail.com";
+
+        // Creamos tres exámenes ficticios: un 4.0, un 8.0 y un 6.0
+        // La media debería ser (4 + 8 + 6) / 3 = 6.0. Debería haber 2 aprobados y 1 suspenso.
+        Evaluacion eval1 = new Evaluacion();
+        eval1.setNota(4.0);
+
+        Evaluacion eval2 = new Evaluacion();
+        eval2.setNota(8.0);
+
+        Evaluacion eval3 = new Evaluacion();
+        eval3.setNota(6.0);
+
+        List<Evaluacion> listaExamenes = new ArrayList<>();
+        listaExamenes.add(eval1);
+        listaExamenes.add(eval2);
+        listaExamenes.add(eval3);
+
+        given(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo)).willReturn(listaExamenes);
+
+        // ejecución (when)
+        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
+
+        // verificación (then)
+        assertNotNull(resultado);
+        assertEquals(correo, resultado.getCorreoAlumno());
+        assertEquals(3, resultado.getTotalExamenesRealizados());
+        assertEquals(6.0, resultado.getNotaMedia());
+        assertEquals(2, resultado.getExamenesAprobados());
+        assertEquals(1, resultado.getExamenesSuspendidos());
+    }
+
+    @Test
+    void obtenerEstadisticasAlumno_SinExamenes_DeberiaDevolverTodoACero() {
+        // preparación de datos (given)
+        String correo = "nuevo@gmail.com";
+
+        // Simulamos que el repositorio devuelve una lista vacía
+        given(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo)).willReturn(new ArrayList<>());
+
+        // ejecución (when)
+        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
+
+        // verificación (then)
+        assertNotNull(resultado);
+        assertEquals(correo, resultado.getCorreoAlumno());
+        assertEquals(0, resultado.getTotalExamenesRealizados());
+        assertEquals(0.0, resultado.getNotaMedia());
+        assertEquals(0, resultado.getExamenesAprobados());
+        assertEquals(0, resultado.getExamenesSuspendidos());
+    }
+
+    @Test
+    void obtenerEstadisticas_CuandoListaEsNula_DeberiaDevolverTodoACero() {
+        String correo = "nuevo@test.com";
+
+        // Simulamos que el repositorio devuelve un null literal
+        when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo))
+                .thenReturn(null);
+
+        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
+
+        assertEquals(correo, resultado.getCorreoAlumno());
+        assertEquals(0, resultado.getTotalExamenesRealizados());
+        assertEquals(0.0, resultado.getNotaMedia());
+        assertEquals(0, resultado.getExamenesAprobados());
+        assertEquals(0, resultado.getExamenesSuspendidos());
+
+        verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc(correo);
+    }
+
+    @Test
+    void obtenerEstadisticas_CuandoListaEstaVacia_DeberiaDevolverTodoACero() {
+        String correo = "nuevo@test.com";
+
+        // Simulamos que el repositorio devuelve una lista vacía
+        when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo))
+                .thenReturn(java.util.Collections.emptyList());
+
+        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
+
+        assertEquals(correo, resultado.getCorreoAlumno());
+        assertEquals(0, resultado.getTotalExamenesRealizados());
+        assertEquals(0.0, resultado.getNotaMedia());
+        assertEquals(0, resultado.getExamenesAprobados());
+        assertEquals(0, resultado.getExamenesSuspendidos());
+
+        verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc(correo);
     }
 }

@@ -1,5 +1,6 @@
 package com.jorge.examenes.services.impl;
 
+import com.jorge.examenes.dto.EstadisticasAlumnoDTO;
 import com.jorge.examenes.dto.EvaluacionHistorialDTO;
 import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
@@ -11,6 +12,7 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -113,5 +115,72 @@ public class EvaluacionServiceImpl {
 
         // Las convertimos a DTO con MapStruct para no devolver la entidad cruda
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
+    }
+
+    public EstadisticasAlumnoDTO obtenerEstadisticasAlumno(String correo) {
+
+        List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo);
+
+        // Si el alumno no ha hecho ningún examen, devolvemos todo a cero
+        if (evaluaciones == null || evaluaciones.isEmpty()) {
+            return new EstadisticasAlumnoDTO(correo, 0, 0.0, 0, 0);
+        }
+
+        int totalExamenes = evaluaciones.size();
+        int aprobados = 0;
+        double sumaNotas = 0.0;
+
+        for (Evaluacion eval : evaluaciones) {
+            sumaNotas += eval.getNota();
+            if (eval.getNota() >= 5.0) {
+                aprobados++;
+            }
+        }
+
+        // Calculamos la media y la redondeamos a 2 decimales
+        double media = sumaNotas / totalExamenes;
+        media = Math.round(media * 100.0) / 100.0;
+
+        int suspensos = totalExamenes - aprobados;
+
+        return new EstadisticasAlumnoDTO(
+                correo,
+                totalExamenes,
+                media,
+                aprobados,
+                suspensos
+        );
+    }
+
+    public List<EvaluacionHistorialDTO> obtenerHistorialAlumno(String correo, String sortBy, String sortDir) {
+        String campoEntidad = traducirCampoSort(sortBy);
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(campoEntidad).ascending()
+                : Sort.by(campoEntidad).descending();
+
+        // Llamamos al nuevo método del repositorio pasándole el Sort
+        List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuario(correo, sort);
+        return evaluacionMapper.toHistorialDTOList(evaluaciones);
+    }
+
+    public List<EvaluacionHistorialDTO> obtenerNotasExamen(Long idExamen, String sortBy, String sortDir) {
+        String campoEntidad = traducirCampoSort(sortBy);
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(campoEntidad).ascending()
+                : Sort.by(campoEntidad).descending();
+
+        // Llamamos al nuevo método del repositorio pasándole el Sort
+        List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamen(idExamen, sort);
+        return evaluacionMapper.toHistorialDTOList(evaluaciones);
+    }
+
+    // Traductor de columnas de la URL a tu Entidad
+    private String traducirCampoSort(String sortBy) {
+        switch (sortBy.toLowerCase()) {
+            case "nota": return "nota";
+            case "fecha": return "fecha";
+            case "correo": return "correoUsuario";
+            default: return "id"; // Orden por defecto
+        }
     }
 }
