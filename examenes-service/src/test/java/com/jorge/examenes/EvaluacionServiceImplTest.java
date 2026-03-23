@@ -185,4 +185,42 @@ class EvaluacionServiceImplTest {
 
         verify(evaluacionRepository, never()).findByCorreoUsuarioOrderByFechaDesc(anyString());
     }
+
+    @Test
+    void corregirExamen_DeberiaLanzarBadRequestSiAlcanzaLimiteIntentos() {
+        Examen examen = new Examen();
+        examen.setId(1L);
+        examen.setPreguntas(new ArrayList<>());
+
+        when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
+
+        // simulamos que la base de datos dice que este alumno ya lo ha hecho 2 veces
+        when(evaluacionRepository.countByIdExamenAndCorreoUsuario(1L, "alumno@test.com")).thenReturn(2);
+
+        ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
+        submitDTO.setRespuestas(new HashMap<>());
+
+        assertThrows(BadRequestException.class, () -> {
+            evaluacionService.corregirExamen(1L, submitDTO);
+        });
+
+        verify(evaluacionRepository, never()).save(any(Evaluacion.class));
+    }
+
+    @Test
+    void obtenerNotasDeAlumnoEnExamen_DeberiaDevolverHistorialParaElProfesor() {
+
+        List<Evaluacion> evaluaciones = List.of(new Evaluacion());
+        List<EvaluacionHistorialDTO> dtos = List.of(new EvaluacionHistorialDTO());
+
+        when(evaluacionRepository.findByIdExamenAndCorreoUsuarioOrderByFechaDesc(1L, "alumno@test.com"))
+                .thenReturn(evaluaciones);
+        when(evaluacionMapper.toHistorialDTOList(evaluaciones)).thenReturn(dtos);
+
+        List<EvaluacionHistorialDTO> resultado = evaluacionService.obtenerNotasDeAlumnoEnExamen(1L, "alumno@test.com");
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(evaluacionRepository).findByIdExamenAndCorreoUsuarioOrderByFechaDesc(1L, "alumno@test.com");
+    }
 }

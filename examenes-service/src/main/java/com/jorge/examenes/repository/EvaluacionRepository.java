@@ -7,22 +7,20 @@ import java.util.List;
 
 public interface EvaluacionRepository  extends JpaRepository<Evaluacion, Long> {
     /**
-     * Devuelve el historial de exámenes de un alumno en concreto.
-     * Ideal para hacer una pantalla de "Mis Notas".
-     */
-    List<Evaluacion> findByCorreoUsuario(String correoUsuario);
-
-    /**
      * Devuelve todas las notas sacadas por todos los alumnos en un examen específico.
      * Ideal para el panel del profesor.
      */
     List<Evaluacion> findByIdExamen(Long idExamen);
 
     /**
-     * Comprueba si un alumno ya ha realizado un examen concreto.
-     * Muy útil para lanzar una excepción si intenta repetir un examen que ya entregó.
+     * Devuelve el historial de exámenes de un alumno en concreto ordenados por fecha descendente.
+     * Ideal para hacer una pantalla de "Mis Notas".
      */
-    boolean existsByCorreoUsuarioAndIdExamen(String correoUsuario, Long idExamen);
-
     List<Evaluacion> findByCorreoUsuarioOrderByFechaDesc(String correoUsuario);
+
+    // cuenta cuántas veces aparece un examen asociado a un correo concreto
+    int countByIdExamenAndCorreoUsuario(Long idExamen, String correoUsuario);
+
+    // busca los intentos de un alumno concreto en un examen específico
+    List<Evaluacion> findByIdExamenAndCorreoUsuarioOrderByFechaDesc(Long idExamen, String correoUsuario);
 }

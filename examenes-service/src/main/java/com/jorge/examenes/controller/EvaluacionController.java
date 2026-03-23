@@ -50,11 +50,27 @@ public class EvaluacionController {
             @ApiResponse(responseCode = "200", description = "Historial devuelto con éxito"),
             @ApiResponse(responseCode = "403", description = "No tienes permisos")
     })
-    @PreAuthorize("hasAuthority('ALUMNO')") // Solo los alumnos deberían ver "sus" notas aquí
+    @PreAuthorize("hasAuthority('ALUMNO')") // solo los alumnos deberían ver sus notas aquí
     @GetMapping("/mis-notas")
     public ResponseEntity<List<EvaluacionHistorialDTO>> verMisNotas() throws Exception {
 
         List<EvaluacionHistorialDTO> historial = evaluacionService.obtenerMisNotas();
         return ResponseEntity.ok(historial);
+    }
+
+    @Operation(summary = "Buscar notas de un alumno en un examen",
+            description = "Permite a un profesor ver los intentos (máximo 2) de un alumno específico en un examen concreto.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Búsqueda realizada con éxito"),
+            @ApiResponse(responseCode = "403", description = "No tienes permisos (Solo ADMIN o PROFESOR)")
+    })
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
+    @GetMapping("/examen/{idExamen}/alumno/{correoAlumno}")
+    public ResponseEntity<List<EvaluacionHistorialDTO>> buscarNotasDeAlumno(
+            @PathVariable Long idExamen,
+            @PathVariable String correoAlumno) {
+
+        List<EvaluacionHistorialDTO> notas = evaluacionService.obtenerNotasDeAlumnoEnExamen(idExamen, correoAlumno);
+        return ResponseEntity.ok(notas);
     }
 }

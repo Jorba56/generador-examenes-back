@@ -11,10 +11,12 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +42,9 @@ public class EvaluacionServiceImpl {
         int enBlanco = 0;
 
         Map<Integer, String> respuestasAlumno = submitDTO.getRespuestas();
-
+        if (respuestasAlumno == null) {
+            respuestasAlumno = new HashMap<>(); // si es null, creamos un mapa vacío para que cuente como e blanco
+        }
         int numeroPregunta = 1;
 
         for (Pregunta preguntaReal : examen.getPreguntas()) {
@@ -60,18 +64,21 @@ public class EvaluacionServiceImpl {
 
         double notaFinal = totalPreguntas > 0 ? ((double) aciertos / totalPreguntas) * 10.0 : 0.0;
         notaFinal = Math.round(notaFinal * 100.0) / 100.0;
-        // 1. Extraemos el objeto de autenticación de forma segura
 
-        org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 2. Paracaídas para SonarQube: Comprobamos que no sea nulo antes de sacar el nombre
+        // comprobamos que no sea nulo antes de sacar el nombre y asi sonar no salta
         if (authentication == null) {
             throw new BadRequestException("El contexto de seguridad está vacío. No se puede identificar al usuario.");
         }
 
-        // 3. Magia segura: Extraemos el correo
+        // extraemos el correo
         String correoUsuarioLogueado = authentication.getName();
-        // Guardamos la evaluación
+        int intentosPrevios = evaluacionRepository.countByIdExamenAndCorreoUsuario(idExamen, correoUsuarioLogueado);
+        if (intentosPrevios >= 2) {
+            throw new BadRequestException("Has alcanzado el número máximo de intentos (2) para este examen.");
+        }
+        // guardamos la evaluación
         Evaluacion evaluacion = new Evaluacion();
         evaluacion.setCorreoUsuario(correoUsuarioLogueado);
         evaluacion.setIdExamen(examen.getId());
@@ -85,7 +92,7 @@ public class EvaluacionServiceImpl {
 
     public List<EvaluacionHistorialDTO> obtenerMisNotas() throws BadRequestException {
         // extraemos el usuario del token (igual que hicimos al corregir)
-        org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
             throw new BadRequestException("No hay un usuario logueado en el sistema.");
@@ -96,7 +103,15 @@ public class EvaluacionServiceImpl {
         // buscamos sus evaluaciones en la base de datos
         List<Evaluacion> misEvaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correoUsuario);
 
-
         return evaluacionMapper.toHistorialDTOList(misEvaluaciones);
+    }
+
+    public List<EvaluacionHistorialDTO> obtenerNotasDeAlumnoEnExamen(Long idExamen, String correoAlumno) {
+
+        // Buscamos las evaluaciones en la base de datos
+        List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamenAndCorreoUsuarioOrderByFechaDesc(idExamen, correoAlumno);
+
+        // Las convertimos a DTO con MapStruct para no devolver la entidad cruda
+        return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 }

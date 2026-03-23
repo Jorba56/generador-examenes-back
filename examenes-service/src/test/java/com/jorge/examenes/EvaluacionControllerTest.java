@@ -73,5 +73,20 @@ class EvaluacionControllerTest {
         verify(evaluacionService).obtenerMisNotas();
     }
 
+    @Test
+    void buscarNotasDeAlumno_DeberiaDevolver200YLista() {
 
+        List<EvaluacionHistorialDTO> dtosEsperados = List.of(new EvaluacionHistorialDTO());
+
+        when(evaluacionService.obtenerNotasDeAlumnoEnExamen(1L, "alumno@test.com"))
+                .thenReturn(dtosEsperados);
+
+        ResponseEntity<List<EvaluacionHistorialDTO>> respuesta = evaluacionController.buscarNotasDeAlumno(1L, "alumno@test.com");
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+        assertEquals(1, respuesta.getBody().size());
+
+        verify(evaluacionService).obtenerNotasDeAlumnoEnExamen(1L, "alumno@test.com");
+    }
 }
