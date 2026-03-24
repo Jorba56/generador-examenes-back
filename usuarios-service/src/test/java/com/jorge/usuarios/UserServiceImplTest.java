@@ -762,8 +762,13 @@ class UserServiceImplTest {
         User user = new User();
         user.setNombreUsuario("Jorge");
 
-        // El repositorio ahora espera un objeto Sort
+        // 1. Preparamos el DTO que devolverá el mapper
+        UsersAllDTO dto = new UsersAllDTO();
+        dto.setNombreUsuario("Jorge");
+
         given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        // 2. Educamos al mock del mapper
+        given(userMap.mappingADTO(any(User.class))).willReturn(dto);
 
         List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("nombre", "asc");
 
@@ -777,9 +782,12 @@ class UserServiceImplTest {
         User user = new User();
         user.setApellidoUsuario("Sánchez");
 
-        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        UsersAllDTO dto = new UsersAllDTO();
+        dto.setApellidoUsuario("Sánchez");
 
-        // forzamos que pase por el case "apellido" y por el orden descendente
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        given(userMap.mappingADTO(any(User.class))).willReturn(dto);
+
         List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("apellido", "desc");
 
         assertFalse(resultado.isEmpty());
@@ -791,9 +799,12 @@ class UserServiceImplTest {
         User user = new User();
         user.setEmailUsuario("jorge@gmail.com");
 
-        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        UsersAllDTO dto = new UsersAllDTO();
+        dto.setEmailUsuario("jorge@gmail.com");
 
-        // forzamos que pase por el case "correo"
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        given(userMap.mappingADTO(any(User.class))).willReturn(dto);
+
         List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("correo", "asc");
 
         assertFalse(resultado.isEmpty());
@@ -805,9 +816,12 @@ class UserServiceImplTest {
         User user = new User();
         user.setNombreUsuario("Default");
 
-        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        UsersAllDTO dto = new UsersAllDTO();
+        dto.setNombreUsuario("Default");
 
-        // forzamos que pase por el "default" del switch mandando una columna que no existe
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+        given(userMap.mappingADTO(any(User.class))).willReturn(dto);
+
         List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("campo_inventado", "asc");
 
         assertFalse(resultado.isEmpty());
