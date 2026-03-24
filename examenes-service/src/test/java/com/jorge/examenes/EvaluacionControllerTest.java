@@ -14,6 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -123,5 +126,48 @@ class EvaluacionControllerTest {
 
         // Verificamos que el controlador ha llamado al servicio correcto
         verify(evaluacionService).obtenerEstadisticasAlumno(correo);
+    }
+
+    @Test
+    void listarHistorialAlumno_DeberiaDevolver200YListaOrdenada() {
+        List<EvaluacionHistorialDTO> dtosEsperados = List.of(new EvaluacionHistorialDTO());
+        when(evaluacionService.obtenerHistorialAlumno("alumno@test.com", "fecha", "desc"))
+                .thenReturn(dtosEsperados);
+
+        ResponseEntity<List<EvaluacionHistorialDTO>> respuesta = evaluacionController.listarHistorialAlumno("alumno@test.com", "fecha", "desc");
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+        assertEquals(1, respuesta.getBody().size());
+    }
+
+    @Test
+    void listarNotasDeExamen_DeberiaDevolver200YListaOrdenada() {
+        List<EvaluacionHistorialDTO> dtosEsperados = List.of(new EvaluacionHistorialDTO());
+        when(evaluacionService.obtenerNotasExamen(1L, "nota", "desc"))
+                .thenReturn(dtosEsperados);
+
+        ResponseEntity<List<EvaluacionHistorialDTO>> respuesta = evaluacionController.listarNotasDeExamen(1L, "nota", "desc");
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+    }
+
+    @Test
+    void exportarNotasAExcel_DeberiaConfigurarCabecerasYDescargarArchivo() throws Exception {
+        // Simulamos la respuesta HTTP y su flujo de salida para que el Excel no dé NullPointer
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
+
+        List<EvaluacionHistorialDTO> dtos = List.of(new EvaluacionHistorialDTO());
+        when(evaluacionService.obtenerNotasExamen(1L, "nota", "desc")).thenReturn(dtos);
+
+        // Llamamos al método
+        evaluacionController.exportarNotasAExcel(1L, response);
+
+        // Verificamos que se han inyectado las cabeceras correctas de descarga de Excel
+        verify(response).setContentType("application/octet-stream");
+        verify(response).setHeader(eq("Content-Disposition"), anyString());
     }
 }

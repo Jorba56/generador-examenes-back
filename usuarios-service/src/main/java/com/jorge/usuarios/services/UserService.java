@@ -8,6 +8,7 @@ import com.jorge.usuarios.entity.Rol;
 import com.jorge.usuarios.entity.User;
 import com.jorge.usuarios.exceptions.BadRequestException;
 import com.jorge.usuarios.exceptions.DuplicateException;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public interface UserService {
      * @return Lista de usuarios proyectados a DTO de vista general.
      */
     List<UsersAllDTO> listarUsuarios();
+
+    Page<UsersAllDTO> obtenerTodosLosUsuariosPaginados(int page, int size, String sortBy, String sortDir);
 
     /**
      * Busca un usuario activo por su identificador.
@@ -85,4 +88,6 @@ public interface UserService {
      * @return Mensaje de confirmación.
      */
     String deleteRolUser(Long idUser, Long idRol);
+
+    List<UsersAllDTO> obtenerTodosLosUsuarios(String sortBy, String sortDir);
 }

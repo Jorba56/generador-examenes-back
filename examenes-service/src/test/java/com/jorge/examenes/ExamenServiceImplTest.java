@@ -8,7 +8,7 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.ExamenMapper;
 import com.jorge.examenes.repository.ExamenRepository;
 import com.jorge.examenes.repository.PreguntaRepository;
-import com.jorge.examenes.services.impl.ExamenServiceImpl;
+import com.jorge.examenes.services.ExamenService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +38,7 @@ class ExamenServiceImplTest {
     private ExamenMapper examenMapper;
 
     @InjectMocks
-    private ExamenServiceImpl examenService;
+    private ExamenService examenService;
 
     @Test
     void obtenerTodosResumen_DeberiaDevolverLista() {

@@ -1,6 +1,6 @@
 package com.jorge.usuarios.utils;
 
-import com.jorge.usuarios.dto.AlumnoDTO;
+import com.jorge.usuarios.dto.UsersAllDTO;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Cell;
@@ -13,19 +13,18 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.util.List;
 
-public class AlumnoExcelExporter {
-    private XSSFWorkbook workbook;
+public class UsuarioExcelExporter {
+    private final XSSFWorkbook workbook;
     private XSSFSheet sheet;
-    private List<AlumnoDTO> listaAlumnos;
+    private final List<UsersAllDTO> listaUsuarios;
 
-    public AlumnoExcelExporter(List<AlumnoDTO> listaAlumnos) {
-        this.listaAlumnos = listaAlumnos;
-        // XSSFWorkbook es el formato para archivos .xlsx modernos
+    public UsuarioExcelExporter(List<UsersAllDTO> listaUsuarios) {
+        this.listaUsuarios = listaUsuarios;
         workbook = new XSSFWorkbook();
     }
 
     private void escribirCabecera() {
-        sheet = workbook.createSheet("Alumnos");
+        sheet = workbook.createSheet("Todos los Usuarios");
         Row fila = sheet.createRow(0);
 
         CellStyle estilo = workbook.createCellStyle();
@@ -34,21 +33,21 @@ public class AlumnoExcelExporter {
         fuente.setFontHeight(14);
         estilo.setFont(fuente);
 
-        crearCelda(fila, 0, "ID", estilo);
-        crearCelda(fila, 1, "Nombre", estilo);
-        crearCelda(fila, 2, "Apellidos", estilo);
-        crearCelda(fila, 3, "Correo", estilo);
+        // Empezamos directamente por el Nombre en la columna 0
+        crearCelda(fila, 0, "Nombre de Usuario", estilo);
+        crearCelda(fila, 1, "Apellido", estilo);
+        crearCelda(fila, 2, "Correo Electrónico", estilo);
+
     }
 
     private void crearCelda(Row fila, int contadorColumnas, Object valor, CellStyle estilo) {
         sheet.autoSizeColumn(contadorColumnas);
         Cell celda = fila.createCell(contadorColumnas);
 
-        switch (valor) {
-            case Long l -> celda.setCellValue((long) valor);
-            case Integer i -> celda.setCellValue(i);
-            case Boolean b -> celda.setCellValue(b);
-            case null, default -> celda.setCellValue((String) valor);
+        if (valor != null) {
+            celda.setCellValue(valor.toString());
+        } else {
+            celda.setCellValue("");
         }
         celda.setCellStyle(estilo);
     }
@@ -60,13 +59,14 @@ public class AlumnoExcelExporter {
         fuente.setFontHeight(12);
         estilo.setFont(fuente);
 
-        for (AlumnoDTO alumno : listaAlumnos) {
+        for (UsersAllDTO usuario : listaUsuarios) {
             Row fila = sheet.createRow(contadorFilas++);
             int contadorColumnas = 0;
-            crearCelda(fila, contadorColumnas++, alumno.getId(), estilo);
-            crearCelda(fila, contadorColumnas++, alumno.getNombre(), estilo);
-            crearCelda(fila, contadorColumnas++, alumno.getApellidos(), estilo);
-            crearCelda(fila, contadorColumnas, alumno.getCorreo(), estilo);
+
+            // Usamos solo los campos que sabemos que tienes en tu DTO
+            crearCelda(fila, contadorColumnas++, usuario.getNombreUsuario(), estilo);
+            crearCelda(fila, contadorColumnas++, usuario.getApellidoUsuario(), estilo);
+            crearCelda(fila, contadorColumnas, usuario.getEmailUsuario(), estilo);
         }
     }
 

@@ -1,6 +1,9 @@
 package com.jorge.examenes.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -12,6 +15,10 @@ public class Examen {
 
     private String titulo;
     private String descripcion;
+
+    @CreationTimestamp
+    @Column(name = "fecha_creacion", updatable = false)
+    private LocalDateTime fechaCreacion;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -51,5 +58,13 @@ public class Examen {
 
     public void setPreguntas(List<Pregunta> preguntas) {
         this.preguntas = preguntas;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

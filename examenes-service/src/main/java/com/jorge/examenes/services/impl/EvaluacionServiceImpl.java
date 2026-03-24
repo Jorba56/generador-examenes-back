@@ -93,7 +93,7 @@ public class EvaluacionServiceImpl {
     }
 
     public List<EvaluacionHistorialDTO> obtenerMisNotas() throws BadRequestException {
-        // extraemos el usuario del token (igual que hicimos al corregir)
+        // extraemos el usuario del token (igual que al corregir)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
@@ -110,10 +110,8 @@ public class EvaluacionServiceImpl {
 
     public List<EvaluacionHistorialDTO> obtenerNotasDeAlumnoEnExamen(Long idExamen, String correoAlumno) {
 
-        // Buscamos las evaluaciones en la base de datos
         List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamenAndCorreoUsuarioOrderByFechaDesc(idExamen, correoAlumno);
 
-        // Las convertimos a DTO con MapStruct para no devolver la entidad cruda
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 
@@ -121,9 +119,9 @@ public class EvaluacionServiceImpl {
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo);
 
-        // Si el alumno no ha hecho ningún examen, devolvemos todo a cero
+        // si el alumno no ha hecho ningún examen, devolvemos ceros
         if (evaluaciones == null || evaluaciones.isEmpty()) {
-            return new EstadisticasAlumnoDTO(correo, 0, 0.0, 0, 0);
+            throw new NotFoundException("El alumno no ha realizado ningún examen aún.");
         }
 
         int totalExamenes = evaluaciones.size();
@@ -137,7 +135,7 @@ public class EvaluacionServiceImpl {
             }
         }
 
-        // Calculamos la media y la redondeamos a 2 decimales
+        // calculamos la media y la redondeamos a 2 decimales
         double media = sumaNotas / totalExamenes;
         media = Math.round(media * 100.0) / 100.0;
 
@@ -158,7 +156,7 @@ public class EvaluacionServiceImpl {
                 ? Sort.by(campoEntidad).ascending()
                 : Sort.by(campoEntidad).descending();
 
-        // Llamamos al nuevo método del repositorio pasándole el Sort
+        // llamamos al nuevo métod del repositorio pasándole el sort
         List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuario(correo, sort);
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
@@ -169,18 +167,17 @@ public class EvaluacionServiceImpl {
                 ? Sort.by(campoEntidad).ascending()
                 : Sort.by(campoEntidad).descending();
 
-        // Llamamos al nuevo método del repositorio pasándole el Sort
         List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamen(idExamen, sort);
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 
-    // Traductor de columnas de la URL a tu Entidad
+    // traductor de columnas de la url a entidad
     private String traducirCampoSort(String sortBy) {
-        switch (sortBy.toLowerCase()) {
-            case "nota": return "nota";
-            case "fecha": return "fecha";
-            case "correo": return "correoUsuario";
-            default: return "id"; // Orden por defecto
-        }
+        return switch (sortBy.toLowerCase()) {
+            case "nota" -> "nota";
+            case "fecha" -> "fecha";
+            case "correo" -> "correoUsuario";
+            default -> "id"; // ordenacion por id por defecto
+        };
     }
 }

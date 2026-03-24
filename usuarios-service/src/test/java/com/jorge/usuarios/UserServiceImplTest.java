@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -754,5 +755,78 @@ class UserServiceImplTest {
 
         // comprobar
         assertEquals("Usuario con id 1 editado correctamente", resultado);
+    }
+
+    @Test
+    void obtenerTodosLosUsuarios_OrdenadosPorNombreAscendente() {
+        User user = new User();
+        user.setNombreUsuario("Jorge");
+
+        // El repositorio ahora espera un objeto Sort
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+
+        List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("nombre", "asc");
+
+        assertFalse(resultado.isEmpty());
+        assertEquals("Jorge", resultado.getFirst().getNombreUsuario());
+        verify(userRepository).findByActivoTrue(any(Sort.class));
+    }
+
+    @Test
+    void obtenerTodosLosUsuarios_OrdenadosPorApellidoDescendente() {
+        User user = new User();
+        user.setApellidoUsuario("Sánchez");
+
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+
+        // forzamos que pase por el case "apellido" y por el orden descendente
+        List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("apellido", "desc");
+
+        assertFalse(resultado.isEmpty());
+        assertEquals("Sánchez", resultado.getFirst().getApellidoUsuario());
+    }
+
+    @Test
+    void obtenerTodosLosUsuarios_OrdenadosPorCorreo() {
+        User user = new User();
+        user.setEmailUsuario("jorge@gmail.com");
+
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+
+        // forzamos que pase por el case "correo"
+        List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("correo", "asc");
+
+        assertFalse(resultado.isEmpty());
+        assertEquals("jorge@gmail.com", resultado.getFirst().getEmailUsuario());
+    }
+
+    @Test
+    void obtenerTodosLosUsuarios_OrdenadosPorDefecto() {
+        User user = new User();
+        user.setNombreUsuario("Default");
+
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+
+        // forzamos que pase por el "default" del switch mandando una columna que no existe
+        List<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuarios("campo_inventado", "asc");
+
+        assertFalse(resultado.isEmpty());
+        assertEquals("Default", resultado.getFirst().getNombreUsuario());
+    }
+
+    @Test
+    void obtenerTodosLosUsuarios_CoberturaTotalDeAliasDelSwitch() {
+        // Preparamos un usuario de pega
+        User user = new User();
+        user.setNombreUsuario("Paco");
+
+        given(userRepository.findByActivoTrue(any(Sort.class))).willReturn(List.of(user));
+
+        userServiceImpl.obtenerTodosLosUsuarios("nombreusuario", "asc");
+        userServiceImpl.obtenerTodosLosUsuarios("apellidousuario", "asc");
+        userServiceImpl.obtenerTodosLosUsuarios("email", "asc");
+        userServiceImpl.obtenerTodosLosUsuarios("emailusuario", "asc");
+
+        verify(userRepository, times(4)).findByActivoTrue(any(Sort.class));
     }
 }

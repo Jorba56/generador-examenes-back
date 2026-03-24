@@ -2,11 +2,12 @@ package com.jorge.examenes.controller;
 
 import com.jorge.examenes.dto.ExamenDetalleDTO;
 import com.jorge.examenes.dto.ExamenGetDTO;
-import com.jorge.examenes.services.impl.ExamenServiceImpl;
+import com.jorge.examenes.services.ExamenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,9 +21,9 @@ import java.util.List;
 @Tag(name = "Exámenes", description = "Endpoints para consultar, generar, editar y realizar exámenes.")
 public class ExamenController {
 
-    private final ExamenServiceImpl examenService;
+    private final ExamenService examenService;
 
-    public ExamenController(ExamenServiceImpl examenService) {
+    public ExamenController(ExamenService examenService) {
         this.examenService = examenService;
     }
 
@@ -106,6 +107,17 @@ public class ExamenController {
             @PathVariable Long id,
             @RequestBody List<Long> idsPreguntasNuevas) {
         return ResponseEntity.ok(examenService.anadirPreguntas(id, idsPreguntasNuevas));
+    }
+
+    @Operation(summary = "Listar exámenes paginados")
+    @GetMapping("/paginados")
+    public ResponseEntity<Page<ExamenGetDTO>> listarExamenesPaginados(
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(value = "sortBy", defaultValue = "fecha", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+
+        return ResponseEntity.ok(examenService.obtenerExamenesPaginados(page, size, sortBy, sortDir));
     }
 
 }

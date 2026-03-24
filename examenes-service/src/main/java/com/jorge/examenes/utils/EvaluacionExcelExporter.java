@@ -43,9 +43,9 @@ public class EvaluacionExcelExporter {
         Cell celda = fila.createCell(contadorColumnas);
 
         if (valor instanceof Double) {
-            celda.setCellValue((Double) valor);
+            celda.setCellValue((double) valor);
         } else if (valor instanceof Long) {
-            celda.setCellValue((Long) valor);
+            celda.setCellValue((long) valor);
         } else if (valor != null) {
             celda.setCellValue(valor.toString());
         }
@@ -64,7 +64,7 @@ public class EvaluacionExcelExporter {
             int contadorColumnas = 0;
             // Ajusta estos getters a los nombres reales que tengas en tu EvaluacionHistorialDTO
             crearCelda(fila, contadorColumnas++, evaluacion.getCorreoUsuario(), estilo);
-            crearCelda(fila, contadorColumnas++, evaluacion.getNota(), estilo);
+            crearCelda(fila, contadorColumnas, evaluacion.getNota(), estilo);
         }
     }
 

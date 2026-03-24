@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Sort;
 
 import java.util.*;
 
@@ -196,7 +197,6 @@ class EvaluacionServiceImplTest {
 
         when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
 
-        // simulamos que la base de datos dice que este alumno ya lo ha hecho 2 veces
         when(evaluacionRepository.countByIdExamenAndCorreoUsuario(1L, "alumno@test.com")).thenReturn(2);
 
         ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
@@ -228,11 +228,10 @@ class EvaluacionServiceImplTest {
 
     @Test
     void obtenerEstadisticasAlumno_ConExamenes_DeberiaCalcularMediaYAprobados() {
-        // preparación de datos (given)
         String correo = "alumno@gmail.com";
 
-        // Creamos tres exámenes ficticios: un 4.0, un 8.0 y un 6.0
-        // La media debería ser (4 + 8 + 6) / 3 = 6.0. Debería haber 2 aprobados y 1 suspenso.
+        // tres exámenes ficticios: 4.0, 8.0 y 6.0
+        // la media debería ser (4 + 8 + 6) / 3 = 6.0. debería haber 2 aprobados y 1 suspenso.
         Evaluacion eval1 = new Evaluacion();
         eval1.setNota(4.0);
 
@@ -249,10 +248,8 @@ class EvaluacionServiceImplTest {
 
         given(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo)).willReturn(listaExamenes);
 
-        // ejecución (when)
         EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
 
-        // verificación (then)
         assertNotNull(resultado);
         assertEquals(correo, resultado.getCorreoAlumno());
         assertEquals(3, resultado.getTotalExamenesRealizados());
@@ -262,60 +259,98 @@ class EvaluacionServiceImplTest {
     }
 
     @Test
-    void obtenerEstadisticasAlumno_SinExamenes_DeberiaDevolverTodoACero() {
-        // preparación de datos (given)
+    void obtenerEstadisticasAlumno_SinExamenes_DeberiaLanzarNotFound() {
         String correo = "nuevo@gmail.com";
 
-        // Simulamos que el repositorio devuelve una lista vacía
         given(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo)).willReturn(new ArrayList<>());
 
-        // ejecución (when)
-        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> evaluacionService.obtenerEstadisticasAlumno(correo)
+        );
 
-        // verificación (then)
-        assertNotNull(resultado);
-        assertEquals(correo, resultado.getCorreoAlumno());
-        assertEquals(0, resultado.getTotalExamenesRealizados());
-        assertEquals(0.0, resultado.getNotaMedia());
-        assertEquals(0, resultado.getExamenesAprobados());
-        assertEquals(0, resultado.getExamenesSuspendidos());
-    }
-
-    @Test
-    void obtenerEstadisticas_CuandoListaEsNula_DeberiaDevolverTodoACero() {
-        String correo = "nuevo@test.com";
-
-        // Simulamos que el repositorio devuelve un null literal
-        when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo))
-                .thenReturn(null);
-
-        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
-
-        assertEquals(correo, resultado.getCorreoAlumno());
-        assertEquals(0, resultado.getTotalExamenesRealizados());
-        assertEquals(0.0, resultado.getNotaMedia());
-        assertEquals(0, resultado.getExamenesAprobados());
-        assertEquals(0, resultado.getExamenesSuspendidos());
-
+        assertEquals("El alumno no ha realizado ningún examen aún.", ex.getMessage());
         verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc(correo);
     }
 
     @Test
-    void obtenerEstadisticas_CuandoListaEstaVacia_DeberiaDevolverTodoACero() {
+    void obtenerEstadisticas_CuandoListaEsNula_DeberiaLanzarNotFound() {
         String correo = "nuevo@test.com";
 
-        // Simulamos que el repositorio devuelve una lista vacía
+        when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo)).thenReturn(null);
+
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> evaluacionService.obtenerEstadisticasAlumno(correo)
+        );
+
+        assertEquals("El alumno no ha realizado ningún examen aún.", ex.getMessage());
+        verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc(correo);
+    }
+
+    @Test
+    void obtenerEstadisticas_CuandoListaEstaVacia_DeberiaLanzarNotFound() {
+        String correo = "nuevo@test.com";
+
+        // simulamos que el repositorio devuelve una lista vacía
         when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo))
                 .thenReturn(java.util.Collections.emptyList());
 
-        EstadisticasAlumnoDTO resultado = evaluacionService.obtenerEstadisticasAlumno(correo);
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> evaluacionService.obtenerEstadisticasAlumno(correo)
+        );
 
-        assertEquals(correo, resultado.getCorreoAlumno());
-        assertEquals(0, resultado.getTotalExamenesRealizados());
-        assertEquals(0.0, resultado.getNotaMedia());
-        assertEquals(0, resultado.getExamenesAprobados());
-        assertEquals(0, resultado.getExamenesSuspendidos());
-
+        assertEquals("El alumno no ha realizado ningún examen aún.", ex.getMessage());
         verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc(correo);
+    }
+
+    @Test
+    void obtenerHistorialAlumno_CoberturaTotalDeAliasDelSwitch() {
+        List<Evaluacion> evaluaciones = List.of(new Evaluacion());
+        List<EvaluacionHistorialDTO> dtos = List.of(new EvaluacionHistorialDTO());
+
+        when(evaluacionRepository.findByCorreoUsuario(eq("alumno@test.com"), any(Sort.class)))
+                .thenReturn(evaluaciones);
+        when(evaluacionMapper.toHistorialDTOList(evaluaciones)).thenReturn(dtos);
+
+        // forzamos pasar por todas las ramas posibles del switch para el 100% de branch coverage
+        evaluacionService.obtenerHistorialAlumno("alumno@test.com", "nota", "asc");
+        evaluacionService.obtenerHistorialAlumno("alumno@test.com", "fecha", "desc");
+        evaluacionService.obtenerHistorialAlumno("alumno@test.com", "correo", "asc");
+        evaluacionService.obtenerHistorialAlumno("alumno@test.com", "inventado", "desc"); // default
+
+        verify(evaluacionRepository, times(4)).findByCorreoUsuario(eq("alumno@test.com"), any(Sort.class));
+    }
+
+    @Test
+    void obtenerNotasExamen_DeberiaDevolverRankingOrdenado() {
+        List<Evaluacion> evaluaciones = List.of(new Evaluacion());
+        List<EvaluacionHistorialDTO> dtos = List.of(new EvaluacionHistorialDTO());
+
+        when(evaluacionRepository.findByIdExamen(eq(1L), any(Sort.class))).thenReturn(evaluaciones);
+        when(evaluacionMapper.toHistorialDTOList(evaluaciones)).thenReturn(dtos);
+
+        List<EvaluacionHistorialDTO> resultado = evaluacionService.obtenerNotasExamen(1L, "nota", "desc");
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(evaluacionRepository).findByIdExamen(eq(1L), any(Sort.class));
+    }
+
+    @Test
+    void obtenerNotasExamen_OrdenacionAscendente_CoberturaTernario() {
+        List<Evaluacion> evaluaciones = List.of(new Evaluacion());
+        List<EvaluacionHistorialDTO> dtos = List.of(new EvaluacionHistorialDTO());
+
+        when(evaluacionRepository.findByIdExamen(eq(1L), any(Sort.class))).thenReturn(evaluaciones);
+        when(evaluacionMapper.toHistorialDTOList(evaluaciones)).thenReturn(dtos);
+
+        // forzamos el "asc" para cubrir la rama que faltaba del operador ternario
+        List<EvaluacionHistorialDTO> resultado = evaluacionService.obtenerNotasExamen(1L, "nota", "asc");
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(evaluacionRepository).findByIdExamen(eq(1L), any(Sort.class));
     }
 }

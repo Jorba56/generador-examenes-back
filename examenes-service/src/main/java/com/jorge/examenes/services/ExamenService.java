@@ -1,21 +1,28 @@
 package com.jorge.examenes.services;
 
-import com.jorge.examenes.entity.Examen;
+import com.jorge.examenes.dto.ExamenDetalleDTO;
+import com.jorge.examenes.dto.ExamenGetDTO;
+import org.springframework.data.domain.Page;
 
-/**
- * Interfaz que define las operaciones principales para la gestión de exámenes.
- */
+import java.util.List;
+
 public interface ExamenService {
+    // listar todos (resumen)
+    List<ExamenGetDTO> obtenerTodosResumen();
 
-    /**
-     * Genera automáticamente un nuevo examen seleccionando un número específico
-     * de preguntas al azar desde la base de datos.
-     *
-     * @param titulo Título descriptivo del examen.
-     * @param descripcion Descripción o instrucciones del examen.
-     * @param numPreguntas Cantidad de preguntas aleatorias que contendrá el examen.
-     * @return El examen generado y persistido en la base de datos.
-     */
-    Examen generarExamenAleatorio(String titulo, String descripcion, int numPreguntas);
+    // detalle por id (numerado y censurado)
+    ExamenDetalleDTO obtenerDetallePorId(Long id);
 
+    // generar aleatorio
+    ExamenDetalleDTO generarExamenAleatorio(String titulo, String descripcion, int numPreguntas);
+
+    ExamenDetalleDTO actualizarPreguntasDeExamen(Long idExamen, List<Long> idsNuevasPreguntas);
+
+    ExamenDetalleDTO actualizarDetallesExamen(Long id, String titulo, String descripcion);
+
+    void borrarExamen(Long id);
+
+    ExamenDetalleDTO anadirPreguntas(Long idExamen, List<Long> idsPreguntasNuevas);
+
+    Page<ExamenGetDTO> obtenerExamenesPaginados(int page, int size, String sortBy, String sortDir);
 }

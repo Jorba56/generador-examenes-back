@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -75,5 +76,17 @@ public class AlumnoController {
         // generamos el archivo
         AlumnoExcelExporter exportador = new AlumnoExcelExporter(alumnos);
         exportador.exportar(response);
+    }
+
+    @Operation(summary = "Listar alumnos paginados")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
+    @GetMapping("/paginados")
+    public ResponseEntity<Page<AlumnoDTO>> listarAlumnosPaginados(
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(value = "sortBy", defaultValue = "apellidos", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
+
+        return ResponseEntity.ok(alumnoService.obtenerAlumnosPaginados(page, size, sortBy, sortDir));
     }
 }

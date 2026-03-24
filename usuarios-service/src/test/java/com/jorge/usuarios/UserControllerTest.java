@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.security.core.Authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
 import java.util.List;
 
@@ -78,6 +80,22 @@ class UserControllerTest {
     }
 
     @Test
+    void exportarUsuariosAExcel_DeberiaDescargarArchivo() throws Exception {
+
+        UsersAllDTO usuarioFalso = new UsersAllDTO();
+        usuarioFalso.setNombreUsuario("Paco");
+        usuarioFalso.setEmailUsuario("paco@gmail.com");
+
+        given(userServiceImpl.obtenerTodosLosUsuarios("nombreUsuario", "asc")).willReturn(List.of(usuarioFalso));
+
+        // simulamos la petición get y comprobamos que nos devuelve un archivo (application/octet-stream)
+        mockMvc.perform(get("/usuarios/exportar/excel"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Content-Disposition"))
+                .andExpect(header().string("Content-Type", "application/octet-stream"));
+    }
+
+    @Test
      void getUserId(){
         UserIdDTo usuario=new UserIdDTo();
         usuario.setIdUser(1L);
@@ -113,7 +131,7 @@ class UserControllerTest {
 
         // ejecutar peticion y verificar respuesta
         mockMvc.perform(put("/usuarios/{id}", userId)
-                        .principal((java.security.Principal) authenticationMock)
+                        .principal(authenticationMock)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usuarioModificado)))
                 .andExpect(status().isOk())

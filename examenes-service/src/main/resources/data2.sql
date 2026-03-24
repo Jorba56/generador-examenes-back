@@ -4,7 +4,8 @@ Use examenes;
 CREATE TABLE IF NOT EXISTS examenes (
                                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                         titulo VARCHAR(255) NOT NULL,
-    descripcion TEXT
+                                        descripcion TEXT,
+                                        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
 -- 2. Tabla para almacenar el banco global de preguntas

@@ -1,18 +1,22 @@
 package com.jorge.examenes.dto;
 
+import java.time.LocalDateTime;
+
 public class ExamenGetDTO {
     private Long id;
     private String titulo;
     private String descripcion;
-    private int numeroPreguntas; // <-- NUEVO CAMPO
+    private int numeroPreguntas;
+    private LocalDateTime fechaCreacion;
 
     public ExamenGetDTO() {}
 
-    public ExamenGetDTO(Long id, String titulo, String descripcion, int numeroPreguntas) {
+    public ExamenGetDTO(Long id, String titulo, String descripcion, int numeroPreguntas, LocalDateTime fechaCreacion) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.numeroPreguntas = numeroPreguntas;
+        this.fechaCreacion=fechaCreacion;
     }
 
     public Long getId() { return id; }
@@ -25,4 +29,7 @@ public class ExamenGetDTO {
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public int getNumeroPreguntas() { return numeroPreguntas; }
     public void setNumeroPreguntas(int numeroPreguntas) { this.numeroPreguntas = numeroPreguntas; }
+
+    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

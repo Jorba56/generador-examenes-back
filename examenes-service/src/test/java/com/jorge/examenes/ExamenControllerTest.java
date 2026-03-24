@@ -3,7 +3,7 @@ package com.jorge.examenes;
 import com.jorge.examenes.controller.ExamenController;
 import com.jorge.examenes.dto.ExamenDetalleDTO;
 import com.jorge.examenes.dto.ExamenGetDTO;
-import com.jorge.examenes.services.impl.ExamenServiceImpl;
+import com.jorge.examenes.services.ExamenService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 class ExamenControllerTest {
 
     @Mock
-    private ExamenServiceImpl examenService;
+    private ExamenService examenService;
 
     @InjectMocks
     private ExamenController examenController;

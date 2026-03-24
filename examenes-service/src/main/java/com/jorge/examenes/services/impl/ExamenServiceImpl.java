@@ -8,7 +8,12 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.ExamenMapper;
 import com.jorge.examenes.repository.ExamenRepository;
 import com.jorge.examenes.repository.PreguntaRepository;
+import com.jorge.examenes.services.ExamenService;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -16,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class ExamenServiceImpl {
+public class ExamenServiceImpl implements ExamenService {
     String nf="Examen no encontrado con ID: ";
     private final ExamenRepository examenRepository;
     private final PreguntaRepository preguntaRepository;
@@ -29,12 +34,14 @@ public class ExamenServiceImpl {
     }
 
     // listar todos (resumen)
+    @Override
     public List<ExamenGetDTO> obtenerTodosResumen() {
         List<Examen> examenes = examenRepository.findAll();
         return examenMapper.toResumenDTOList(examenes); // <-- 1 sola línea gracias a MapStruct
     }
 
     // detalle por id (numerado y censurado)
+    @Override
     public ExamenDetalleDTO obtenerDetallePorId(Long id) {
         Examen examen = examenRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(nf + id));
@@ -43,6 +50,7 @@ public class ExamenServiceImpl {
     }
 
     // generar aleatorio
+    @Override
     public ExamenDetalleDTO generarExamenAleatorio(String titulo, String descripcion, int numPreguntas) {
         Examen examen = new Examen();
         examen.setTitulo(titulo);
@@ -60,6 +68,7 @@ public class ExamenServiceImpl {
         return examenMapper.toDetalleDTO(examenGuardado);
     }
 
+    @Override
     public ExamenDetalleDTO actualizarPreguntasDeExamen(Long idExamen, List<Long> idsNuevasPreguntas) {
         Examen examen = examenRepository.findById(idExamen)
                 .orElseThrow(() -> new NotFoundException(nf + idExamen));
@@ -73,6 +82,7 @@ public class ExamenServiceImpl {
         return examenMapper.toDetalleDTO(examenActualizado);
     }
 
+    @Override
     public ExamenDetalleDTO actualizarDetallesExamen(Long id, String titulo, String descripcion) {
         Examen examen = examenRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(nf + id));
@@ -84,6 +94,7 @@ public class ExamenServiceImpl {
         return examenMapper.toDetalleDTO(actualizado);
     }
 
+    @Override
     public void borrarExamen(Long id) {
         if (!examenRepository.existsById(id)) {
             throw new NotFoundException(nf + id);
@@ -91,6 +102,7 @@ public class ExamenServiceImpl {
         examenRepository.deleteById(id);
     }
 
+    @Override
     public ExamenDetalleDTO anadirPreguntas(Long idExamen, List<Long> idsPreguntasNuevas) {
         Examen examen = examenRepository.findById(idExamen)
                 .orElseThrow(() -> new NotFoundException(nf+idExamen));
@@ -109,5 +121,21 @@ public class ExamenServiceImpl {
         Examen actualizado = examenRepository.save(examen);
 
         return examenMapper.toDetalleDTO(actualizado);
+    }
+
+    @Override
+    public Page<ExamenGetDTO> obtenerExamenesPaginados(int page, int size, String sortBy, String sortDir) {
+        String campoEntidad = switch (sortBy.toLowerCase()) {
+            case "titulo" -> "titulo";
+            case "fecha" -> "fechaCreacion";
+            default -> "id";
+        };
+
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(campoEntidad).ascending() : Sort.by(campoEntidad).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Examen> paginaExamenes = examenRepository.findAll(pageable);
+
+        return paginaExamenes.map(examenMapper::toResumenDTO);
     }
 }

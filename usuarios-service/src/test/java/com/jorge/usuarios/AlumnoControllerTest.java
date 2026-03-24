@@ -1,6 +1,5 @@
 package com.jorge.usuarios;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jorge.usuarios.controller.AlumnoController;
 import com.jorge.usuarios.dto.AlumnoDTO;
 import com.jorge.usuarios.services.AlumnoService;
@@ -14,14 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class AlumnoControllerTest {
@@ -34,20 +31,17 @@ class AlumnoControllerTest {
     @InjectMocks
     private AlumnoController alumnoController;
 
-    private ObjectMapper objectMapper;
-
     @BeforeEach
     void setUp() {
-        // Configuración aislada sin Spring Security para test unitario puro
+        // configuración aislada sin spring security para test unitario puro
         mockMvc = MockMvcBuilders.standaloneSetup(alumnoController).build();
-        objectMapper = new ObjectMapper();
     }
 
     @Test
     void listarAlumnos_DeberiaDevolverLista() throws Exception {
         // Arrange
         AlumnoDTO alumno = new AlumnoDTO(1L, "Jorge", "Sánchez", "jorge@gmail.com");
-        List<AlumnoDTO> lista = Arrays.asList(alumno);
+        List<AlumnoDTO> lista = List.of(alumno);
 
         given(alumnoService.obtenerTodosLosAlumnos()).willReturn(lista);
 
@@ -74,4 +68,14 @@ class AlumnoControllerTest {
                 .andExpect(jsonPath("$.nombre").value("Jorge"))
                 .andExpect(jsonPath("$.correo").value(email));
     }
+    @Test
+    void exportarAlumnosAExcel_DeberiaDescargarArchivo() throws Exception {
+        given(alumnoService.obtenerTodosLosAlumnos()).willReturn(List.of(new AlumnoDTO()));
+
+        mockMvc.perform(get("/alumnos/exportar/excel"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Content-Disposition"))
+                .andExpect(header().string("Content-Type", "application/octet-stream"));
+    }
+
 }

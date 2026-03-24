@@ -126,7 +126,7 @@ public class EvaluacionController {
         String cabeceraValor = "attachment; filename=notas_examen_" + idExamen + "_" + fechaActual + ".xlsx";
         response.setHeader(cabeceraClave, cabeceraValor);
 
-        // Obtenemos las notas ordenadas de mayor a menor (desc)
+        // obtenemos las notas ordenadas de mayor a menor (desc)
         List<EvaluacionHistorialDTO> notas = evaluacionService.obtenerNotasExamen(idExamen, "nota", "desc");
 
         EvaluacionExcelExporter exportador = new EvaluacionExcelExporter(notas);

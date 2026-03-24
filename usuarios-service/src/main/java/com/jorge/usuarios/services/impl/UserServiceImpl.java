@@ -8,6 +8,10 @@ import com.jorge.usuarios.dto.UserAddDTO;
 import com.jorge.usuarios.dto.UserIdDTo;
 import com.jorge.usuarios.dto.UsersAllDTO;
 import com.jorge.usuarios.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.jorge.usuarios.exceptions.*;
 import com.jorge.usuarios.mapping.UserMapper;
@@ -62,6 +66,21 @@ public class UserServiceImpl implements UserService {
         List<UsersAllDTO> usuarios=new ArrayList<>();
         for (User encontrado : encontrados) usuarios.add(userMap.mappingADTO(encontrado));
         return usuarios;
+    }
+
+    @Override
+    public Page<UsersAllDTO> obtenerTodosLosUsuariosPaginados(int page, int size, String sortBy, String sortDir) {
+        String campoEntidad = traducirCampoSortUsuario(sortBy); // Usamos tu switch traductor
+
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(campoEntidad).ascending()
+                : Sort.by(campoEntidad).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<User> paginaUsuarios = userRep.findByActivoTrue(pageable);
+
+        // page tiene un .map() integrado que funciona como un for-each
+        return paginaUsuarios.map(userMap::mappingADTO);
     }
 
     /**
@@ -241,5 +260,33 @@ public class UserServiceImpl implements UserService {
             return "Rol con id "+idRol+" eliminado correctamente del usuario con id "+idUser;
         }
         throw new NotFoundException("Error: El usuario no tenía asignado ese rol.");
+    }
+
+    public List<UsersAllDTO> obtenerTodosLosUsuarios(String sortBy, String sortDir) {
+        // traducimos el campo de la url al nombre real de la base de datos
+        String campoEntidad = traducirCampoSortUsuario(sortBy);
+
+        // creamos la ordenación (ascendente o descendente)
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(campoEntidad).ascending()
+                : Sort.by(campoEntidad).descending();
+
+        // jparepository ya tiene un findall(sort) incorporado
+        List<User> usuarios = userRep.findByActivoTrue(sort);
+        List <UsersAllDTO> usuariosMappeados= new ArrayList<>();
+
+        for (User usuario : usuarios) {
+            usuariosMappeados.add(userMap.mappingADTO(usuario));
+        }
+        return usuariosMappeados;
+    }
+
+    private String traducirCampoSortUsuario(String sortBy) {
+        return switch (sortBy.toLowerCase()) {
+            case "nombre", "nombreusuario" -> "nombreUsuario";
+            case "apellido", "apellidousuario" -> "apellidoUsuario";
+            case "correo", "email", "emailusuario" -> "emailUsuario";
+            default -> "idUser"; // O el nombre que tenga tu clave primaria en la entidad User
+        };
     }
 }

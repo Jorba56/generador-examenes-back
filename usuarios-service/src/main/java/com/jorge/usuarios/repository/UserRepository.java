@@ -1,7 +1,9 @@
 package com.jorge.usuarios.repository;
 
-import com.jorge.usuarios.entity.Rol;
 import com.jorge.usuarios.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findUserByEmailUsuario(String correo);
     List<User> findByRoles_Name(String nombreRol);
     Optional <User> findByEmailUsuarioAndRoles_Name(String emailUsuario, String rolesName);
+    List<User> findByActivoTrue(Sort sort);
+    Page<User> findByActivoTrue(Pageable pageable);
+    Page<User> findByRoles_Name(String roleName, Pageable pageable);
 }
 
 
