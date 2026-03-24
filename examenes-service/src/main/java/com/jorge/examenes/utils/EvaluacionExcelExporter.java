@@ -13,6 +13,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Clase utilitaria encargada de la generación y exportación de archivos Excel (.xlsx).
+ * Utiliza la librería Apache POI para transformar una lista de historiales de evaluación
+ * (notas de alumnos) en una hoja de cálculo estructurada y estilizada, lista para ser
+ * descargada mediante una respuesta HTTP.
+ */
 public class EvaluacionExcelExporter {
     private XSSFWorkbook workbook;
     private XSSFSheet sheet;
@@ -23,6 +29,11 @@ public class EvaluacionExcelExporter {
         workbook = new XSSFWorkbook();
     }
 
+    /**
+     * Configura y escribe la primera fila (cabecera) de la hoja de cálculo.
+     * Define los títulos de las columnas (ID, Correo, Nombre, Apellidos, Nota, Fecha)
+     * aplicando estilos visuales de cabecera (fuente en negrita, tamaño mayor).
+     */
     private void escribirCabecera() {
         sheet = workbook.createSheet("Notas del Examen");
         Row fila = sheet.createRow(0);
@@ -52,6 +63,12 @@ public class EvaluacionExcelExporter {
         celda.setCellStyle(estilo);
     }
 
+    /**
+     * Recorre la lista de evaluaciones proporcionada y vuelca los datos de cada
+     * alumno en las filas subsiguientes de la hoja de cálculo.
+     * Aplica auto-ajuste al ancho de las columnas para asegurar la correcta
+     * legibilidad de la información.
+     */
     private void escribirDatos() {
         int contadorFilas = 1;
         CellStyle estilo = workbook.createCellStyle();
@@ -68,6 +85,13 @@ public class EvaluacionExcelExporter {
         }
     }
 
+    /**
+     * Orquesta el proceso completo de creación del documento Excel y lo inyecta
+     * en el flujo de salida de la respuesta HTTP del cliente para iniciar la descarga.
+     *
+     * @param response Objeto HttpServletResponse donde se escribirá el archivo binario.
+     * @throws IOException Si ocurre un fallo en la escritura del flujo de salida (Stream).
+     */
     public void exportar(HttpServletResponse response) throws IOException {
         escribirCabecera();
         escribirDatos();

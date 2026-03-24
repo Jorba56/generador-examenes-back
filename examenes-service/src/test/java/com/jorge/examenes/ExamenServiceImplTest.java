@@ -14,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -252,5 +255,31 @@ class ExamenServiceImplTest {
         assertEquals("Titulo Original", examen.getTitulo());
         assertEquals("Desc Original", examen.getDescripcion());
         verify(examenRepository).save(examen);
+    }
+
+    @Test
+    void obtenerExamenesPaginados_DeberiaCubrirTodasLasRamasDeOrdenacion() {
+
+        Examen examen = new Examen();
+        Page<Examen> pagina = new PageImpl<>(List.of(examen));
+        ExamenGetDTO dto = new ExamenGetDTO();
+
+        when(examenRepository.findAll(any(Pageable.class))).thenReturn(pagina);
+        when(examenMapper.toResumenDTO(any(Examen.class))).thenReturn(dto);
+
+        // switch titulo y operador ternario asc
+        Page<ExamenGetDTO> res1 = examenService.obtenerExamenesPaginados(0, 10, "titulo", "asc");
+
+        // switch fecha y operador ternario desc
+        Page<ExamenGetDTO> res2 = examenService.obtenerExamenesPaginados(0, 10, "fecha", "desc");
+
+        // switch default (columna que no existe)
+        Page<ExamenGetDTO> res3 = examenService.obtenerExamenesPaginados(0, 10, "columna_inventada", "asc");
+
+        assertNotNull(res1);
+        assertNotNull(res2);
+        assertNotNull(res3);
+        verify(examenRepository, times(3)).findAll(any(Pageable.class));
+        verify(examenMapper, times(3)).toResumenDTO(any(Examen.class));
     }
 }

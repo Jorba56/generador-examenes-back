@@ -1,5 +1,12 @@
 package com.jorge.examenes.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que representa una pregunta de un examen
+ * enviada al cliente.
+ * Se utiliza para mostrar el enunciado y las opciones al alumno durante la
+ * realización de la prueba, excluyendo deliberadamente la respuesta correcta
+ * por motivos de seguridad.
+ */
 public class PreguntaExamenDTO {
     private int numero;
     private Long id;

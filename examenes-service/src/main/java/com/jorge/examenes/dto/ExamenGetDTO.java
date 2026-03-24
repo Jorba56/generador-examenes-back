@@ -2,6 +2,12 @@ package com.jorge.examenes.dto;
 
 import java.time.LocalDateTime;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que proporciona una vista resumida de un examen.
+ * Se utiliza principalmente en listados y vistas paginadas para enviar al cliente
+ * la información básica (título, descripción, fecha y número de preguntas) sin
+ * sobrecargar la red con la lista completa de preguntas.
+ */
 public class ExamenGetDTO {
     private Long id;
     private String titulo;

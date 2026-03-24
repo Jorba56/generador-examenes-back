@@ -3,6 +3,11 @@ package com.jorge.examenes.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Map;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para recibir desde el cliente
+ * las respuestas seleccionadas por un alumno al finalizar un examen.
+ * Actúa como envoltorio para el mapa de respuestas.
+ */
 @Schema(description = "Objeto que envía el alumno al terminar el examen con todas sus respuestas.")
 public class ExamenSubmitDTO {
 

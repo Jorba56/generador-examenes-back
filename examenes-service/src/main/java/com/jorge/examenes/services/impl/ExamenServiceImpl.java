@@ -20,6 +20,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Implementación del servicio de gestión de Exámenes.
+ * Contiene toda la lógica de negocio principal para la creación aleatoria de exámenes,
+ * la gestión de sus preguntas y la consulta paginada.
+ */
 @Service
 public class ExamenServiceImpl implements ExamenService {
     String nf="Examen no encontrado con ID: ";
@@ -49,7 +54,17 @@ public class ExamenServiceImpl implements ExamenService {
         return examenMapper.toDetalleDTO(examen); // <-- Automáticamente numerará las preguntas
     }
 
-    // generar aleatorio
+    /**
+     * Genera un examen de forma aleatoria seleccionando un número específico de preguntas
+     * del banco general de preguntas disponibles en la base de datos.
+     *
+     * @param titulo          Título que se le asignará al nuevo examen.
+     * @param descripcion     Breve texto descriptivo sobre el contenido del examen.
+     * @param numPreguntas Cantidad exacta de preguntas aleatorias que debe contener.
+     * @return Objeto {@link Examen} recién creado y persistido en la base de datos.
+     * @throws NotFoundException Si en la base de datos hay menos preguntas disponibles
+     * que la cantidad solicitada para generar el examen.
+     */
     @Override
     public ExamenDetalleDTO generarExamenAleatorio(String titulo, String descripcion, int numPreguntas) {
         Examen examen = new Examen();
@@ -67,7 +82,16 @@ public class ExamenServiceImpl implements ExamenService {
         // devolvemos el dto en lugar de la entidad cruda
         return examenMapper.toDetalleDTO(examenGuardado);
     }
-
+    /**
+     * Actualiza la lista de preguntas asociadas a un examen existente.
+     * Sustituye las preguntas actuales por una nueva lista, eliminando posibles duplicados
+     * aportados por el usuario.
+     *
+     * @param idExamen      Identificador del examen que se va a modificar.
+     * @param idsNuevasPreguntas  Lista con los nuevos IDs de las preguntas a asociar.
+     * @return DTO con los detalles actualizados del examen.
+     * @throws NotFoundException Si el examen especificado no existe.
+     */
     @Override
     public ExamenDetalleDTO actualizarPreguntasDeExamen(Long idExamen, List<Long> idsNuevasPreguntas) {
         Examen examen = examenRepository.findById(idExamen)

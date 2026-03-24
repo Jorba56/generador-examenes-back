@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador REST que gestiona las operaciones relacionadas con los exámenes.
+ * Expone los endpoints para la creación, consulta, modificación y borrado de exámenes.
+ * * Interacciona directamente con el frontend y delega la lógica de negocio
+ * al {@link com.jorge.examenes.services.ExamenService}.
+ */
 @RestController
 @RequestMapping("/examenes")
 @CrossOrigin(origins = "http://localhost:8080") // Corrección de seguridad para SonarQube
@@ -38,6 +44,12 @@ public class ExamenController {
         return ResponseEntity.ok(examenService.obtenerTodosResumen());
     }
 
+    /**
+     * Consulta los detalles completos de un examen específico, incluyendo su lista de preguntas.
+     *
+     * @param id Identificador único del examen en la base de datos.
+     * @return DTO con todos los datos detallados del examen.
+     */
     @Operation(summary = "Ver detalles de un examen (Preguntas numeradas y censuradas)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Examen encontrado y devuelto con éxito"),
@@ -109,6 +121,16 @@ public class ExamenController {
         return ResponseEntity.ok(examenService.anadirPreguntas(id, idsPreguntasNuevas));
     }
 
+    /**
+     * Recupera una lista paginada de todos los exámenes registrados en el sistema.
+     * Permite ordenar los resultados dinámicamente.
+     *
+     * @param page    Número de la página a consultar (empieza en 0).
+     * @param size    Cantidad de elementos por página.
+     * @param sortBy  Nombre del campo por el cual se ordenarán los resultados (ej: "fecha").
+     * @param sortDir Dirección de la ordenación ("asc" para ascendente, "desc" para descendente).
+     * @return Una página ({@link Page}) que contiene objetos DTO con el resumen de los exámenes.
+     */
     @Operation(summary = "Listar exámenes paginados")
     @GetMapping("/paginados")
     public ResponseEntity<Page<ExamenGetDTO>> listarExamenesPaginados(

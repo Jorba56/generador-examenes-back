@@ -353,4 +353,54 @@ class EvaluacionServiceImplTest {
         assertEquals(1, resultado.size());
         verify(evaluacionRepository).findByIdExamen(eq(1L), any(Sort.class));
     }
+
+    @Test
+    void obtenerMisNotas_DeberiaLanzarNotFoundSiNoHayExamenes() {
+        // Simulamos que la base de datos devuelve una lista vacía
+        when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc("alumno@test.com"))
+                .thenReturn(new ArrayList<>());
+
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+                evaluacionService.obtenerMisNotas()
+        );
+
+        assertEquals("No has realizado ningún examen aún.", ex.getMessage());
+        verify(evaluacionRepository).findByCorreoUsuarioOrderByFechaDesc("alumno@test.com");
+    }
+
+    @Test
+    void obtenerNotasDeAlumnoEnExamen_DeberiaLanzarNotFoundSiNoHayNotas() {
+        when(evaluacionRepository.findByIdExamenAndCorreoUsuarioOrderByFechaDesc(1L, "alumno@test.com"))
+                .thenReturn(new ArrayList<>());
+
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+                evaluacionService.obtenerNotasDeAlumnoEnExamen(1L, "alumno@test.com")
+        );
+
+        assertEquals("El usuario seleccionado no ha hecho este examen.", ex.getMessage());
+    }
+
+    @Test
+    void obtenerHistorialAlumno_DeberiaLanzarNotFoundSiNoHayHistorial() {
+        when(evaluacionRepository.findByCorreoUsuario(eq("alumno@test.com"), any(Sort.class)))
+                .thenReturn(new ArrayList<>());
+
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+                evaluacionService.obtenerHistorialAlumno("alumno@test.com", "nota", "asc")
+        );
+
+        assertEquals("El usuario seleccionado no ha hecho este examen.", ex.getMessage());
+    }
+
+    @Test
+    void obtenerNotasExamen_DeberiaLanzarNotFoundSiNadieLoHaHecho() {
+        when(evaluacionRepository.findByIdExamen(eq(1L), any(Sort.class)))
+                .thenReturn(new ArrayList<>());
+
+        NotFoundException ex = assertThrows(NotFoundException.class, () ->
+                evaluacionService.obtenerNotasExamen(1L, "nota", "asc")
+        );
+
+        assertEquals("El examen seleccionado no ha sido realizado por ningún usuario aún.", ex.getMessage());
+    }
 }

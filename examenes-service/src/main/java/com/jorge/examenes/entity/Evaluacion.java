@@ -3,6 +3,11 @@ package com.jorge.examenes.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad que representa la realización de un examen por parte de un alumno.
+ * Mapea la tabla "evaluaciones" en la base de datos, almacenando la nota obtenida,
+ * la fecha del intento y el identificador del usuario.
+ */
 @Entity
 @Table(name = "evaluaciones")
 public class Evaluacion {

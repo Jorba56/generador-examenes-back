@@ -2,6 +2,13 @@ package com.jorge.examenes.dto;
 
 import java.time.LocalDateTime;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para representar el registro
+ * histórico de un intento de examen.
+ * Agrupa los datos del intento (nota y fecha) con los datos del usuario
+ * (correo, nombre y apellidos) para su visualización en tablas de seguimiento
+ * o su exportación a documentos externos.
+ */
 public class EvaluacionHistorialDTO {
 
     private Long idEvaluacion;

@@ -13,5 +13,5 @@ public interface PreguntaService {
 
     Pregunta actualizarPregunta(Long id, Pregunta preguntaActualizada);
 
-    void borrarPregunta(Long id);
+    String borrarPregunta(Long id);
 }

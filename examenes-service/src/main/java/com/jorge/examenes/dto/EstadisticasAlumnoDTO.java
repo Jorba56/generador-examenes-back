@@ -1,5 +1,11 @@
 package com.jorge.examenes.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que consolida el rendimiento académico
+ * global de un alumno.
+ * Transporta métricas calculadas como la nota media histórica, el número total
+ * de exámenes realizados y el recuento de aprobados frente a suspensos.
+ */
 public class EstadisticasAlumnoDTO {
 
     private String correoAlumno;

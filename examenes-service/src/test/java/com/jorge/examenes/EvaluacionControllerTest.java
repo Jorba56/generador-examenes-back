@@ -170,4 +170,15 @@ class EvaluacionControllerTest {
         verify(response).setContentType("application/octet-stream");
         verify(response).setHeader(eq("Content-Disposition"), anyString());
     }
+
+    @Test
+    void obtenerNotasDeAlumnoEnExamen_DeberiaDevolver200YLista() {
+        List<EvaluacionHistorialDTO> dtos = List.of(new EvaluacionHistorialDTO());
+        when(evaluacionService.obtenerNotasDeAlumnoEnExamen(1L, "alumno@test.com")).thenReturn(dtos);
+
+        ResponseEntity<List<EvaluacionHistorialDTO>> respuesta = evaluacionController.buscarNotasDeAlumno(1L, "alumno@test.com");
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertNotNull(respuesta.getBody());
+    }
 }

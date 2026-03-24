@@ -1,5 +1,11 @@
 package com.jorge.examenes.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) de salida que encapsula el resultado
+ * inmediato de la corrección automática de un examen.
+ * Devuelve al alumno su nota final calculada sobre 10, junto con el desglose
+ * exacto de aciertos, fallos y respuestas dejadas en blanco.
+ */
 public class EvaluacionResultDTO {
     private int aciertos;
     private int fallos;

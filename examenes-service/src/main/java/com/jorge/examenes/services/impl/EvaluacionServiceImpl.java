@@ -22,6 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementación del servicio de evaluaciones.
+ * Contiene la lógica de negocio central para la corrección algorítmica de exámenes,
+ * el cálculo de estadísticas (medias, aprobados/suspensos) y la validación de intentos.
+ */
 @Service
 public class EvaluacionServiceImpl {
 
@@ -35,6 +40,17 @@ public class EvaluacionServiceImpl {
         this.evaluacionMapper = evaluacionMapper;
     }
 
+    /**
+     * Procesa la entrega de un examen comparando las respuestas dadas por el alumno
+     * con las respuestas correctas de cada pregunta. Calcula la nota sobre 10 y
+     * guarda el intento en la base de datos si el alumno no ha superado el límite.
+     *
+     * @param idExamen Identificador del examen a corregir.
+     * @param submitDTO Objeto que contiene las respuestas del alumno.
+     * @return DTO con el resultado detallado de la corrección.
+     * @throws BadRequestException Si el contexto de seguridad está vacío o se superan los 2 intentos.
+     * @throws NotFoundException Si el examen solicitado no existe.
+     */
     public EvaluacionResultDTO corregirExamen(Long idExamen, ExamenSubmitDTO submitDTO) throws BadRequestException {
         Examen examen = examenRepository.findById(idExamen)
                 .orElseThrow(() -> new NotFoundException("Examen no encontrado con ID: " + idExamen));
@@ -92,6 +108,13 @@ public class EvaluacionServiceImpl {
         return new EvaluacionResultDTO(aciertos, fallos, enBlanco, notaFinal);
     }
 
+    /**
+     * Recupera el historial de notas del usuario actualmente autenticado en el sistema.
+     *
+     * @return Lista de evaluaciones ordenadas por fecha descendente.
+     * @throws BadRequestException Si no hay un usuario logueado en el contexto de seguridad.
+     * @throws NotFoundException Si el usuario no ha realizado ningún examen.
+     */
     public List<EvaluacionHistorialDTO> obtenerMisNotas() throws BadRequestException {
         // extraemos el usuario del token (igual que al corregir)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -104,17 +127,28 @@ public class EvaluacionServiceImpl {
 
         // buscamos sus evaluaciones en la base de datos
         List<Evaluacion> misEvaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correoUsuario);
-
+        if (misEvaluaciones.isEmpty()){
+            throw new NotFoundException("No has realizado ningún examen aún.");
+        }
         return evaluacionMapper.toHistorialDTOList(misEvaluaciones);
     }
 
     public List<EvaluacionHistorialDTO> obtenerNotasDeAlumnoEnExamen(Long idExamen, String correoAlumno) {
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamenAndCorreoUsuarioOrderByFechaDesc(idExamen, correoAlumno);
-
+        if (evaluaciones.isEmpty()){
+            throw new NotFoundException("El usuario seleccionado no ha hecho este examen.");
+        }
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 
+    /**
+     * Calcula las estadísticas de rendimiento general de un alumno a partir de su historial.
+     *
+     * @param correo Correo del alumno a analizar.
+     * @return Objeto con el total de exámenes, nota media y conteo de aprobados/suspensos.
+     * @throws NotFoundException Si el alumno no tiene registros de exámenes.
+     */
     public EstadisticasAlumnoDTO obtenerEstadisticasAlumno(String correo) {
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo);
@@ -158,9 +192,21 @@ public class EvaluacionServiceImpl {
 
         // llamamos al nuevo métod del repositorio pasándole el sort
         List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuario(correo, sort);
+        if (evaluaciones.isEmpty()){
+            throw new NotFoundException("El usuario seleccionado no ha hecho este examen.");
+        }
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 
+    /**
+     * Obtiene todas las evaluaciones de un examen concreto aplicando criterios de ordenación.
+     *
+     * @param idExamen Identificador del examen.
+     * @param sortBy Criterio de ordenación proporcionado por la URL.
+     * @param sortDir Dirección de la ordenación ("asc" o "desc").
+     * @return Lista de historial de evaluaciones ordenadas.
+     * @throws NotFoundException Si nadie ha realizado el examen todavía.
+     */
     public List<EvaluacionHistorialDTO> obtenerNotasExamen(Long idExamen, String sortBy, String sortDir) {
         String campoEntidad = traducirCampoSort(sortBy);
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -168,10 +214,20 @@ public class EvaluacionServiceImpl {
                 : Sort.by(campoEntidad).descending();
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamen(idExamen, sort);
+        if (evaluaciones.isEmpty()){
+            throw new NotFoundException("El examen seleccionado no ha sido realizado por ningún usuario aún.");
+        }
+
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 
-    // traductor de columnas de la url a entidad
+    /**
+     * Método auxiliar privado que traduce los parámetros de ordenación de la URL
+     * a los nombres reales de las columnas en la base de datos (Entidad).
+     *
+     * @param sortBy Valor del parámetro de ordenación recibido en la petición.
+     * @return Nombre del atributo correspondiente en la entidad Evaluacion.
+     */
     private String traducirCampoSort(String sortBy) {
         return switch (sortBy.toLowerCase()) {
             case "nota" -> "nota";

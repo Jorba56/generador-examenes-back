@@ -2,6 +2,13 @@ package com.jorge.examenes.dto;
 
 import java.util.List;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que proporciona la vista detallada y
+ * completa de un examen.
+ * Incluye tanto los metadatos del examen como la lista íntegra de sus preguntas
+ * asociadas. Se utiliza cuando un profesor o administrador necesita ver o editar
+ * el examen en profundidad.
+ */
 public class ExamenDetalleDTO {
     private Long id;
     private String titulo;

@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -96,6 +98,18 @@ class ExamenControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+    }
+
+    @Test
+    void listarExamenesPaginados_DeberiaDevolver200YPagina() {
+        Page<ExamenGetDTO> paginaFalsa = new PageImpl<>(List.of(new ExamenGetDTO()));
+        when(examenService.obtenerExamenesPaginados(0, 10, "fecha", "desc")).thenReturn(paginaFalsa);
+
+        ResponseEntity<Page<ExamenGetDTO>> response = examenController.listarExamenesPaginados(0, 10, "fecha", "desc");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        verify(examenService).obtenerExamenesPaginados(0, 10, "fecha", "desc");
     }
 
 

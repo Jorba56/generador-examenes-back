@@ -72,7 +72,43 @@ public class GlobalExceptionHandler {
 
         logger.log(Level.SEVERE, "Excepción capturada en {0}: {1}", new Object[]{endpoint, ex.getMessage()});
 
-        // en una fase posterior, aquí haremos una llamada http (feignclient/resttemplate)
-        // para enviar esta incidencia al incidencias-service.
+        // 1. Extraemos los detalles exactos (Copiado de tu código de Usuarios)
+        String tipo = ex.getClass().getSimpleName();
+        String clase = "Desconocida";
+        String metodo = "Desconocido";
+
+        if (ex.getStackTrace() != null && ex.getStackTrace().length > 0) {
+            StackTraceElement elemento = ex.getStackTrace()[0];
+            clase = elemento.getClassName();
+            metodo = elemento.getMethodName();
+        }
+
+        if (clase.contains(".")) clase = clase.substring(clase.lastIndexOf(".") + 1);
+        if (clase.contains("$$")) clase = clase.substring(0, clase.indexOf("$$"));
+        if (metodo.startsWith("lambda$")) metodo = metodo.split("\\$")[1];
+
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        ex.printStackTrace(pw);
+        String trazaCompleta = sw.toString();
+        String traza = trazaCompleta.length() > 2000 ? trazaCompleta.substring(0, 2000) : trazaCompleta;
+
+        // 2. Construimos el JSON
+        Map<String, Object> incidenciaJson = new java.util.HashMap<>();
+        incidenciaJson.put("endpoint", endpoint);
+        incidenciaJson.put("tipo", tipo);
+        incidenciaJson.put("clase", clase);
+        incidenciaJson.put("metodo", metodo);
+        incidenciaJson.put("traza", traza);
+        incidenciaJson.put("fecha", java.time.LocalDateTime.now().toString());
+        incidenciaJson.put("id_usuario", 0L); // En exámenes ponemos 0 por defecto si no tenemos el usuario a mano
+
+        // 3. Enviamos la petición con RestTemplate igual que en Usuarios
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+        try {
+            restTemplate.postForObject("http://host.docker.internal:8082/incidencias", incidenciaJson, String.class);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "No se pudo comunicar con el servidor de incidencias: {0}", e.getMessage());
+        }
     }
 }
