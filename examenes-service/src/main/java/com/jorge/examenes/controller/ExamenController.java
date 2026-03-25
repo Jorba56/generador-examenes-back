@@ -23,7 +23,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/examenes")
-@CrossOrigin(origins = "http://localhost:8080") // Corrección de seguridad para SonarQube
 @Tag(name = "Exámenes", description = "Endpoints para consultar, generar, editar y realizar exámenes.")
 public class ExamenController {
 

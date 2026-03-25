@@ -12,6 +12,7 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
+import com.jorge.examenes.services.EvaluacionService;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +29,7 @@ import java.util.Map;
  * el cálculo de estadísticas (medias, aprobados/suspensos) y la validación de intentos.
  */
 @Service
-public class EvaluacionServiceImpl {
+public class EvaluacionServiceImpl implements EvaluacionService {
 
     private final EvaluacionRepository evaluacionRepository;
     private final ExamenRepository examenRepository;
@@ -51,6 +52,7 @@ public class EvaluacionServiceImpl {
      * @throws BadRequestException Si el contexto de seguridad está vacío o se superan los 2 intentos.
      * @throws NotFoundException Si el examen solicitado no existe.
      */
+    @Override
     public EvaluacionResultDTO corregirExamen(Long idExamen, ExamenSubmitDTO submitDTO) throws BadRequestException {
         Examen examen = examenRepository.findById(idExamen)
                 .orElseThrow(() -> new NotFoundException("Examen no encontrado con ID: " + idExamen));
@@ -115,6 +117,7 @@ public class EvaluacionServiceImpl {
      * @throws BadRequestException Si no hay un usuario logueado en el contexto de seguridad.
      * @throws NotFoundException Si el usuario no ha realizado ningún examen.
      */
+    @Override
     public List<EvaluacionHistorialDTO> obtenerMisNotas() throws BadRequestException {
         // extraemos el usuario del token (igual que al corregir)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -133,6 +136,7 @@ public class EvaluacionServiceImpl {
         return evaluacionMapper.toHistorialDTOList(misEvaluaciones);
     }
 
+    @Override
     public List<EvaluacionHistorialDTO> obtenerNotasDeAlumnoEnExamen(Long idExamen, String correoAlumno) {
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByIdExamenAndCorreoUsuarioOrderByFechaDesc(idExamen, correoAlumno);
@@ -149,6 +153,7 @@ public class EvaluacionServiceImpl {
      * @return Objeto con el total de exámenes, nota media y conteo de aprobados/suspensos.
      * @throws NotFoundException Si el alumno no tiene registros de exámenes.
      */
+    @Override
     public EstadisticasAlumnoDTO obtenerEstadisticasAlumno(String correo) {
 
         List<Evaluacion> evaluaciones = evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo);
@@ -184,6 +189,7 @@ public class EvaluacionServiceImpl {
         );
     }
 
+    @Override
     public List<EvaluacionHistorialDTO> obtenerHistorialAlumno(String correo, String sortBy, String sortDir) {
         String campoEntidad = traducirCampoSort(sortBy);
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -207,6 +213,7 @@ public class EvaluacionServiceImpl {
      * @return Lista de historial de evaluaciones ordenadas.
      * @throws NotFoundException Si nadie ha realizado el examen todavía.
      */
+    @Override
     public List<EvaluacionHistorialDTO> obtenerNotasExamen(Long idExamen, String sortBy, String sortDir) {
         String campoEntidad = traducirCampoSort(sortBy);
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -221,19 +228,4 @@ public class EvaluacionServiceImpl {
         return evaluacionMapper.toHistorialDTOList(evaluaciones);
     }
 
-    /**
-     * Método auxiliar privado que traduce los parámetros de ordenación de la URL
-     * a los nombres reales de las columnas en la base de datos (Entidad).
-     *
-     * @param sortBy Valor del parámetro de ordenación recibido en la petición.
-     * @return Nombre del atributo correspondiente en la entidad Evaluacion.
-     */
-    private String traducirCampoSort(String sortBy) {
-        return switch (sortBy.toLowerCase()) {
-            case "nota" -> "nota";
-            case "fecha" -> "fecha";
-            case "correo" -> "correoUsuario";
-            default -> "id"; // ordenacion por id por defecto
-        };
-    }
 }

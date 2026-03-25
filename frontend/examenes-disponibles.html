@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exámenes Disponibles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="p-6 bg-gray-50 min-h-screen">
+
+<div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Catálogo de Exámenes</h2>
+    <p class="text-gray-500 text-sm mt-1">Recuerda que tienes un máximo de <span class="font-bold text-red-500">2 intentos</span> por evaluación.</p>
+</div>
+
+<div id="lista-examenes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="col-span-full text-center py-10 text-gray-400 animate-pulse font-bold">
+        <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+        <p>Cargando exámenes e historial...</p>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8080';
+    const token = localStorage.getItem('token');
+    if (!token) window.top.location.href = 'index.html';
+
+    async function cargarExamenesYBloqueos() {
+        try {
+            // 1. Pedimos todos los exámenes disponibles
+            const resExamenes = await fetch(`${API_URL}/examenes/paginados?size=50`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const dataExamenes = await resExamenes.json();
+            const examenes = dataExamenes.content || [];
+
+            // 2. Pedimos las notas del alumno para ver sus intentos consumidos
+            let misNotas = [];
+            const resNotas = await fetch(`${API_URL}/evaluaciones/mis-notas`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            // Si la respuesta es 200, guardamos el historial.
+            // Si es 404 (NotFoundException), significa que no ha hecho ninguno, así que se queda vacío.
+            if (resNotas.ok) {
+                misNotas = await resNotas.json();
+            }
+
+            // 3. Contamos cuántas veces ha hecho cada examen { idExamen: numeroIntentos }
+            const intentosPorExamen = {};
+            misNotas.forEach(nota => {
+                const idEx = nota.idExamen || nota.id_examen; // Depende de cómo lo llame tu DTO
+                if (idEx) {
+                    intentosPorExamen[idEx] = (intentosPorExamen[idEx] || 0) + 1;
+                }
+            });
+
+            // 4. Dibujamos las tarjetas aplicando la lógica de bloqueo
+            const contenedor = document.getElementById('lista-examenes');
+            contenedor.innerHTML = '';
+
+            if (examenes.length === 0) {
+                contenedor.innerHTML = `<p class="text-gray-500 col-span-full text-center font-bold py-10">No hay exámenes disponibles en el sistema.</p>`;
+                return;
+            }
+
+            examenes.forEach(ex => {
+                // Calculamos su estado
+                const intentosHechos = intentosPorExamen[ex.id] || 0;
+                const bloqueado = intentosHechos >= 2;
+                const intentosRestantes = 2 - intentosHechos;
+
+                // Clases dinámicas dependiendo de si está bloqueado o no
+                const cardStyle = bloqueado ? 'bg-gray-200 border-gray-300 opacity-80' : 'bg-white border-blue-100 hover:shadow-xl hover:-translate-y-1 transition transform duration-200';
+                const titleStyle = bloqueado ? 'text-gray-500 line-through' : 'text-gray-800';
+                const badgeStyle = bloqueado ? 'bg-gray-300 text-gray-600' : 'bg-blue-100 text-blue-700';
+
+                // Texto inferior y Botón
+                const footerText = bloqueado
+                    ? `<span class="text-red-600 font-bold text-xs"><i class="fas fa-ban mr-1"></i> Intentos agotados</span>`
+                    : `<span class="text-green-600 font-bold text-xs"><i class="fas fa-unlock mr-1"></i> ${intentosRestantes} intento(s) restante(s)</span>`;
+
+                const btnHtml = bloqueado
+                    ? `<button disabled class="bg-gray-400 text-white px-5 py-2 rounded-lg font-bold text-sm cursor-not-allowed shadow-inner flex items-center transition">
+                                <i class="fas fa-lock mr-2"></i> Bloqueado
+                           </button>`
+                    : `<button onclick="comenzarExamen(${ex.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-md transition flex items-center">
+                                Comenzar <i class="fas fa-play ml-2"></i>
+                           </button>`;
+
+                // Inyectamos la tarjeta en el HTML
+                contenedor.innerHTML += `
+                        <div class="rounded-xl shadow-md overflow-hidden border-2 ${cardStyle} flex flex-col h-full">
+                            <div class="p-6 flex-1">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-xl font-bold ${titleStyle}">${ex.titulo}</h3>
+                                    <span class="${badgeStyle} text-xs font-black px-3 py-1 rounded-full whitespace-nowrap">
+                                        ${ex.numero_preguntas || '?'} Preguntas
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 line-clamp-3">${ex.descripcion || 'Sin descripción disponible.'}</p>
+                            </div>
+
+                            <div class="bg-gray-50/50 p-4 border-t border-gray-200/50 flex items-center justify-between mt-auto">
+                                ${footerText}
+                                ${btnHtml}
+                            </div>
+                        </div>
+                    `;
+            });
+
+        } catch (error) {
+            document.getElementById('lista-examenes').innerHTML = `
+                    <div class="col-span-full bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm">
+                        <p class="font-bold"><i class="fas fa-exclamation-circle mr-2"></i>Error de conexión</p>
+                        <p class="text-sm">No se pudo contactar con el servidor. Revisa tu conexión a internet.</p>
+                    </div>`;
+        }
+    }
+
+    window.comenzarExamen = function(id) {
+        window.location.href = `ejecutar-examen.html?id=${id}`;
+    }
+
+    // Arrancamos
+    cargarExamenesYBloqueos();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Preguntas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<nav class="bg-blue-800 p-4 shadow-lg text-white">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold">Banco Global de Preguntas</h1>
+        <button onclick="window.location.href='dashboard.html'" class="bg-gray-700 hover:bg-gray-900 px-4 py-2 rounded font-bold transition">
+            Volver
+        </button>
+    </div>
+</nav>
+
+<main class="container mx-auto mt-8 p-4">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Listado de Preguntas</h2>
+        <button onclick="window.location.href='crear-pregunta.html'" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition">
+            + Nueva Pregunta
+        </button>
+    </div>
+
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex gap-4 items-center border-t-4 border-blue-500">
+        <i class="fas fa-search text-gray-400"></i>
+        <span class="font-bold text-gray-700 whitespace-nowrap">Buscar Pregunta:</span>
+        <input type="number" id="inputBuscarId" placeholder="Introduce el ID (Ej: 5)..." class="border border-gray-300 rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+
+        <button onclick="buscarPreguntaPorId()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition shadow">
+            Buscar
+        </button>
+        <button onclick="limpiarBusquedaPreguntas()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition shadow">
+            Ver Todas
+        </button>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full leading-normal">
+            <thead class="bg-gray-800 text-white">
+            <tr>
+                <th class="px-5 py-3 text-left text-sm font-semibold uppercase">ID</th>
+                <th class="px-5 py-3 text-left text-sm font-semibold uppercase">Enunciado</th>
+                <th class="px-5 py-3 text-center text-sm font-semibold uppercase">Respuesta Correcta</th>
+                <th class="px-5 py-3 text-center text-sm font-semibold uppercase">Acciones</th>
+            </tr>
+            </thead>
+            <tbody id="tablaPreguntas" class="text-gray-700">
+            <tr><td colspan="4" class="text-center py-4">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4 bg-white p-4 rounded shadow-md">
+        <span class="text-sm font-bold text-gray-600" id="infoPaginacionPreg">Página 1</span>
+        <div class="flex gap-2">
+            <button id="btnAnt" onclick="cambiarPaginaPreguntas(-1)" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-4 rounded transition disabled:opacity-50 cursor-pointer">Anterior</button>
+            <button id="btnSig" onclick="cambiarPaginaPreguntas(1)" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-4 rounded transition disabled:opacity-50 cursor-pointer">Siguiente</button>
+        </div>
+    </div>
+</main>
+
+<script src="js/preguntas.js"></script>
+</body>
+</html>

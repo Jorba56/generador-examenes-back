@@ -28,7 +28,7 @@ public class IncidenciasServiceImpl implements IncidenciasService {
      */
     @Override
     public List<Incidencia> obtenerTodas() {
-        return incidenciaRepository.findAll();
+        return incidenciaRepository.findTop50ByOrderByFechaDesc();
     }
 
     /**

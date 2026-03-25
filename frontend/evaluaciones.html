@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+    <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+        <h3 class="text-lg font-bold text-gray-800 mb-3"><i class="fas fa-file-alt text-blue-500 mr-2"></i>Buscar Ranking por Examen</h3>
+        <div class="flex gap-2">
+            <input type="number" id="inputExamenId" placeholder="ID del Examen (Ej: 1)" class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="buscarPorExamen()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded transition">Buscar</button>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-purple-500">
+        <h3 class="text-lg font-bold text-gray-800 mb-3"><i class="fas fa-user-graduate text-purple-500 mr-2"></i>Buscar Historial por Alumno</h3>
+        <div class="flex gap-2">
+            <input type="email" id="inputCorreo" placeholder="Correo del alumno" class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="buscarPorAlumno()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded transition">Buscar</button>
+        </div>
+    </div>
+
+</div>
+
+<div id="zonaEstadisticas" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 hidden">
+    <div class="bg-white p-4 rounded shadow text-center border-b-4 border-gray-800"><p class="text-sm text-gray-500 font-bold">Total Exámenes</p><p id="statTotal" class="text-2xl font-black text-gray-800">-</p></div>
+    <div class="bg-white p-4 rounded shadow text-center border-b-4 border-blue-500"><p class="text-sm text-gray-500 font-bold">Nota Media</p><p id="statMedia" class="text-2xl font-black text-blue-600">-</p></div>
+    <div class="bg-white p-4 rounded shadow text-center border-b-4 border-green-500"><p class="text-sm text-gray-500 font-bold">Aprobados</p><p id="statAprobados" class="text-2xl font-black text-green-600">-</p></div>
+    <div class="bg-white p-4 rounded shadow text-center border-b-4 border-red-500"><p class="text-sm text-gray-500 font-bold">Suspensos</p><p id="statSuspensos" class="text-2xl font-black text-red-600">-</p></div>
+</div>
+
+<div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
+        <h3 id="tituloResultados" class="font-bold">Resultados de la búsqueda</h3>
+        <button id="btnDescargarExcel" onclick="descargarExcel()" class="bg-green-600 hover:bg-green-700 px-4 py-1 rounded font-bold text-sm hidden transition">
+            <i class="fas fa-file-excel mr-1"></i> Exportar a Excel
+        </button>
+    </div>
+    <table class="min-w-full leading-normal">
+        <thead class="bg-gray-100 text-gray-600">
+        <tr>
+            <th class="px-5 py-3 text-left text-xs font-bold uppercase">ID Eval</th>
+            <th class="px-5 py-3 text-left text-xs font-bold uppercase">ID Examen</th>
+            <th class="px-5 py-3 text-left text-xs font-bold uppercase">Alumno</th>
+            <th class="px-5 py-3 text-center text-xs font-bold uppercase">Fecha</th>
+            <th class="px-5 py-3 text-center text-xs font-bold uppercase">Nota Final</th>
+        </tr>
+        </thead>
+        <tbody id="tablaEvaluaciones" class="text-gray-700">
+        <tr><td colspan="5" class="text-center py-8 text-gray-500">Utiliza los buscadores de arriba para ver las notas.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="js/evaluaciones.js"></script>
+</body>
+</html>

@@ -33,5 +33,11 @@ public interface IncidenciasRepository extends JpaRepository<Incidencia, Long> {
      * @return Lista de incidencias originadas en ese método.
      */
     List<Incidencia> findByMetodo(String metodo);
+
+    /**
+     * Busca las últimas 50 incidencias y las ordena por fecha en orden descendente.
+     * * @return Lista de incidencias correspondientes.
+     */
+    List<Incidencia> findTop50ByOrderByFechaDesc();
 }
 

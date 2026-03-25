@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración Global</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen flex overflow-hidden">
+
+<aside class="w-64 bg-gray-900 text-white flex flex-col hidden md:flex shadow-2xl z-10">
+  <div class="p-5 bg-gray-800 text-center text-xl font-black tracking-widest border-b border-gray-700">
+    ADMIN<span class="text-indigo-400">HUB</span></h2>
+  </div>
+
+  <nav class="flex-1 overflow-y-auto py-4">
+    <ul class="space-y-1">
+
+      <li class="pt-4 pb-2 px-5">
+        <span class="text-xs uppercase text-gray-400 font-bold tracking-wider">Módulo Exámenes</span>
+      </li>
+      <li>
+        <a href="#" onclick="cargarVista('dashboard.html', this, 'Gestión de Exámenes')" class="menu-item block px-5 py-3 hover:bg-gray-800 bg-gray-800 border-l-4 border-blue-500 transition">
+          <i class="fas fa-file-alt w-6 text-center text-blue-400"></i> Exámenes
+        </a>
+      </li>
+      <li>
+        <a href="#" onclick="cargarVista('preguntas.html', this, 'Banco Global de Preguntas')" class="menu-item block px-5 py-3 hover:bg-gray-800 border-l-4 border-transparent transition">
+          <i class="fas fa-question-circle w-6 text-center text-green-400"></i> Preguntas
+        </a>
+      </li>
+      <li>
+        <a href="#" onclick="cargarVista('evaluaciones.html', this, 'Historial y Evaluaciones')" class="menu-item block px-5 py-3 hover:bg-gray-800 border-l-4 border-transparent transition">
+          <i class="fas fa-chart-bar w-6 text-center text-yellow-400"></i> Evaluaciones
+        </a>
+      </li>
+
+      <li class="pt-6 pb-2 px-5">
+        <span class="text-xs uppercase text-gray-400 font-bold tracking-wider">Módulo Usuarios</span>
+      </li>
+      <li>
+        <a href="#" onclick="cargarVista('gestion-usuarios.html', this, 'Usuarios y Roles')" class="block px-5 py-3 hover:bg-gray-800 transition">
+          <i class="fas fa-users w-6 text-center"></i> Usuarios / Roles
+        </a>
+      </li>
+
+      <li class="pt-6 pb-2 px-5">
+        <span class="text-xs uppercase text-gray-400 font-bold tracking-wider">Módulo Soporte</span>
+      </li>
+      <li>
+        <a href="#" onclick="cargarVista('incidencias.html', this, 'Registro de Incidencias')" class="menu-item block px-5 py-3 hover:bg-gray-800 border-l-4 border-transparent transition">
+          <i class="fas fa-bug w-6 text-center text-red-400"></i> Incidencias
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="p-4 border-t border-gray-700 bg-gray-800">
+    <button id="btnLogout" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition shadow">
+      <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+    </button>
+  </div>
+</aside>
+
+<main class="flex-1 flex flex-col h-screen relative">
+  <header class="bg-white shadow-sm p-4 flex justify-between items-center z-0">
+    <h2 id="tituloSeccion" class="text-2xl font-bold text-gray-800">Gestión de Exámenes</h2>
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">A</div>
+      <span class="text-sm font-semibold text-gray-600">Administrador</span>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-hidden bg-gray-100">
+    <iframe id="iframeContenido" src="dashboard.html" class="w-full h-full border-none"></iframe>
+  </div>
+</main>
+
+<script src="js/admin-pannel.js"></script>
+
+</body>
+</html>

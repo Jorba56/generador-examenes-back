@@ -5,7 +5,7 @@ import com.jorge.examenes.dto.EvaluacionResultDTO;
 import com.jorge.examenes.dto.ExamenSubmitDTO;
 import com.jorge.examenes.dto.EstadisticasAlumnoDTO;
 import com.jorge.examenes.exceptions.BadRequestException;
-import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
+import com.jorge.examenes.services.EvaluacionService;
 import com.jorge.examenes.utils.EvaluacionExcelExporter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,9 +32,9 @@ import java.util.List;
 @Tag(name = "Evaluaciones", description = "Endpoints para la corrección automática y registro de notas")
 public class EvaluacionController {
 
-    private final EvaluacionServiceImpl evaluacionService;
+    private final EvaluacionService evaluacionService;
 
-    public EvaluacionController(EvaluacionServiceImpl evaluacionService) {
+    public EvaluacionController(EvaluacionService evaluacionService) {
         this.evaluacionService = evaluacionService;
     }
 

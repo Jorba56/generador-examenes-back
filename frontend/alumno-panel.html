@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal del Alumno</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex h-screen overflow-hidden">
+
+<aside class="w-64 bg-blue-900 text-white flex flex-col shadow-xl">
+  <div class="p-6 text-center border-b border-blue-800">
+    <h2 class="text-2xl font-black tracking-tighter">STUDENT<span class="text-blue-400">HUB</span></h2>
+    <p class="text-xs text-blue-300 mt-1 uppercase font-bold">Panel del Estudiante</p>
+  </div>
+
+  <nav class="flex-1 mt-6">
+    <a href="#" onclick="cargarVistaAlumno('examenes-disponibles.html', this)" class="flex items-center px-6 py-3 bg-blue-800 border-l-4 border-blue-400">
+      <i class="fas fa-book-open mr-3"></i> Exámenes
+    </a>
+    <a href="#" onclick="cargarVistaAlumno('mis-notas.html', this)" class="flex items-center px-6 py-3 hover:bg-blue-800 border-l-4 border-transparent transition">
+      <i class="fas fa-graduation-cap mr-3"></i> Mis Notas
+    </a>
+  </nav>
+
+  <div class="p-4 border-t border-blue-800">
+    <button onclick="cerrarSesion()" class="w-full bg-red-500 hover:bg-red-600 py-2 rounded font-bold transition">
+      <i class="fas fa-sign-out-alt mr-2"></i> Salir
+    </button>
+  </div>
+</aside>
+
+<main class="flex-1 flex flex-col">
+  <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+    <h1 id="titulo-pagina" class="text-xl font-bold text-gray-700">Exámenes Disponibles</h1>
+    <div id="usuario-info" class="text-sm font-medium text-gray-500">Cargando...</div>
+  </header>
+  <iframe id="contenido-alumno" src="examenes-disponibles.html" class="w-full flex-1 border-none"></iframe>
+</main>
+
+<script>
+  function cargarVistaAlumno(url, elemento) {
+    document.getElementById('contenido-alumno').src = url;
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('bg-blue-800', 'border-blue-400'));
+    elemento.classList.add('bg-blue-800', 'border-blue-400');
+    document.getElementById('titulo-pagina').innerText = elemento.innerText.trim();
+  }
+
+  function cerrarSesion() {
+    localStorage.removeItem('token');
+    window.top.location.href = 'index.html';
+  }
+
+  // Mostrar el correo del alumno en la cabecera decodificando el token
+  const token = localStorage.getItem('token');
+  if (token) {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    document.getElementById('usuario-info').innerText = payload.sub || payload.correo_usuario;
+  }
+</script>
+</body>
+</html>

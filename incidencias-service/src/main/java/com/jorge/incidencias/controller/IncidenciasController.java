@@ -16,7 +16,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/incidencias")
-@CrossOrigin(origins = {"http://localhost:8081", "http://localhost:8082"})
 @Tag(name = "Incidencias", description = "Endpoints para consultar el registro de errores y excepciones del sistema.")
 public class IncidenciasController {
 
@@ -29,7 +28,7 @@ public class IncidenciasController {
     /**
      * Consulta el listado completo de todas las incidencias registradas.
      */
-    @Operation(summary = "Listar historial de incidencias", description = "Devuelve todas las incidencias (errores de código, accesos denegados, etc.) guardadas en la base de datos.")
+    @Operation(summary = "Listar historial de incidencias", description = "Devuelve las últimas 50 incidencias y las ordena por fecha en orden descendente.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public List<Incidencia> getAllIncidencias() {

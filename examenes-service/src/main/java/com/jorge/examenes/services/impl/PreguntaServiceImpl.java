@@ -4,6 +4,8 @@ import com.jorge.examenes.entity.Pregunta;
 import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.repository.PreguntaRepository;
 import com.jorge.examenes.services.PreguntaService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -84,5 +86,15 @@ public class PreguntaServiceImpl implements PreguntaService {
         Pregunta pregunta = obtenerPorId(id);
         preguntaRepository.delete(pregunta);
         return ("Pregunta eliminada correctamente.");
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<Pregunta> obtenerPreguntasPaginadas(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        return preguntaRepository.findAll(pageable);
     }
 }

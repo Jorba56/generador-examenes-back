@@ -22,7 +22,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/alumnos")
-@CrossOrigin(origins = "http://localhost:8080") // Corrección de seguridad para SonarQube
 @Tag(name = "Alumnos", description = "Gestión exclusiva de alumnos para uso del profesorado")
 public class AlumnoController {
 

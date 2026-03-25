@@ -12,7 +12,7 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
-import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
+import com.jorge.examenes.services.EvaluacionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ class EvaluacionServiceImplTest {
     private EvaluacionMapper evaluacionMapper;
 
     @InjectMocks
-    private EvaluacionServiceImpl evaluacionService;
+    private EvaluacionService evaluacionService;
 
     @BeforeEach
     void setUp() {

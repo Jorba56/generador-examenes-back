@@ -92,4 +92,16 @@ public class PreguntaController {
         preguntaService.borrarPregunta(id);
         return ResponseEntity.ok("Pregunta eliminada correctamente de la base de datos.");
     }
+
+    @Operation(summary = "Listar preguntas paginadas")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
+    @GetMapping("/paginadas")
+    public ResponseEntity<org.springframework.data.domain.Page<Pregunta>> listarPreguntasPaginadas(
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc", required = false) String sortDir) {
+
+        return ResponseEntity.ok(preguntaService.obtenerPreguntasPaginadas(page, size, sortBy, sortDir));
+    }
 }

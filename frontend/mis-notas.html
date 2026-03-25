@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Notas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 p-6 min-h-screen">
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-500 font-bold uppercase">Exámenes</p>
+      <p id="statTotal" class="text-2xl font-black text-gray-800">-</p>
+    </div>
+    <i class="fas fa-file-alt text-3xl text-blue-200"></i>
+  </div>
+  <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-500 flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-500 font-bold uppercase">Nota Media</p>
+      <p id="statMedia" class="text-2xl font-black text-yellow-600">-</p>
+    </div>
+    <i class="fas fa-star text-3xl text-yellow-200"></i>
+  </div>
+  <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-500 font-bold uppercase">Aprobados</p>
+      <p id="statAprobados" class="text-2xl font-black text-green-600">-</p>
+    </div>
+    <i class="fas fa-check-circle text-3xl text-green-200"></i>
+  </div>
+  <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex items-center justify-between">
+    <div>
+      <p class="text-sm text-gray-500 font-bold uppercase">Suspensos</p>
+      <p id="statSuspensos" class="text-2xl font-black text-red-600">-</p>
+    </div>
+    <i class="fas fa-times-circle text-3xl text-red-200"></i>
+  </div>
+</div>
+
+<div class="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200">
+  <div class="bg-blue-900 text-white p-4">
+    <h3 class="font-bold"><i class="fas fa-history mr-2"></i> Historial de Evaluaciones</h3>
+  </div>
+  <table class="min-w-full leading-normal">
+    <thead class="bg-gray-100 text-gray-600">
+    <tr>
+      <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider">Fecha / Hora</th>
+      <th class="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider">Examen</th>
+      <th class="px-5 py-3 text-center text-xs font-bold uppercase tracking-wider">Estado</th>
+      <th class="px-5 py-3 text-center text-xs font-bold uppercase tracking-wider">Nota Final</th>
+    </tr>
+    </thead>
+    <tbody id="tablaMisNotas" class="text-gray-700">
+    <tr><td colspan="4" class="text-center py-8 text-blue-500 animate-pulse font-bold">Cargando tu expediente...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script src="js/mis-notas.js"></script>
+</body>
+</html>
