@@ -65,14 +65,41 @@ public class GlobalExceptionHandler {
      */
     private void logError(Exception ex) {
         String endpoint = "Desconocido";
+        Long idUsuario = 0L; // Por defecto
+
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attrs != null) {
-            endpoint = attrs.getRequest().getRequestURI();
+            jakarta.servlet.http.HttpServletRequest request = attrs.getRequest(); // Usa javax.servlet si estás en Spring Boot 2
+            endpoint = request.getRequestURI();
+
+            // 🚀 EXTRAEMOS EL ID DEL TOKEN A MANO
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                try {
+                    String token = authHeader.substring(7);
+                    String[] partes = token.split("\\.");
+                    if (partes.length > 1) {
+                        // Decodificamos el payload (la parte del medio del JWT)
+                        String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(partes[1]));
+
+                        // Leemos el JSON usando Jackson (nativo de Spring)
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        com.fasterxml.jackson.databind.JsonNode nodo = mapper.readTree(payloadJson);
+
+                        // Buscamos tu clave id_user
+                        if (nodo.has("id_user")) {
+                            idUsuario = nodo.get("id_user").asLong();
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "No se pudo extraer el ID del token JWT: {0}", e.getMessage());
+                }
+            }
         }
 
         logger.log(Level.SEVERE, "Excepción capturada en {0}: {1}", new Object[]{endpoint, ex.getMessage()});
 
-        // 1. Extraemos los detalles exactos (Copiado de tu código de Usuarios)
+        // 1. Extraemos los detalles exactos de la excepción
         String tipo = ex.getClass().getSimpleName();
         String clase = "Desconocida";
         String metodo = "Desconocido";
@@ -93,7 +120,7 @@ public class GlobalExceptionHandler {
         String trazaCompleta = sw.toString();
         String traza = trazaCompleta.length() > 2000 ? trazaCompleta.substring(0, 2000) : trazaCompleta;
 
-        // 2. Construimos el JSON
+        // 2. Construimos el JSON para enviarlo al microservicio de Incidencias
         Map<String, Object> incidenciaJson = new java.util.HashMap<>();
         incidenciaJson.put("endpoint", endpoint);
         incidenciaJson.put("tipo", tipo);
@@ -101,11 +128,14 @@ public class GlobalExceptionHandler {
         incidenciaJson.put("metodo", metodo);
         incidenciaJson.put("traza", traza);
         incidenciaJson.put("fecha", java.time.LocalDateTime.now().toString());
-        incidenciaJson.put("id_usuario", 0L); // En exámenes ponemos 0 por defecto si no tenemos el usuario a mano
 
-        // 3. Enviamos la petición con RestTemplate igual que en Usuarios
+        // 🔥 AQUÍ INYECTAMOS EL ID REAL QUE HEMOS CAPTURADO
+        incidenciaJson.put("id_usuario", idUsuario);
+
+        // 3. Enviamos la petición con RestTemplate
         org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
         try {
+            // Cuidado con la URL, asegúrate de que es correcta en tu entorno Docker
             restTemplate.postForObject("http://host.docker.internal:8082/incidencias", incidenciaJson, String.class);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "No se pudo comunicar con el servidor de incidencias: {0}", e.getMessage());

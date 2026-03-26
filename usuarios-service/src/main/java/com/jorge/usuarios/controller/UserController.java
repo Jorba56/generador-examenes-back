@@ -152,4 +152,11 @@ public class UserController {
 
         return ResponseEntity.ok(userServiceImpl.obtenerTodosLosUsuariosPaginados(page, size, sortBy, sortDir));
     }
+
+    @Operation(summary = "Buscar usuario por Email", description = "Devuelve los detalles de un usuario. Un usuario normal solo puede buscar su propio email.")
+    @PreAuthorize("hasAuthority('ADMIN') or #email == authentication.name")
+    @GetMapping("/email/{email}")
+    public UserIdDTo getUserByEmail(@PathVariable String email) {
+        return userServiceImpl.buscarPorEmail(email);
+    }
 }

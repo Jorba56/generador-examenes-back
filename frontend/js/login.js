@@ -1,3 +1,5 @@
+const API_URL = 'http://localhost:8080';
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -5,53 +7,75 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const contrasenha_usuario = document.getElementById('password').value;
 
     try {
-        // Asegúrate de que esta es la ruta correcta de tu controlador de Login
-        const response = await fetch('http://localhost:8080/auth/login', {
+        // 1. PETICIÓN DE LOGIN
+        const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo_usuario, contrasenha_usuario })
         });
 
         if (response.ok) {
-            // Dependiendo de tu backend, el token puede venir en texto plano o en un JSON
-            // Ajusta esto si tu backend devuelve un texto directamente ( await response.text() )
             const data = await response.json();
-            const token = data.token || data.accessToken || data; // Blindaje
+            // Sacamos el token (manejando posibles nombres de variable del backend)
+            const token = data.token || data.accessToken || data;
 
-            // 1. Guardamos el token
+            if (!token) throw new Error("No se ha recibido el token del servidor.");
+
+            // 2. GUARDAMOS EL TOKEN INICIAL
             localStorage.setItem('token', token);
 
-            // 2. MAGIA: Decodificamos y redirigimos
+            // 4. REDIRIGIR SEGÚN ROL
             redirigirSegunRol(token);
 
         } else {
-            alert("Credenciales incorrectas. Revisa tu correo o contraseña.");
+            document.getElementById('errorMessage').classList.remove('hidden');
+            alert("Credenciales incorrectas.");
         }
     } catch (error) {
+        console.error("Error en el proceso de login:", error);
         alert("Fallo de conexión con el servidor.");
     }
 });
 
-// --- FUNCIÓN PARA LEER EL TOKEN Y REDIRIGIR ---
+/**
+ * Función auxiliar para obtener el ID del usuario.
+ * Se ejecuta durante el login para dejar el ID listo en el navegador.
+ */
+async function obtenerIdPorCorreo(correo, token) {
+    try {
+        const response = await fetch(`${API_URL}/usuarios/email/${correo}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const usuario = await response.json();
+            // Buscamos el ID con todos los nombres posibles que use tu Backend
+            const idEncontrado = usuario.id_user || usuario.id_usuario || usuario.idUser || usuario.id;
+            console.log("ID de usuario recuperado:", idEncontrado);
+            return idEncontrado;
+        }
+        return 0; // Si no lo encuentra, devolvemos 0 para que el back guarde 0L
+    } catch (error) {
+        console.error("Error al obtener ID:", error);
+        return 0;
+    }
+}
+
 function redirigirSegunRol(token) {
     try {
-        // 1. Extraemos el Payload (la parte central del token separada por puntos)
         const base64Url = token.split('.')[1];
-
-        // 2. Arreglamos los caracteres especiales para que JS pueda decodificarlo
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
 
-        // 3. Lo convertimos a un objeto JavaScript
         const payloadDecodificado = JSON.parse(jsonPayload);
-        console.log("Token decodificado:", payloadDecodificado); // Te servirá para cotillear en F12
-
-        // 4. Buscamos el rol. Lo pasamos a mayúsculas para buscar fácilmente
         const rolesString = JSON.stringify(payloadDecodificado).toUpperCase();
 
-        // 5. EL CRUCE DE CAMINOS
         if (rolesString.includes('ADMIN')) {
             window.location.href = 'admin-panel.html';
         } else if (rolesString.includes('PROFESOR')) {
@@ -59,13 +83,13 @@ function redirigirSegunRol(token) {
         } else if (rolesString.includes('ALUMNO')) {
             window.location.href = 'alumno-panel.html';
         } else {
-            alert("Tu usuario no tiene un rol válido asignado.");
-            localStorage.removeItem('token');
+            alert("Tu usuario no tiene un rol válido.");
+            localStorage.clear();
         }
 
     } catch (error) {
-        console.error("Error al parsear el token", error);
-        alert("Error de seguridad al procesar tus datos. Inicia sesión de nuevo.");
-        localStorage.removeItem('token');
+        console.error("Error al procesar el token:", error);
+        alert("Error de seguridad. Inicia sesión de nuevo.");
+        localStorage.clear();
     }
 }

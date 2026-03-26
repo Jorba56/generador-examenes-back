@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Generamos el token y lo devolvemos
-        String token = jwtUtil.generarToken(usuario.getEmailUsuario(), rolesString);
+        String token = jwtUtil.generarToken(usuario.getEmailUsuario(), rolesString, usuario.getIdUser());
         Map<String, String> respuesta = new HashMap<>();
         respuesta.put("token", token);
 

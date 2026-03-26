@@ -15,7 +15,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.security.core.Authentication;
@@ -77,6 +82,28 @@ class UserControllerTest {
         assertEquals((1), userList.size());
         verify(userServiceImpl).listarUsuarios();
         verifyNoMoreInteractions(userServiceImpl); // ver si no se ejecuta mas veces
+    }
+
+    @Test
+    void getUserByEmail_RetornaUsuario() {
+        // 1. Arrange
+        String emailPrueba = "alumno@test.com";
+        UserIdDTo mockDto = new UserIdDTo();
+        mockDto.setIdUser(1L);
+        mockDto.setEmailUsuario(emailPrueba);
+
+        when(userServiceImpl.buscarPorEmail(emailPrueba)).thenReturn(mockDto);
+
+        // 2. Act
+        UserIdDTo resultado = userController.getUserByEmail(emailPrueba);
+
+        // 3. Assert
+        assertNotNull(resultado);
+        assertEquals(emailPrueba, resultado.getEmailUsuario());
+        assertEquals(1L, resultado.getIdUser());
+
+        // Verificamos que el controlador llamó a nuestro servicio exactamente 1 vez
+        verify(userServiceImpl, times(1)).buscarPorEmail(emailPrueba);
     }
 
     @Test
@@ -201,4 +228,30 @@ class UserControllerTest {
 
         assertEquals("Rol eliminado correctamente", resultado);
     }
+
+    @Test
+    void getUsuariosPaginados_DebeRetornarPaginaYStatusOk() {
+        // Arrange
+        int page = 0, size = 10;
+        String sortBy = "nombreUsuario", sortDir = "asc";
+
+        UsersAllDTO dto = new UsersAllDTO();
+        dto.setNombreUsuario("TestPaginado");
+        Page<UsersAllDTO> pageMock = new PageImpl<>(List.of(dto));
+
+        given(userServiceImpl.obtenerTodosLosUsuariosPaginados(page, size, sortBy, sortDir)).willReturn(pageMock);
+
+        // Act
+        ResponseEntity<Page<UsersAllDTO>> response = userController.getUsuariosPaginados(page, size, sortBy, sortDir);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().getTotalElements());
+        assertEquals("TestPaginado", response.getBody().getContent().get(0).getNombreUsuario());
+
+        verify(userServiceImpl, times(1)).obtenerTodosLosUsuariosPaginados(page, size, sortBy, sortDir);
+    }
+
 }

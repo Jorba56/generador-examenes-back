@@ -10,11 +10,16 @@ import com.jorge.usuarios.mapping.UserMapper;
 import com.jorge.usuarios.repository.RolRepository;
 import com.jorge.usuarios.repository.UserRepository;
 import com.jorge.usuarios.services.impl.UserServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Sort;
 
@@ -48,6 +53,23 @@ class UserServiceImplTest {
 
     @InjectMocks
     private UserServiceImpl userServiceImpl;
+
+    private User mockUser;
+    private UserIdDTo mockDto;
+    private final String TEST_EMAIL = "alumno@test.com";
+
+    @BeforeEach
+    void setUp() {
+        // Preparamos un usuario de prueba antes de cada test
+        mockUser = new User();
+        mockUser.setIdUser(1L);
+        mockUser.setEmailUsuario(TEST_EMAIL);
+        mockUser.setActivo(true);
+
+        mockDto = new UserIdDTo();
+        mockDto.setIdUser(1L);
+        mockDto.setEmailUsuario(TEST_EMAIL);
+    }
 
     @Test
     void getAllUsers() {
@@ -843,4 +865,98 @@ class UserServiceImplTest {
 
         verify(userRepository, times(4)).findByActivoTrue(any(Sort.class));
     }
+
+    @Test
+    void buscarPorEmail_Exito() {
+        // 1. Arrange (Preparar)
+        when(userRepository.findUserByEmailUsuario(TEST_EMAIL)).thenReturn(mockUser);
+        when(userMap.userToIdDTO(mockUser)).thenReturn(mockDto);
+
+        // 2. Act (Actuar)
+        UserIdDTo resultado = userServiceImpl.buscarPorEmail(TEST_EMAIL);
+
+        // 3. Assert (Comprobar)
+        assertNotNull(resultado);
+        assertEquals(1L, resultado.getIdUser());
+        assertEquals(TEST_EMAIL, resultado.getEmailUsuario());
+        verify(userRepository, times(1)).findUserByEmailUsuario(TEST_EMAIL);
+        verify(userMap, times(1)).userToIdDTO(mockUser);
+    }
+
+    @Test
+    void buscarPorEmail_UsuarioNoExiste_LanzaException() {
+        // 1. Arrange: El repositorio devuelve null
+        when(userRepository.findUserByEmailUsuario(TEST_EMAIL)).thenReturn(null);
+
+        // 2 & 3. Act & Assert: Comprobamos que salta la NotFoundException
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            userServiceImpl.buscarPorEmail(TEST_EMAIL);
+        });
+
+        assertEquals("Usuario no encontrado con el correo: " + TEST_EMAIL, exception.getMessage());
+        verify(userRepository, times(1)).findUserByEmailUsuario(TEST_EMAIL);
+        verify(userMap, never()).userToIdDTO(any()); // El mapper nunca debe llegar a ejecutarse
+    }
+
+    @Test
+    void buscarPorEmail_UsuarioDesactivado_LanzaException() {
+        // 1. Arrange: El usuario existe, pero está desactivado
+        mockUser.setActivo(false);
+        when(userRepository.findUserByEmailUsuario(TEST_EMAIL)).thenReturn(mockUser);
+
+        // 2 & 3. Act & Assert: Comprobamos que salta la NotFoundException
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+            userServiceImpl.buscarPorEmail(TEST_EMAIL);
+        });
+
+        assertEquals("El usuario está desactivado.", exception.getMessage());
+        verify(userRepository, times(1)).findUserByEmailUsuario(TEST_EMAIL);
+        verify(userMap, never()).userToIdDTO(any());
+    }
+    @Test
+    void obtenerTodosLosUsuariosPaginados_OrdenAscendente() {
+        int page = 0, size = 10;
+        String sortBy = "nombre", sortDir = "asc"; // "nombre" debe traducirse a "nombreUsuario"
+
+        User user = new User();
+        user.setNombreUsuario("PaginadoAsc");
+        Page<User> paginaMock = new PageImpl<>(List.of(user));
+
+        UsersAllDTO dto = new UsersAllDTO();
+        dto.setNombreUsuario("PaginadoAsc");
+
+        given(userRepository.findByActivoTrue(any(Pageable.class))).willReturn(paginaMock);
+        given(userMap.mappingADTO(any(User.class))).willReturn(dto);
+
+        Page<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuariosPaginados(page, size, sortBy, sortDir);
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.getTotalElements());
+
+        ArgumentCaptor<Pageable> capturador = ArgumentCaptor.forClass(Pageable.class);
+        verify(userRepository).findByActivoTrue(capturador.capture());
+
+        Pageable pageableUsado = capturador.getValue();
+        assertEquals(Sort.by("nombreUsuario").ascending(), pageableUsado.getSort());
+    }
+
+    @Test
+    void obtenerTodosLosUsuariosPaginados_OrdenDescendente() {
+        int page = 1, size = 5;
+        String sortBy = "correo", sortDir = "desc"; // "correo" debe traducirse a "emailUsuario"
+
+        Page<User> paginaMock = new PageImpl<>(new ArrayList<>());
+
+        given(userRepository.findByActivoTrue(any(Pageable.class))).willReturn(paginaMock);
+
+        Page<UsersAllDTO> resultado = userServiceImpl.obtenerTodosLosUsuariosPaginados(page, size, sortBy, sortDir);
+
+        assertTrue(resultado.isEmpty());
+
+        ArgumentCaptor<Pageable> capturador = ArgumentCaptor.forClass(Pageable.class);
+        verify(userRepository).findByActivoTrue(capturador.capture());
+
+        assertEquals(Sort.by("emailUsuario").descending(), capturador.getValue().getSort());
+    }
+
 }

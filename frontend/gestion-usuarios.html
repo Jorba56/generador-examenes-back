@@ -22,10 +22,18 @@
 
 <div id="seccion-usuarios" class="block">
     <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex justify-between items-center border-t-4 border-blue-500">
-        <div class="flex gap-4 items-center flex-1">
-            <i class="fas fa-search text-gray-400"></i>
-            <input type="text" id="buscadorUsuarios" placeholder="Buscar usuario..." class="border-none focus:ring-0 w-full bg-transparent" disabled title="La búsqueda en servidor se añadirá pronto">
-        </div>
+        <input type="number" id="inputBusquedaId" placeholder="ID..." class="border rounded px-2 py-1 w-20">
+        <button onclick="buscarUsuarioPorId()" class="bg-blue-500 text-white px-3 py-1 rounded">Buscar</button>
+
+        <input type="text" id="inputBusquedaCorreo" placeholder="Correo..." class="border rounded px-2 py-1 ml-4">
+        <button onclick="buscarUsuarioPorCorreo()" class="bg-blue-500 text-white px-3 py-1 rounded">Buscar</button>
+
+        <select id="selectBusquedaRol" class="border rounded px-2 py-1 ml-4" onchange="buscarUsuarioPorRol()">
+            <option value="">Todos los roles...</option>
+            <option value="1">ADMIN</option>
+            <option value="2">PROFESOR</option>
+            <option value="3">ALUMNO</option>
+        </select>
         <button onclick="exportarExcelUsuarios()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition flex items-center">
             <i class="fas fa-file-excel mr-2"></i> Exportar
         </button>
@@ -122,6 +130,32 @@
                 <i class="fas fa-save mr-2"></i> Guardar
             </button>
         </div>
+    </div>
+</div>
+
+<div id="modalGestionRoles" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 transition-opacity">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+
+        <div class="bg-purple-600 px-6 py-4 flex justify-between items-center">
+            <h3 class="text-white font-bold text-lg"><i class="fas fa-user-tag mr-2"></i> Gestionar Roles</h3>
+            <button onclick="cerrarGestionRoles()" class="text-white hover:text-gray-200 focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="p-6">
+            <p class="text-sm text-gray-600 mb-4 border-b pb-2">Añade o quita permisos a este usuario en tiempo real.</p>
+
+            <div id="listaRolesUsuario" class="max-h-60 overflow-y-auto pr-2 space-y-2">
+            </div>
+        </div>
+
+        <div class="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-100">
+            <button onclick="cerrarGestionRoles()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded shadow transition">
+                Cerrar
+            </button>
+        </div>
+
     </div>
 </div>
 

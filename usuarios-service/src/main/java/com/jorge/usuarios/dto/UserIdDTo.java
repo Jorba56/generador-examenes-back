@@ -26,6 +26,7 @@ public class UserIdDTo {
 
     // Getters y setters
     public void setIdUser(Long idUser) { this.idUser = idUser; }
+    public Long getIdUser() { return idUser; }
 
     public String getNombreUsuario() { return nombreUsuario; }
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }

@@ -1,4 +1,22 @@
 const token = localStorage.getItem('token');
+async function cogerIdUser() {
+    let idUsuario;
+    try {
+        const responseBusqueda = await fetch(`${API_URL}/usuarios/email/${miCorreo}`, {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+
+        if (responseBusqueda.ok) {
+            const usuario = await responseBusqueda.json();
+
+            // 3. ¡LA MAGIA! A raíz del usuario encontrado, atrapamos su ID
+            return idUsuario = usuario.id_usuario;
+        }
+    } catch {
+         return ("No se ha podido conseguir tu id de usuario");
+    }
+}
+idUsuario=cogerIdUser();
 if (!token) window.location.href = 'index.html';
 
 const API_URL = 'http://localhost:8080';
@@ -76,7 +94,9 @@ window.buscarPreguntaPorId = async function() {
     try {
         // Atacamos al endpoint de ID específico de tu PreguntaController
         const response = await fetch(`${API_URL}/preguntas/${idBuscar}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         if (response.ok) {

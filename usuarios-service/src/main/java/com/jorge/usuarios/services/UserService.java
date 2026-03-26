@@ -90,4 +90,6 @@ public interface UserService {
     String deleteRolUser(Long idUser, Long idRol);
 
     List<UsersAllDTO> obtenerTodosLosUsuarios(String sortBy, String sortDir);
+
+    UserIdDTo buscarPorEmail(String email);
 }

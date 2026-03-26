@@ -31,17 +31,17 @@ class IncidenciasServiceImplTest {
     // metodos generales
 
     @Test
-    void obtenerTodas() {
+    void obtenerUltimas50() {
         Incidencia incidencia = new Incidencia();
         List<Incidencia> lista = List.of(incidencia);
 
-        given(incidenciaRepository.findAll()).willReturn(lista);
+        given(incidenciaRepository.findTop50ByOrderByFechaDesc()).willReturn(lista);
 
         List<Incidencia> resultado = incidenciasService.obtenerTodas();
 
         assertFalse(resultado.isEmpty());
         assertEquals(1, resultado.size());
-        verify(incidenciaRepository).findAll();
+        verify(incidenciaRepository).findTop50ByOrderByFechaDesc();
     }
 
     @Test

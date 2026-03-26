@@ -40,7 +40,7 @@ window.cargarIncidencias = async function(urlPersonalizada = null) {
 
     try {
         const response = await fetch(urlFinal, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token}`}
         });
 
         if (response.ok) {

@@ -1,7 +1,10 @@
 package com.jorge.incidencias.exceptions;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jorge.incidencias.entity.Incidencia;
 import com.jorge.incidencias.services.IncidenciasService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +15,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -22,7 +26,6 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     private final IncidenciasService incidenciaService;
 
     // Solo inyectamos IncidenciasService (aquí no existe UserRepository)
@@ -73,13 +76,37 @@ public class GlobalExceptionHandler {
      */
     private void registrarIncidencia(Exception ex) {
         String endpoint = "Desconocido";
-
-        // Como aquí no tenemos acceso a la base de datos de usuarios, asignamos 0L temporalmente.
         Long idUsuario = 0L;
 
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attrs != null) {
-            endpoint = attrs.getRequest().getRequestURI();
+            HttpServletRequest request = attrs.getRequest();
+            endpoint = request.getRequestURI();
+
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                try {
+                    String token = authHeader.substring(7);
+                    // 1. El JWT tiene 3 partes separadas por puntos. La 2ª es el Payload (datos).
+                    String[] partes = token.split("\\.");
+                    if (partes.length > 1) {
+                        // 2. Decodificamos la base64 del payload
+                        String payloadJson = new String(Base64.getUrlDecoder().decode(partes[1]));
+
+                        // 3. Usamos ObjectMapper (que Spring ya tiene) para leer el JSON
+                        ObjectMapper mapper = new ObjectMapper();
+                        JsonNode nodo = mapper.readTree(payloadJson);
+
+                        // 4. Buscamos el campo "id_user" que inyectamos en el otro microservicio
+                        if (nodo.has("id_user")) {
+                            idUsuario = nodo.get("id_user").asLong();
+                        }
+                    }
+                } catch (Exception e) {
+                    // Si el token es inválido o no tiene el ID, se queda en 0L
+                    idUsuario = 0L;
+                }
+            }
         }
 
         String tipo = ex.getClass().getSimpleName();
@@ -118,6 +145,8 @@ public class GlobalExceptionHandler {
         incidencia.setMetodo(metodo);
         incidencia.setTraza(traza);
         incidencia.setFecha(LocalDateTime.now());
+
+        // Asignamos el ID capturado
         incidencia.setIdUsuario(idUsuario);
 
         incidenciaService.guardar(incidencia);

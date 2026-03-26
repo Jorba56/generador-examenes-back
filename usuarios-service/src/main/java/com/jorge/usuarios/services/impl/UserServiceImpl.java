@@ -281,6 +281,20 @@ public class UserServiceImpl implements UserService {
         return usuariosMappeados;
     }
 
+    @Override
+    public UserIdDTo buscarPorEmail(String email) {
+        User usuario = userRep.findUserByEmailUsuario(email);
+
+        if (usuario == null) {
+            throw new NotFoundException("Usuario no encontrado con el correo: " + email);
+        }
+        if (!usuario.getActivo()) {
+            throw new NotFoundException("El usuario está desactivado.");
+        }
+
+        return userMap.userToIdDTO(usuario);
+    }
+
     private String traducirCampoSortUsuario(String sortBy) {
         return switch (sortBy.toLowerCase()) {
             case "nombre", "nombreusuario" -> "nombreUsuario";

@@ -25,10 +25,11 @@ public class JwtUtil {
      * @param roles Lista de roles asignados al usuario.
      * @return String que representa el token JWT firmado.
      */
-    public String generarToken(String email, List<String> roles) {
+    public String generarToken(String email, List<String> roles, Long id_user) {
         return JWT.create()
                 .withSubject(email)// guardamos el correo en el token
                 .withClaim("roles", roles)
+                .withClaim("id_user", id_user)
                 .withIssuedAt(new Date()) // fecha de creación
                 .withExpiresAt(new Date(System.currentTimeMillis() + 86400000)) // expira en 1 día
                 .sign(ALGORITHM);
@@ -46,5 +47,18 @@ public class JwtUtil {
                 .build()
                 .verify(token)
                 .getSubject();
+    }
+
+    /**
+     * Extrae el ID de usuario almacenado en los claims del token.
+     * * @param token Token JWT recibido.
+     * @return El ID del usuario como Long.
+     */
+    public Long obtenerIdUsuario(String token) {
+        return JWT.require(ALGORITHM)
+                .build()
+                .verify(token)
+                .getClaim("id_user")
+                .asLong(); // Lo extraemos directamente como Long
     }
 }

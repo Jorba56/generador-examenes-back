@@ -1,4 +1,30 @@
 
+(function protegerRuta() {
+    const token = localStorage.getItem('token');
+
+    // Si no hay token, fuera
+    if (!token) {
+        window.location.replace('login.html');
+        return;
+    }
+
+    try {
+        // Abrimos el token para cotillear los roles
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const rolesString = JSON.stringify(payload).toUpperCase();
+
+        // Si es el panel de admin y NO tiene el rol ADMIN, fuera
+        if (!rolesString.includes('ADMIN')) {
+            alert("Acceso denegado: No tienes permisos de Administrador.");
+            window.location.replace('login.html'); // O mándalo a su panel correspondiente
+        }
+    } catch (e) {
+        // Si el token está corrupto o lo han modificado a mano, fuera
+        localStorage.removeItem('token');
+        window.location.replace('login.html');
+    }
+})();
+
 // Validar seguridad global
 const token = localStorage.getItem('token');
 if (!token) {

@@ -68,7 +68,7 @@ class AuthServiceTest {
 
         given(userRepository.findUserByEmailUsuario("luis@gmail.com")).willReturn(usuario);
         given(passwordEncoder.matches(user.getContrasenhaUsuario(), usuario.getContrasenhaUsuario())).willReturn(true);
-        given(jwtUtil.generarToken("luis@gmail.com", rolesString)).willReturn("token123");
+        given(jwtUtil.generarToken("luis@gmail.com", rolesString, 1L)).willReturn("token123");
 
         Map<String, String> respuesta= authServiceImpl.login(user);
 
