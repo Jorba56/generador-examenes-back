@@ -42,19 +42,11 @@ window.cambiarPaginaUsu = function(dir) {
     cargarUsuarios();
 }
 
-// ==================== LÓGICA DE USUARIOS ====================
-
-window.cambiarPaginaUsu = function(dir) {
-    pagUsuarios += dir;
-    cargarUsuarios();
-}
-
 async function cargarUsuarios() {
     const tabla = document.getElementById('tablaUsuarios');
     tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-blue-500 animate-pulse font-bold">Cargando usuarios y roles...</td></tr>`;
 
     try {
-        // Lanzamos las 3 peticiones SIMULTÁNEAMENTE para no perder rendimiento
         const [resUsu, resRoles, resMapa] = await Promise.all([
             fetch(`${API_URL}/usuarios/paginados?page=${pagUsuarios}&size=10&sortBy=idUser&sortDir=asc`, { headers: { 'Authorization': `Bearer ${token}` } }),
             fetch(`${API_URL}/roles`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -64,19 +56,13 @@ async function cargarUsuarios() {
         if (resUsu.ok && resRoles.ok && resMapa.ok) {
             const dataUsu = await resUsu.json();
             const todosLosRoles = await resRoles.json();
-            const mapaUsuariosRoles = await resMapa.json(); // Esto trae tu List<UsuarioRolesDTO>
+            const mapaUsuariosRoles = await resMapa.json();
 
             const usuarios = dataUsu.content || [];
 
-            // 1. Creamos un diccionario rápido de Roles para no hacer bucles anidados
-            // Ejemplo: { 1: "ADMIN", 2: "PROFESOR" }
             const diccRoles = {};
-            todosLosRoles.forEach(r => {
-                const idRol = r.idRol || r.id;
-                diccRoles[idRol] = r.name || r.nombre || 'Desconocido';
-            });
+            todosLosRoles.forEach(r => diccRoles[r.idRol || r.id_rol || r.id] = r.name || r.nombre || 'Desconocido');
 
-            // 2. Controles de Paginación
             document.getElementById('infoPagUsuarios').innerText = `Página ${dataUsu.number + 1} de ${dataUsu.totalPages || 1}`;
             document.getElementById('btnAntUsu').disabled = dataUsu.number === 0;
             document.getElementById('btnSigUsu').disabled = dataUsu.number >= (dataUsu.totalPages - 1);
@@ -88,22 +74,16 @@ async function cargarUsuarios() {
                 return;
             }
 
-            // 3. Pintamos la tabla cruzando los datos
             usuarios.forEach(u => {
-                // Adaptado al snake_case o camelCase de tu UsersAllDTO
-                const idUser = u.id_usuario || u.id_user;
+                const idUser = u.id_usuario || u.id_user || u.idUser || u.id;
                 const nombreCompleto = `${u.nombre_usuario || u.nombreUsuario || ''} ${u.apellido_usuario || u.apellidoUsuario || ''}`.trim();
                 const correo = u.correo_usuario || u.emailUsuario || 'Sin correo';
 
-                // Buscamos este usuario en la relación que devolvió el endpoint /usuarios_roles
                 const relacion = mapaUsuariosRoles.find(m => (m.id_usuario || m.idUser) === idUser);
-
                 let rolesHtml = '<span class="text-gray-400 text-xs italic">Sin roles</span>';
 
-                // Si encontramos la relación y tiene IDs de roles, los pintamos
                 if (relacion && relacion.id_rol && relacion.id_rol.length > 0) {
                     rolesHtml = relacion.id_rol.map(idRol => {
-                        // Rescatamos el nombre del rol usando nuestro diccionario
                         const nombreRol = diccRoles[idRol] || `ID:${idRol}`;
                         return `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded border border-blue-200 mr-1 shadow-sm uppercase">${nombreRol}</span>`;
                     }).join('');
@@ -123,238 +103,65 @@ async function cargarUsuarios() {
                 `;
             });
         } else {
-            tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Error de permisos o conexión con uno de los endpoints.</td></tr>`;
+            tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Error de permisos o conexión.</td></tr>`;
         }
     } catch (error) {
         tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Fallo de red al conectar.</td></tr>`;
     }
 }
-window.exportarExcelUsuarios = function() {
-    window.open(`${API_URL}/usuarios/exportar/excel`, '_blank');
-}
 
-window.editarUsuario = async function(id) {
+window.exportarExcelUsuarios = async function() {
     try {
-        // Pedimos a tu endpoint GET /usuarios/{id} los datos frescos
-        const response = await fetch(`${API_URL}/usuarios/${id}`, {
+        const response = await fetch(`${API_URL}/usuarios/exportar/excel`, {
+            method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (response.ok) {
-            const usuario = await response.json();
-
-            // Rellenamos los campos del formulario respetando tu DTO
-            document.getElementById('editUserId').value = id;
-            document.getElementById('editNombre').value = usuario.nombre_usuario || usuario.nombreUsuario || '';
-            document.getElementById('editApellidos').value = usuario.apellido_usuario || usuario.apellidoUsuario || '';
-            document.getElementById('editCorreo').value = usuario.correo_usuario || usuario.emailUsuario || '';
-
-            // Si por algún casual la base de datos lo tiene en false, quitamos el check
-            document.getElementById('editActivo').checked = usuario.activo !== false;
-
-            // Mostramos la ventana
-            document.getElementById('modalEditarUsuario').classList.remove('hidden');
-        } else {
-            alert("No se pudieron cargar los datos del usuario.");
+        if (response.status === 401) {
+            alert("Sesión expirada o no autorizada. Por favor, inicia sesión de nuevo.");
+            return;
         }
+
+        if (!response.ok) throw new Error("Error al generar el archivo Excel");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const fecha = new Date().toISOString().split('T')[0];
+        a.download = `reporte_usuarios_${fecha}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
     } catch (error) {
-        alert("Fallo de red al intentar conectar.");
+        alert("No se pudo descargar el archivo.");
     }
-}
-
-// --- CERRAR MODAL ---
-window.cerrarModalEditar = function() {
-    document.getElementById('modalEditarUsuario').classList.add('hidden');
-}
-
-// --- GUARDAR LOS CAMBIOS (PUT) ---
-window.guardarEdicionUsuario = async function() {
-    const id = document.getElementById('editUserId').value;
-
-    // Construimos el JSON exactamente como espera tu Entidad User.java
-    // No enviamos contraseña ni roles porque tu backend lo prohíbe/ignora para el ADMIN
-    const payload = {
-        nombre_usuario: document.getElementById('editNombre').value,
-        apellido_usuario: document.getElementById('editApellidos').value,
-        correo_usuario: document.getElementById('editCorreo').value,
-        activo: document.getElementById('editActivo').checked
-    };
-
-    try {
-        // Atacamos a tu endpoint PUT /usuarios/{id}
-        const response = await fetch(`${API_URL}/usuarios/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            alert("¡Usuario modificado con éxito!");
-            cerrarModalEditar();
-            cargarUsuarios(); // Recargamos la tabla automáticamente para ver los cambios
-        } else {
-            // El detector de mentiras por si falla algo en el backend
-            const errorText = await response.text();
-            try {
-                const errorJson = JSON.parse(errorText);
-                alert(`Error: ${errorJson.message || errorJson.error || 'Desconocido'}`);
-            } catch (e) {
-                alert(`Error del Servidor (${response.status}).`);
-            }
-        }
-    } catch (error) {
-        alert("Fallo de conexión al guardar.");
-    }
-}
-window.borrarUsuario = function(id) { alert("Llamar al DELETE /usuarios/" + id); }
-
-// Búsqueda por ID
-window.buscarUsuarioPorId = async function() {
-    // Asume que tienes un input en HTML con id="inputBusquedaId"
-    const idABuscar = document.getElementById('inputBusquedaId').value.trim();
-
-    if (!idABuscar) {
-        pagUsuarios = 0;
-        return cargarUsuarios(); // Si está vacío, recarga la tabla normal
-    }
-
-    const tabla = document.getElementById('tablaUsuarios');
-    tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-blue-500 animate-pulse font-bold">Buscando usuario...</td></tr>`;
-
-    try {
-        const response = await fetch(`${API_URL}/usuarios/${idABuscar}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const usuario = await response.json();
-            // Limpiamos los botones de paginación porque es un resultado único
-            document.getElementById('infoPagUsuarios').innerText = `Resultado único`;
-            document.getElementById('btnAntUsu').disabled = true;
-            document.getElementById('btnSigUsu').disabled = true;
-
-            renderizarUnUsuario(usuario, tabla); // Función auxiliar abajo
-        } else {
-            tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Usuario no encontrado.</td></tr>`;
-        }
-    } catch (error) {
-        tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Fallo de red al buscar.</td></tr>`;
-    }
-}
-
-// Búsqueda por Rol
-window.buscarUsuarioPorRol = async function() {
-    // Asume que tienes un <select> en HTML con id="selectBusquedaRol"
-    const idRolABuscar = document.getElementById('selectBusquedaRol').value;
-
-    if (!idRolABuscar) {
-        pagUsuarios = 0;
-        return cargarUsuarios();
-    }
-
-    const tabla = document.getElementById('tablaUsuarios');
-    tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-purple-500 animate-pulse font-bold">Filtrando por rol...</td></tr>`;
-
-    try {
-        // Asegúrate de que este endpoint exista en tu backend
-        const response = await fetch(`${API_URL}/usuarios/rol/${idRolABuscar}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const usuarios = await response.json();
-            document.getElementById('infoPagUsuarios').innerText = `Filtro por Rol`;
-            document.getElementById('btnAntUsu').disabled = true;
-            document.getElementById('btnSigUsu').disabled = true;
-
-            tabla.innerHTML = '';
-            if(usuarios.length === 0) {
-                tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-500 font-bold">Ningún usuario tiene este rol.</td></tr>`;
-                return;
-            }
-            // Reutilizamos tu lógica pero iterando la lista filtrada
-            usuarios.forEach(u => renderizarUnUsuario(u, tabla));
-        } else {
-            tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500">Error al filtrar por rol.</td></tr>`;
-        }
-    } catch (error) {
-        tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500">Fallo de red al buscar.</td></tr>`;
-    }
-}
-
-// Función auxiliar para no repetir código HTML al pintar un usuario buscado
-function renderizarUnUsuario(u, tabla) {
-    const idUser = u.id_usuario || u.idUser;
-    const nombreCompleto = `${u.nombre_usuario || u.nombreUsuario || ''} ${u.apellido_usuario || u.apellidoUsuario || ''}`.trim();
-    const correo = u.correo_usuario || u.emailUsuario || 'Sin correo';
-
-    // Como es búsqueda directa, pintamos botones genéricos para gestionar roles
-    tabla.innerHTML += `
-        <tr class="hover:bg-blue-50 border-b border-gray-100 transition">
-            <td class="px-5 py-3 text-sm font-bold text-gray-800">${nombreCompleto}</td>
-            <td class="px-5 py-3 text-sm text-gray-600">${correo}</td>
-            <td class="px-5 py-3 text-center text-gray-400 text-xs italic">Ver en Gestión Roles</td>
-            <td class="px-5 py-3 text-center">
-                <button onclick="editarUsuario(${idUser})" class="text-blue-600 hover:text-blue-900 font-bold mr-3"><i class="fas fa-edit"></i></button>
-                <button onclick="abrirGestionRoles(${idUser})" class="text-purple-600 hover:text-purple-900 font-bold mr-3" title="Gestionar Roles"><i class="fas fa-user-tag"></i></button>
-                <button onclick="borrarUsuario(${idUser})" class="text-red-600 hover:text-red-900 font-bold"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>
-    `;
 }
 
 // ==================== BÚSQUEDA DE USUARIOS ====================
 
-// 1. Buscar por ID
 window.buscarUsuarioPorId = function() {
-    // Asegúrate de tener un input <input id="inputBusquedaId" type="number">
     const id = document.getElementById('inputBusquedaId').value.trim();
-    if (!id) {
-        pagUsuarios = 0;
-        return cargarUsuarios(); // Si el input está vacío, recargamos la tabla normal
-    }
+    if (!id) { pagUsuarios = 0; return cargarUsuarios(); }
     realizarBusqueda(`${API_URL}/usuarios/${id}`, true);
 };
 
-// 2. Buscar por Correo
 window.buscarUsuarioPorCorreo = function() {
-    // Asegúrate de tener un input <input id="inputBusquedaCorreo" type="text">
     const correo = document.getElementById('inputBusquedaCorreo').value.trim();
-    if (!correo) {
-        pagUsuarios = 0;
-        return cargarUsuarios();
-    }
+    if (!correo) { pagUsuarios = 0; return cargarUsuarios(); }
     realizarBusqueda(`${API_URL}/usuarios/email/${correo}`, true);
 };
 
-// 3. Buscar por Rol
-window.buscarUsuarioPorRol = function() {
-    // Asegúrate de tener un <select id="selectBusquedaRol">
-    const idRol = document.getElementById('selectBusquedaRol').value;
-    if (!idRol) {
-        pagUsuarios = 0;
-        return cargarUsuarios();
-    }
-    // OJO: Comprueba que la ruta de este endpoint es exactamente la de tu Java
-    realizarBusqueda(`${API_URL}/roles/${idRol}/usuarios`, false);
-};
-
-// --- EL MOTOR CENTRAL DE BÚSQUEDA ---
-// urlFetch: El endpoint al que atacamos
-// esUnico: true (si buscamos ID/Correo devuelven 1 objeto), false (si buscamos Rol devuelve array)
 async function realizarBusqueda(urlFetch, esUnico) {
     const tabla = document.getElementById('tablaUsuarios');
     tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-blue-500 animate-pulse font-bold">Buscando...</td></tr>`;
 
     try {
-        // Lanzamos la búsqueda y además traemos los roles para mantener las "etiquetas de colores"
         const [resBusqueda, resRoles, resMapa] = await Promise.all([
             fetch(urlFetch, { headers: { 'Authorization': `Bearer ${token}` } }),
             fetch(`${API_URL}/roles`, { headers: { 'Authorization': `Bearer ${token}` } }),
-            fetch(`${API_URL}/roles/${idRol}/usuarios`, { headers: { 'Authorization': `Bearer ${token}` } })
+            fetch(`${API_URL}/usuarios_roles`, { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
         if (resBusqueda.ok && resRoles.ok && resMapa.ok) {
@@ -362,14 +169,11 @@ async function realizarBusqueda(urlFetch, esUnico) {
             const todosRoles = await resRoles.json();
             const mapaUsuariosRoles = await resMapa.json();
 
-            // Homogeneizamos la respuesta: Si es un solo usuario, lo metemos en un Array [ ]
             const usuarios = esUnico ? [dataBusqueda] : dataBusqueda;
 
-            // Diccionario de roles rápido
             const diccRoles = {};
-            todosRoles.forEach(r => diccRoles[r.id_rol] = r.name || r.nombre);
+            todosRoles.forEach(r => diccRoles[r.id_rol || r.idRol || r.id] = r.name || r.nombre);
 
-            // Cambiamos los botones de paginación para indicar que estamos en modo Búsqueda
             document.getElementById('infoPagUsuarios').innerText = `Resultados de Búsqueda`;
             document.getElementById('btnAntUsu').disabled = true;
             document.getElementById('btnSigUsu').disabled = true;
@@ -381,18 +185,17 @@ async function realizarBusqueda(urlFetch, esUnico) {
                 return;
             }
 
-            // Pintamos la tabla reciclando tu lógica de diseño
             usuarios.forEach(u => {
-                const idUser = u.id_usuario || u.idUser;
+                const idUser = u.id_usuario || u.idUser || u.id;
                 const nombreCompleto = `${u.nombre_usuario || u.nombreUsuario || ''} ${u.apellido_usuario || u.apellidoUsuario || ''}`.trim();
-                const correo = u.correo_usuario || u.emailUsuario || 'Sin correo';
+                const correo = u.correo_usuario || u.emailUsuario || u.correo || 'Sin correo';
 
                 const relacion = mapaUsuariosRoles.find(m => (m.id_usuario || m.idUser) === idUser);
                 let rolesHtml = '<span class="text-gray-400 text-xs italic">Sin roles</span>';
 
                 if (relacion && relacion.id_rol && relacion.id_rol.length > 0) {
-                    rolesHtml = relacion.id_rol.map(idRol => {
-                        const nombreRol = diccRoles[idRol] || `ID:${idRol}`;
+                    rolesHtml = relacion.id_rol.map(idRolMapeado => {
+                        const nombreRol = diccRoles[idRolMapeado] || `ID:${idRolMapeado}`;
                         return `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded border border-blue-200 mr-1 shadow-sm uppercase">${nombreRol}</span>`;
                     }).join('');
                 }
@@ -403,9 +206,9 @@ async function realizarBusqueda(urlFetch, esUnico) {
                         <td class="px-5 py-3 text-sm text-gray-600">${correo}</td>
                         <td class="px-5 py-3 text-center">${rolesHtml}</td>
                         <td class="px-5 py-3 text-center">
-                            <button onclick="editarUsuario(${idUser})" class="text-blue-600 hover:text-blue-900 font-bold mr-3" title="Editar Usuario"><i class="fas fa-edit"></i></button>
-                            <button onclick="abrirGestionRoles(${idUser})" class="text-purple-600 hover:text-purple-900 font-bold mr-3" title="Gestionar Roles"><i class="fas fa-user-tag"></i></button>
-                            <button onclick="borrarUsuario(${idUser})" class="text-red-600 hover:text-red-900 font-bold" title="Eliminar Usuario"><i class="fas fa-trash"></i></button>
+                            <button onclick="editarUsuario(${idUser})" class="text-blue-600 hover:text-blue-900 font-bold mr-3"><i class="fas fa-edit"></i></button>
+                            <button onclick="abrirGestionRoles(${idUser})" class="text-purple-600 hover:text-purple-900 font-bold mr-3"><i class="fas fa-user-tag"></i></button>
+                            <button onclick="borrarUsuario(${idUser})" class="text-red-600 hover:text-red-900 font-bold"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -414,61 +217,78 @@ async function realizarBusqueda(urlFetch, esUnico) {
             tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-500 font-bold">Usuario no encontrado.</td></tr>`;
         }
     } catch (error) {
-        tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Fallo de conexión al buscar.</td></tr>`;
+        tabla.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-500 font-bold">Fallo en la ejecución de la búsqueda.</td></tr>`;
     }
 }
 
-// ==================== LÓGICA DE ROLES ====================
+// ==================== EDITAR Y BORRAR USUARIO ====================
 
-async function cargarRoles() {
-    const tabla = document.getElementById('tablaRoles');
-    tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-purple-500 animate-pulse font-bold">Cargando roles...</td></tr>`;
-
+window.editarUsuario = async function(id) {
     try {
-        const response = await fetch(`${API_URL}/roles`, {
+        const response = await fetch(`${API_URL}/usuarios/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (response.ok) {
+            const usuario = await response.json();
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editNombre').value = usuario.nombre_usuario || usuario.nombreUsuario || '';
+            document.getElementById('editApellidos').value = usuario.apellido_usuario || usuario.apellidoUsuario || '';
+            document.getElementById('editCorreo').value = usuario.correo_usuario || usuario.emailUsuario || '';
+            document.getElementById('editActivo').checked = usuario.activo !== false;
+            document.getElementById('modalEditarUsuario').classList.remove('hidden');
+        } else { alert("No se pudieron cargar los datos del usuario."); }
+    } catch (error) { alert("Fallo de red al intentar conectar."); }
+}
+
+window.cerrarModalEditar = function() { document.getElementById('modalEditarUsuario').classList.add('hidden'); }
+
+window.guardarEdicionUsuario = async function() {
+    const id = document.getElementById('editUserId').value;
+    const payload = {
+        nombre_usuario: document.getElementById('editNombre').value,
+        apellido_usuario: document.getElementById('editApellidos').value,
+        correo_usuario: document.getElementById('editCorreo').value,
+        activo: document.getElementById('editActivo').checked
+    };
+    try {
+        const response = await fetch(`${API_URL}/usuarios/${id}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+            alert("¡Usuario modificado con éxito!");
+            cerrarModalEditar();
+            cargarUsuarios();
+        } else { alert("Error al modificar usuario."); }
+    } catch (error) { alert("Fallo de conexión al guardar."); }
+}
+
+window.borrarUsuario = async function(id) {
+    const confirmacion = confirm(`¿Dar de baja al usuario con ID: ${id}?\n\n(Borrado lógico)`);
+    if (!confirmacion) return;
+    try {
+        const response = await fetch(`${API_URL}/usuarios/${id}`, {
+            method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-
         if (response.ok) {
-            const roles = await response.json();
-            tabla.innerHTML = '';
+            alert("Usuario dado de baja.");
+            cargarUsuarios();
+        } else { alert("Error al intentar borrar al usuario."); }
+    } catch (error) { alert("Fallo de red al intentar dar de baja."); }
+};
 
-            if (roles.length === 0) {
-                tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-gray-500 font-bold">No hay roles creados.</td></tr>`;
-                return;
-            }
 
-            roles.forEach(r => {
-                tabla.innerHTML += `
-                    <tr class="hover:bg-purple-50 border-b border-gray-100 transition">
-                        <td class="px-5 py-3 text-sm font-bold text-gray-500">#${r.id_rol || r.id}</td>
-                        <td class="px-5 py-3 text-sm font-bold text-purple-700">${r.name || r.nombre}</td>
-                        <td class="px-5 py-3 text-center">
-                            <button onclick="editarRol(${r.idRol || r.id})" class="text-blue-600 hover:text-blue-900 font-bold mr-3"><i class="fas fa-edit"></i></button>
-                            <button onclick="borrarRol(${r.idRol || r.id})" class="text-red-600 hover:text-red-900 font-bold"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        } else {
-            tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-red-500">Error al cargar roles.</td></tr>`;
-        }
-    } catch (error) {
-        tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-red-500 font-bold">Fallo de red al conectar.</td></tr>`;
-    }
-}
+// ==================== GESTIÓN DE ROLES (ASIGNAR/QUITAR A USUARIO) ====================
 
-let idUsuarioRolActual = null; // Guardamos a qué usuario le estamos tocando los roles
+let idUsuarioRolActual = null;
 
 window.abrirGestionRoles = async function(idUsuario) {
     idUsuarioRolActual = idUsuario;
     document.getElementById('modalGestionRoles').classList.remove('hidden');
-    // Asume que tienes un <ul> o <div> con id="listaRolesUsuario" en tu modal
     const contenedorRoles = document.getElementById('listaRolesUsuario');
     contenedorRoles.innerHTML = '<p class="text-gray-500">Cargando...</p>';
 
     try {
-        // Pedimos TODOS los roles y la relación de ESTE usuario
         const [resTodosRoles, resMapa] = await Promise.all([
             fetch(`${API_URL}/roles`, { headers: { 'Authorization': `Bearer ${token}` } }),
             fetch(`${API_URL}/usuarios_roles`, { headers: { 'Authorization': `Bearer ${token}` } })
@@ -478,15 +298,13 @@ window.abrirGestionRoles = async function(idUsuario) {
             const todosRoles = await resTodosRoles.json();
             const mapaCompleto = await resMapa.json();
 
-            // Buscamos los roles de nuestro usuario específico
             const relacion = mapaCompleto.find(m => (m.id_usuario || m.idUser) === idUsuario);
             const rolesDelUsuario = relacion && relacion.id_rol ? relacion.id_rol : [];
 
             contenedorRoles.innerHTML = '';
 
-            // Pintamos cada rol con un botón de Añadir o Quitar
             todosRoles.forEach(rol => {
-                const idRol = rol.idRol || rol.id_rol;
+                const idRol = rol.idRol || rol.id_rol || rol.id;
                 const nombreRol = rol.name || rol.nombre;
                 const loTiene = rolesDelUsuario.includes(idRol);
 
@@ -501,74 +319,168 @@ window.abrirGestionRoles = async function(idUsuario) {
                     contenedorRoles.innerHTML += `
                         <div class="flex justify-between items-center p-2 bg-gray-50 border border-gray-200 mb-2 rounded">
                             <span class="font-bold text-gray-600 uppercase">${nombreRol}</span>
-                            <button onclick="anadirRolAUsuario(${idUsuario}, ${idRol})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold transition">Añadir (id: ${idRol})</button>
+                            <button onclick="anadirRolAUsuario(${idUsuario}, ${idRol})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold transition">Añadir</button>
                         </div>
                     `;
                 }
             });
         }
-    } catch (error) {
-        contenedorRoles.innerHTML = '<p class="text-red-500">Error al cargar la gestión de roles.</p>';
-    }
+    } catch (error) { contenedorRoles.innerHTML = '<p class="text-red-500">Error al cargar la gestión de roles.</p>'; }
 }
 
 window.cerrarGestionRoles = function() {
     document.getElementById('modalGestionRoles').classList.add('hidden');
     idUsuarioRolActual = null;
-    cargarUsuarios(); // Recargamos la tabla principal para ver los badges actualizados
+    cargarUsuarios();
 }
 
-// Lógica POST para Añadir
 window.anadirRolAUsuario = async function(idUsuario, idRol) {
     try {
-        // 1. Usamos tu endpoint exacto
         const response = await fetch(`${API_URL}/usuarios/${idUsuario}/roles`, {
             method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_rol: idRol })
+        });
+        if (response.ok) { abrirGestionRoles(idUsuario); } else { alert("Error al asignar el rol."); }
+    } catch (error) { alert("Fallo de red."); }
+}
+
+window.quitarRolAUsuario = async function(idUsuario, idRol) {
+    if (!confirm("¿Seguro que quieres quitarle este rol al usuario?")) return;
+    try {
+        const response = await fetch(`${API_URL}/usuarios/${idUsuario}/roles/${idRol}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) { abrirGestionRoles(idUsuario); } else { alert("Error al quitar el rol."); }
+    } catch (error) { alert("Fallo de red."); }
+}
+
+// ==================== LÓGICA DE LA PESTAÑA DE ROLES (CRUD) ====================
+
+async function cargarRoles() {
+    const tabla = document.getElementById('tablaRoles');
+    tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-purple-500 animate-pulse font-bold">Cargando roles...</td></tr>`;
+
+    try {
+        const response = await fetch(`${API_URL}/roles`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (response.ok) {
+            const roles = await response.json();
+            tabla.innerHTML = '';
+            if (roles.length === 0) { tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-gray-500 font-bold">No hay roles creados.</td></tr>`; return; }
+
+            roles.forEach(r => {
+                const id = r.id_rol || r.idRol || r.id;
+                tabla.innerHTML += `
+                    <tr class="hover:bg-purple-50 border-b border-gray-100 transition">
+                        <td class="px-5 py-3 text-sm font-bold text-gray-500">#${id}</td>
+                        <td class="px-5 py-3 text-sm font-bold text-purple-700 uppercase">${r.name || r.nombre}</td>
+                        <td class="px-5 py-3 text-center">
+                            <button onclick="editarRol(${id})" class="text-blue-600 hover:text-blue-900 font-bold mr-3"><i class="fas fa-edit"></i></button>
+                            <button onclick="borrarRol(${id})" class="text-red-600 hover:text-red-900 font-bold"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else { tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-red-500">Error al cargar roles.</td></tr>`; }
+    } catch (error) { tabla.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-red-500 font-bold">Fallo de red al conectar.</td></tr>`; }
+}
+
+window.cerrarModalRol = function() {
+    document.getElementById('modalGestionarRol').classList.add('hidden');
+};
+
+window.crearRol = function() {
+    document.getElementById('rolId').value = '';
+    document.getElementById('rolNombre').value = '';
+    document.getElementById('contenedorRolActivo').classList.add('hidden');
+    document.getElementById('cabeceraModalRol').classList.replace('bg-blue-600', 'bg-purple-600');
+    document.getElementById('tituloModalRol').innerHTML = '<i class="fas fa-plus-circle mr-3 text-purple-200"></i> Nuevo Rol';
+    document.getElementById('modalGestionarRol').classList.remove('hidden');
+};
+
+window.editarRol = async function(id) {
+    try {
+        const response = await fetch(`${API_URL}/roles/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (response.ok) {
+            const rol = await response.json();
+            document.getElementById('rolId').value = rol.id_rol || rol.idRol || rol.id;
+            document.getElementById('rolNombre').value = rol.name || rol.nombre || '';
+            document.getElementById('contenedorRolActivo').classList.remove('hidden');
+            document.getElementById('rolActivo').checked = rol.activo !== false;
+            document.getElementById('cabeceraModalRol').classList.replace('bg-purple-600', 'bg-blue-600');
+            document.getElementById('tituloModalRol').innerHTML = '<i class="fas fa-edit mr-3 text-blue-200"></i> Editar Rol';
+            document.getElementById('modalGestionarRol').classList.remove('hidden');
+        } else { alert("No se pudo cargar la información del rol."); }
+    } catch (error) { alert("Fallo de conexión al intentar cargar el rol."); }
+};
+
+// 🔥 AQUÍ ESTÁ EL METODO UNIFICADO DE POST Y PUT PARA GUARDAR ROLES 🔥
+window.guardarRol = async function() {
+    const id = document.getElementById('rolId').value;
+    const nombre = document.getElementById('rolNombre').value.trim().toUpperCase();
+    const activo = document.getElementById('rolActivo').checked;
+
+    if (!nombre) {
+        alert("El nombre del rol no puede estar vacío.");
+        return;
+    }
+
+    const esEdicion = id !== ''; // Si hay ID en el input oculto, es un PUT. Si no, POST.
+    const endpoint = esEdicion ? `${API_URL}/roles/${id}` : `${API_URL}/roles`;
+    const metodoHTTP = esEdicion ? 'PUT' : 'POST';
+
+    // Construimos el Payload (RolPutDTO lleva 'activo', RolDTO normal no)
+    const payload = esEdicion ? { name: nombre, activo: activo } : { name: nombre };
+
+    try {
+        const response = await fetch(endpoint, {
+            method: metodoHTTP,
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            // 2. Enviamos solo el id_rol en el JSON, como pide tu backend
-            body: JSON.stringify({ id_rol: idRol })
+            body: JSON.stringify(payload)
         });
 
         if (response.ok) {
-            abrirGestionRoles(idUsuario); // Refresca el modal al instante
+            alert(esEdicion ? "Rol actualizado correctamente." : "Rol creado con éxito.");
+            cerrarModalRol();
+            cargarRoles();
         } else {
-            // Chivato por si el backend se queja de algo (ej. "El usuario ya tiene el rol")
             const errorText = await response.text();
-            console.error("Fallo en el backend:", errorText);
-            alert("Error al asignar el rol. Revisa la consola (F12) para más detalles.");
+            try {
+                const errorJson = JSON.parse(errorText);
+                alert(`Error: ${errorJson.message || errorJson.error}`);
+            } catch (e) {
+                alert(`Error del servidor (${response.status}).`);
+            }
         }
-    } catch (error) {
-        alert("Fallo de red al intentar asignar rol.");
-    }
-}
+    } catch (error) { alert("Fallo de conexión al guardar el rol."); }
+};
 
-// Lógica DELETE para Quitar
-window.quitarRolAUsuario = async function(idUsuario, idRol) {
-    if (!confirm("¿Seguro que quieres quitarle este rol al usuario?")) return;
+window.borrarRol = async function(id) {
+    const confirmacion = confirm(`¿Estás seguro de que deseas desactivar este rol (ID: ${id})?\n\nSi el rol tiene usuarios asignados actualmente, el sistema no te permitirá borrarlo para evitar inconsistencias.`);
+    if (!confirmacion) return;
 
     try {
-        // Asegúrate de que tu backend tiene este endpoint DELETE exacto configurado
-        const response = await fetch(`${API_URL}/usuarios/${idUsuario}/roles/${idRol}`, {
+        const response = await fetch(`${API_URL}/roles/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
-            abrirGestionRoles(idUsuario); // Refresca el modal
+            alert("Rol desactivado correctamente.");
+            cargarRoles();
         } else {
-            alert("Error al quitar el rol.");
+            const errorText = await response.text();
+            try {
+                const errorJson = JSON.parse(errorText);
+                alert(`Atención: ${errorJson.message || errorJson.error}`);
+            } catch (e) { alert(`Error del servidor al desactivar el rol (${response.status}).`); }
         }
-    } catch (error) {
-        alert("Fallo de red al intentar quitar rol.");
-    }
-}
-
-window.crearRol = function() { alert("Abrir modal para crear rol llamando a POST /roles"); }
-window.editarRol = function(id) { alert("Abrir modal para editar rol " + id + " llamando a PUT /roles/" + id); }
-window.borrarRol = function(id) { alert("Llamar a DELETE /roles/" + id + " (Borrado lógico)"); }
+    } catch (error) { alert("Fallo de red al intentar desactivar el rol."); }
+};
 
 // Arrancamos en la pestaña por defecto
 cargarUsuarios();
