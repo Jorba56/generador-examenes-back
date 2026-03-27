@@ -1,34 +1,29 @@
 # Generador de Exámenes - Backend API (Arquitectura de Microservicios)
 
-Esta es la API RESTful del backend para el proyecto "Generador de Exámenes", desarrollada con Java y Spring Boot.
+Esta es la plataforma completa (Backend y Frontend) para el proyecto "Generador de Exámenes". El sistema está diseñado bajo una arquitectura orientada a microservicios en el lado del servidor, proporcionando un entorno seguro y escalable, acompañado de un cliente web ligero y eficiente.
 
-Este repositorio contiene la evolución del proyecto hacia una arquitectura basada en **Microservicios**. Tras asentar unas bases sólidas de CRUD y seguridad en las primeras fases, el objetivo ha sido dividir el dominio (Usuarios e Incidencias), orquestar el tráfico mediante un API Gateway, contenerizar toda la infraestructura (incluyendo la base de datos) y aplicar prácticas de Integración y Entrega Continua (CI/CD).
+## Arquitectura del Sistema
+
+El backend ha evolucionado de un monolito a una arquitectura de microservicios utilizando el ecosistema Spring Cloud:
+
+1. **Eureka Server (Puerto 8761):** Servidor de descubrimiento de servicios. Mantiene el registro de todas las instancias activas.
+2. **API Gateway (Puerto 8080):** Punto de entrada único para el Frontend. Enruta las peticiones a los microservicios correspondientes y maneja las políticas de CORS.
+3. **Microservicio de Usuarios (Puerto 8081):** Gestiona la autenticación, autorización (JWT), operaciones CRUD de usuarios y la asignación de roles (RBAC).
+4. **Microservicio de Incidencias (Puerto 8082):** Servicio dedicado a la auditoría. Recibe y persiste automáticamente los errores lanzados por el resto de microservicios.
+5. **Frontend:** Cliente web desarrollado nativamente sin frameworks pesados, consumiendo los endpoints a través del API Gateway.
 
 ## Características destacadas
 
-* **Arquitectura Distribuida y API Gateway:** División del sistema en microservicios independientes comunicados por red interna. Un **API Gateway** reactivo actúa como único punto de entrada público, centralizando el enrutamiento y la configuración de CORS y Swagger.
-* **Contenedorización y Calidad de Código:** Uso de **Docker y Docker Compose** para desplegar de forma predecible toda la infraestructura. Integración con **Jenkins** para automatización de *builds* y **SonarQube** para análisis estático y garantía de código limpio.
-* **Seguridad integral con JWT (Spring Security):** Implementación de un sistema de autenticación sin estado (stateless). Las rutas están fuertemente protegidas mediante Control de Acceso Basado en Roles (RBAC) y validaciones de negocio estrictas (un usuario normal solo puede editar su perfil, un admin no puede ver contraseñas en claro).
-* **Subsistema Automático de Incidencias:** Un interceptor global (`@RestControllerAdvice`) captura cualquier excepción del sistema o error de negocio, devuelve un JSON estandarizado al cliente y guarda de forma silenciosa un registro detallado en su propio microservicio dedicado (Clase, Método, Stacktrace parcial y Usuario responsable).
-* **Logs Centralizados no intrusivos:** Uso de Programación Orientada a Aspectos (Spring AOP) para interceptar las llamadas a los servicios y registrar los tiempos de ejecución en milisegundos mediante la API nativa `java.util.logging`, escupiendo los datos rotativamente a un archivo `.txt` local.
-* **Gestión de Usuarios y Roles:** CRUD completo con borrado lógico (soft delete) para mantener el histórico de datos intacto, usando DTOs y MapStruct para aislar las entidades de la base de datos de la vista pública. Configuración estricta en `snake_case` para el intercambio de JSON.
-* **Alta cobertura de tests:** Pruebas unitarias avanzadas con JUnit y Mockito, mockeando incluso el contexto de seguridad (`Authentication`) para validar las reglas de negocio.
-
-## Arquitectura
-
-El ecosistema sigue una estructura de microservicios contenerizados para mantener el código desacoplado y altamente escalable:
-1. **API Gateway:** Único punto de acceso público (`localhost:8080`). Recibe las peticiones HTTP y las enruta a los microservicios correspondientes.
-2. **Microservicio Usuarios:** Centraliza la lógica de identidades, autenticación, tokens JWT, roles y validaciones de acceso.
-3. **Microservicio Incidencias:** Actúa como auditor, centralizando la persistencia del historial de errores.
-4. **Base de Datos:** Instancia de MySQL dockerizada e independiente.
-
-*(A nivel interno, cada microservicio mantiene la estructura multicapa limpia: Controllers, Services, Repositories y Security/AOP).*
+* **Seguridad integral con JWT (Spring Security):** Implementación de un sistema de autenticación sin estado (stateless). Las rutas están fuertemente protegidas mediante Control de Acceso Basado en Roles (RBAC) y validaciones de negocio estrictas.
+* **Subsistema Automático de Incidencias:** Un interceptor global (`@RestControllerAdvice`) captura cualquier excepción del sistema. Mediante el uso de `RestTemplate`, el microservicio afectado envía el contexto del error al microservicio de Incidencias de forma asíncrona.
+* **Exportación de Datos:** Generación dinámica de reportes en formato Excel (`.xlsx`) utilizando Apache POI para la descarga de registros de usuarios, alumnos y rankings.
+* **Paginación y Ordenación Dinámica:** Implementación de `Pageable` y `Sort` en los endpoints de listado para optimizar el rendimiento y permitir la ordenación ascendente o descendente por múltiples criterios.
+* **Logs Centralizados no intrusivos:** Uso de Programación Orientada a Aspectos (Spring AOP) para interceptar las llamadas a los servicios y registrar los tiempos de ejecución mediante SLF4J en un archivo `.txt` local.
+* * **Alta cobertura de tests:** Pruebas unitarias avanzadas con JUnit y Mockito, mockeando incluso el contexto de seguridad (`Authentication`) para validar las reglas de negocio.
 
 ---
 
 ## Endpoints de la API
-
-> **Nota:** Todas las peticiones deben realizarse a través del puerto del API Gateway (`http://localhost:8080`).
 
 ### Autenticación (/auth) - *Públicos*
 | Método | Ruta | Descripción |
@@ -40,10 +35,12 @@ El ecosistema sigue una estructura de microservicios contenerizados para mantene
 | Método | Ruta | Descripción |
 | :--- | :--- | :--- |
 | GET | `/usuarios` | Obtiene la lista de todos los usuarios activos. |
+| GET | `/usuarios/paginados` | Obtiene la lista de usuarios mediante paginación dinámica. |
 | GET | `/usuarios/{id}` | Busca un usuario concreto por su ID. |
-| POST | `/usuarios` | Crea un nuevo usuario. |
+| GET | `/usuarios/email/{email}` | Busca un usuario por su correo electrónico. |
 | PUT | `/usuarios/{id}` | Modifica los datos del usuario (Aplica reglas ABAC según el Token). |
 | DELETE | `/usuarios/{id}` | Realiza un borrado lógico del usuario. |
+| GET | `/usuarios/exportar/excel` | Descarga el listado de usuarios en formato .xlsx. |
 
 ### Roles (/roles) - *Solo Administradores*
 | Método | Ruta | Descripción |
@@ -55,19 +52,16 @@ El ecosistema sigue una estructura de microservicios contenerizados para mantene
 | DELETE | `/roles/{id}` | Realiza un borrado lógico del rol. |
 
 ### Relaciones Usuario-Rol - *Solo Administradores*
-| Método | Ruta | Descripción |
-| :--- | :--- | :--- |
-| POST | `/usuarios/{id}/roles` | Asigna un rol específico a un usuario. |
-| DELETE | `/usuarios/{idUsuario}/roles/{idRol}` | Le quita un rol a un usuario. |
-| GET | `/usuarios/{id}/roles` | Consulta todos los roles que tiene asignados un usuario. |
-| GET | `/roles/{idRol}/usuarios` | Consulta qué usuarios poseen un rol concreto. |
-| GET | `/usuarios_roles` | Obtiene una lista plana optimizada con todas las asignaciones. |
+| Método | Ruta                       | Descripción |
+| :--- |:---------------------------| :--- |
+| GET | `/usuarios_roles`          | Consulta todos los roles que tiene asignados un usuario. |
+
 
 ### Incidencias (/incidencias) - *Solo Administradores*
 | Método | Ruta | Descripción |
 | :--- | :--- | :--- |
 | GET | `/incidencias` | Obtiene el historial completo de errores de la API. |
-| GET | `/incidencias/{id}` | Busca una incidencia por ID (Protegido con Circuit Breaker). |
+| GET | `/incidencias/{id}` | Busca una incidencia por ID. |
 | GET | `/incidencias/usuario/{idUsuario}` | Historial de errores provocados por un usuario específico. |
 | GET | `/incidencias/clase/{clase}` | Filtra incidencias originadas en una clase concreta. |
 | GET | `/incidencias/metodo/{metodo}` | Filtra incidencias originadas en un método concreto. |
@@ -78,32 +72,38 @@ El ecosistema sigue una estructura de microservicios contenerizados para mantene
 
 * Java 21+
 * Spring Boot 4.0.2
-* **Spring Cloud Gateway (WebFlux)**
-* **Docker y Docker Compose**
-* **Jenkins y SonarQube**
-* **Spring Security + JWT (io.jsonwebtoken)**
-* **Spring AOP (AspectJ)**
-* Spring Data JPA / MySQL
+* Spring Cloud (Netflix Eureka, API Gateway)
+* Spring Security + JWT (io.jsonwebtoken)
+* Spring AOP (AspectJ)
+* Spring Data JPA / Hibernate
 * MapStruct
-* JUnit 6 y Mockito
-* Maven
+* Apache POI
+* JUnit 5 y Mockito
+* **Frontend:** HTML5, CSS3 (con Tailwind), JavaScript (Vanilla JS)
+* **Base de Datos:** MySQL 8.0
 
 ---
 
 ## Cómo ejecutar el proyecto en local
 
-1. Clona este repositorio en tu equipo:
-   ```bash
-   git clone [https://github.com/Jorba56/generador-examenes-back.git](https://github.com/Jorba56/generador-examenes-back.git)
+### 1. Requisitos Previos
+* Java 21 instalado en el sistema.
+* Servidor MySQL ejecutándose en el puerto 3306.
+* Configurar la variable de entorno `SECRET_KEY` en el sistema operativo o en el IDE con una cadena segura para la firma de los tokens JWT.
 
-2. Compila el API Gateway y los microservicios desde la raíz:
-   ```bash
-   ./mvnw clean package -DskipTests
+### 2. Base de Datos
+Las bases de datos se generarán automáticamente al iniciar los microservicios gracias a la configuración de Hibernate. El microservicio de usuarios inyectará automáticamente los roles por defecto y un usuario administrador mediante el archivo `data.sql` incluido en el classpath.
 
-3. Levanta la infraestructura completa mediante Docker Compose:
-   ```bash
-   docker-compose up -d --build
-   
-4. Accede a la documentación centralizada de Swagger a través del Gateway en: 
-   ```bash
-   http://localhost:8080/swagger-ui.html
+### 3. Ejecución del Backend
+El orden de inicio de los servicios es estricto para garantizar el correcto registro y enrutamiento:
+1. Ejecutar **Eureka Server** (`localhost:8761`).
+2. Ejecutar **API Gateway** (`localhost:8080`).
+3. Ejecutar los microservicios de negocio: **Usuarios Service** (`localhost:8081`) e **Incidencias Service** (`localhost:8082`).
+
+La documentación interactiva de la API estará disponible en `http://localhost:8080/swagger-ui.html`.
+
+### 4. Ejecución del Frontend
+Al ser una aplicación desarrollada en JavaScript Vanilla, no requiere instalación de dependencias mediante gestores de paquetes.
+
+1. Navegar al directorio raíz del frontend.
+2. Abrir el archivo `index.html` principal directamente en un navegador web moderno, o preferiblemente, servir la carpeta utilizando un servidor local ligero (como *Live Server* en VS Code) para un correcto manejo de las peticiones asíncronas hacia el API Gateway.

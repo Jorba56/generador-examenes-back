@@ -13,6 +13,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Clase utilitaria encargada de generar y exportar listados de datos a formato Excel (.xlsx).
+ * <p>
+ * Utiliza la librería Apache POI para construir dinámicamente el documento en memoria,
+ * aplicando estilos a las cabeceras y ajustando el ancho de las columnas antes de
+ * inyectar el archivo directamente en el flujo de respuesta HTTP.
+ * </p>
+ */
 public class AlumnoExcelExporter {
     private XSSFWorkbook workbook;
     private XSSFSheet sheet;

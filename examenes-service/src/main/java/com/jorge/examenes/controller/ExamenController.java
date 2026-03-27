@@ -17,9 +17,11 @@ import java.util.List;
 
 /**
  * Controlador REST que gestiona las operaciones relacionadas con los exámenes.
+ * <p>
  * Expone los endpoints para la creación, consulta, modificación y borrado de exámenes.
- * * Interacciona directamente con el frontend y delega la lógica de negocio
+ * Interacciona directamente con el frontend y delega la lógica de negocio
  * al {@link com.jorge.examenes.services.ExamenService}.
+ * </p>
  */
 @RestController
 @RequestMapping("/examenes")
@@ -28,10 +30,20 @@ public class ExamenController {
 
     private final ExamenService examenService;
 
+    /**
+     * Constructor que inyecta la dependencia del servicio de exámenes.
+     *
+     * @param examenService Servicio que contiene la lógica de negocio principal para la gestión de exámenes.
+     */
     public ExamenController(ExamenService examenService) {
         this.examenService = examenService;
     }
 
+    /**
+     * Recupera una lista completa con el resumen de todos los exámenes registrados en el sistema.
+     *
+     * @return {@link ResponseEntity} que contiene una lista de {@link ExamenGetDTO} con la información básica de los exámenes.
+     */
     @Operation(summary = "Listar todos los exámenes (Vista Resumen)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de exámenes devuelta con éxito"),
@@ -47,7 +59,7 @@ public class ExamenController {
      * Consulta los detalles completos de un examen específico, incluyendo su lista de preguntas.
      *
      * @param id Identificador único del examen en la base de datos.
-     * @return DTO con todos los datos detallados del examen.
+     * @return {@link ResponseEntity} con el {@link ExamenDetalleDTO} que contiene todos los datos detallados del examen.
      */
     @Operation(summary = "Ver detalles de un examen (Preguntas numeradas y censuradas)")
     @ApiResponses(value = {
@@ -61,6 +73,14 @@ public class ExamenController {
         return ResponseEntity.ok(examenService.obtenerDetallePorId(id));
     }
 
+    /**
+     * Genera un nuevo examen de forma aleatoria seleccionando preguntas existentes en la base de datos.
+     *
+     * @param titulo Título que se le asignará al nuevo examen.
+     * @param descripcion Descripción o instrucciones generales del examen.
+     * @param numPreguntas Cantidad de preguntas aleatorias que contendrá el examen.
+     * @return {@link ResponseEntity} con el {@link ExamenDetalleDTO} del examen recién creado y un estado HTTP 201 (CREATED).
+     */
     @Operation(summary = "Generar Examen Aleatorio", description = "Genera un examen aleatorio escogiendo preguntas almacenadas en la base de datos.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Examen generado y guardado con éxito"),
@@ -77,6 +97,14 @@ public class ExamenController {
         return new ResponseEntity<>(nuevoExamen, HttpStatus.CREATED);
     }
 
+    /**
+     * Modifica los detalles básicos de un examen existente (título y descripción) sin alterar sus preguntas.
+     *
+     * @param id Identificador único del examen a modificar.
+     * @param titulo Nuevo título para el examen (opcional).
+     * @param descripcion Nueva descripción para el examen (opcional).
+     * @return {@link ResponseEntity} con el {@link ExamenDetalleDTO} actualizado.
+     */
     @Operation(summary = "Editar detalles básicos de un examen (Título y Descripción)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Examen actualizado con éxito"),
@@ -92,6 +120,12 @@ public class ExamenController {
         return ResponseEntity.ok(examenService.actualizarDetallesExamen(id, titulo, descripcion));
     }
 
+    /**
+     * Elimina de forma definitiva un examen de la base de datos.
+     *
+     * @param id Identificador del examen que se desea borrar.
+     * @return {@link ResponseEntity} con un mensaje de texto confirmando la eliminación.
+     */
     @Operation(summary = "Borrar un examen")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Examen eliminado con éxito"),
@@ -105,6 +139,14 @@ public class ExamenController {
         return ResponseEntity.ok("Examen eliminado correctamente.");
     }
 
+    /**
+     * Agrega un conjunto de preguntas nuevas a un examen ya existente.
+     * Las preguntas se añaden al listado actual sin eliminar las que el examen ya tuviera asignadas previamente.
+     *
+     * @param id Identificador del examen a modificar.
+     * @param idsPreguntasNuevas Lista de identificadores de las preguntas que se desean añadir.
+     * @return {@link ResponseEntity} con el {@link ExamenDetalleDTO} actualizado con las nuevas preguntas.
+     */
     @Operation(summary = "AÑADIR nuevas preguntas a un examen existente",
             description = "Agrega las preguntas sin borrar las que el examen ya tenía.")
     @ApiResponses(value = {
@@ -128,7 +170,7 @@ public class ExamenController {
      * @param size    Cantidad de elementos por página.
      * @param sortBy  Nombre del campo por el cual se ordenarán los resultados (ej: "fecha").
      * @param sortDir Dirección de la ordenación ("asc" para ascendente, "desc" para descendente).
-     * @return Una página ({@link Page}) que contiene objetos DTO con el resumen de los exámenes.
+     * @return {@link ResponseEntity} con una página ({@link Page}) que contiene objetos DTO con el resumen de los exámenes.
      */
     @Operation(summary = "Listar exámenes paginados")
     @GetMapping("/paginados")
@@ -140,5 +182,4 @@ public class ExamenController {
 
         return ResponseEntity.ok(examenService.obtenerExamenesPaginados(page, size, sortBy, sortDir));
     }
-
 }

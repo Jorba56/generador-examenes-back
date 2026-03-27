@@ -55,6 +55,12 @@ public class IncidenciasController {
         return incidenciasService.obtenerPorId(id);
     }
 
+    /**
+     * Obtiene todas las incidencias asociadas a las acciones de un usuario específico.
+     *
+     * @param idUsuario Identificador del usuario a consultar.
+     * @return Lista de entidades {@link Incidencia}.
+     */
     @Operation(summary = "Buscar incidencias por Usuario", description = "Devuelve todas las incidencias asociadas a un ID de usuario específico.")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('ADMINISTRADOR')")
     @GetMapping("/usuario/{idUsuario}")
@@ -62,6 +68,12 @@ public class IncidenciasController {
         return incidenciasService.obtenerPorUsuario(idUsuario);
     }
 
+    /**
+     * Obtiene todas las incidencias originadas en una clase específica del código fuente.
+     *
+     * @param clase Nombre de la clase (ej. "UserService").
+     * @return Lista de entidades {@link Incidencia}.
+     */
     @Operation(summary = "Buscar incidencias por Clase", description = "Filtra las incidencias buscando en qué clase de Java se originaron (Ej: UserService).")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('ADMINISTRADOR')")
     @GetMapping("/clase/{clase}")
@@ -69,6 +81,12 @@ public class IncidenciasController {
         return incidenciasService.obtenerPorClase(clase);
     }
 
+    /**
+     * Obtiene todas las incidencias originadas en un método específico del código fuente.
+     *
+     * @param metodo Nombre del método (ej. "actualizarUsuario").
+     * @return Lista de entidades {@link Incidencia}.
+     */
     @Operation(summary = "Buscar incidencias por Método", description = "Filtra las incidencias buscando en qué método específico de Java se originaron (Ej: buscarPorId).")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('ADMINISTRADOR')")
     @GetMapping("/metodo/{metodo}")

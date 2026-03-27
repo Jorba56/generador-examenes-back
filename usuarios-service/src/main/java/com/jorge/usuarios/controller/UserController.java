@@ -36,6 +36,11 @@ public class UserController {
 
     private final UserServiceImpl userServiceImpl;
 
+    /**
+     * Constructor que inyecta el servicio principal de usuarios.
+     *
+     * @param userServiceImpl Implementación del servicio de lógica de negocio de usuarios.
+     */
     public UserController(UserServiceImpl userServiceImpl) {
         this.userServiceImpl = userServiceImpl;
     }
@@ -121,6 +126,12 @@ public class UserController {
         return userServiceImpl.deleteRolUser(idUsuario, idRol );
     }
 
+    /**
+     * Exporta el registro completo de usuarios del sistema a un archivo Excel (.xlsx).
+     *
+     * @param response Objeto {@link HttpServletResponse} para escribir el archivo de salida.
+     * @throws IOException Si ocurre un error durante la generación del documento.
+     */
     @Operation(summary = "Exportar lista de todos los usuarios a Excel", description = "Descarga un archivo .xlsx con el registro completo de usuarios del sistema.")
     @PreAuthorize("hasAuthority('ADMIN')") // Tiene sentido que esto solo lo haga el admin general
     @GetMapping("/exportar/excel")
@@ -141,6 +152,15 @@ public class UserController {
         exportador.exportar(response);
     }
 
+    /**
+     * Recupera una lista paginada de todos los usuarios del sistema, con opciones de ordenación.
+     *
+     * @param page Número de la página (comienza en 0).
+     * @param size Cantidad de usuarios por página.
+     * @param sortBy Campo de la entidad para ordenar los resultados.
+     * @param sortDir Dirección de ordenación ("asc" o "desc").
+     * @return {@link ResponseEntity} con una página de {@link UsersAllDTO}.
+     */
     @Operation(summary = "Listar usuarios paginados", description = "Devuelve los usuarios en páginas.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/paginados")
@@ -153,6 +173,12 @@ public class UserController {
         return ResponseEntity.ok(userServiceImpl.obtenerTodosLosUsuariosPaginados(page, size, sortBy, sortDir));
     }
 
+    /**
+     * Busca los detalles de un usuario específico a través de su correo electrónico.
+     *
+     * @param email Correo electrónico del usuario a consultar.
+     * @return DTO {@link UserIdDTo} con la información detallada del usuario.
+     */
     @Operation(summary = "Buscar usuario por Email", description = "Devuelve los detalles de un usuario. Un usuario normal solo puede buscar su propio email.")
     @PreAuthorize("hasAuthority('ADMIN') or #email == authentication.name")
     @GetMapping("/email/{email}")

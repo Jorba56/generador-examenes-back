@@ -25,8 +25,10 @@ import java.util.Map;
 
 /**
  * Implementación del servicio de evaluaciones.
+ * <p>
  * Contiene la lógica de negocio central para la corrección algorítmica de exámenes,
  * el cálculo de estadísticas (medias, aprobados/suspensos) y la validación de intentos.
+ * </p>
  */
 @Service
 public class EvaluacionServiceImpl implements EvaluacionService {
@@ -35,6 +37,13 @@ public class EvaluacionServiceImpl implements EvaluacionService {
     private final ExamenRepository examenRepository;
     private final EvaluacionMapper evaluacionMapper;
 
+    /**
+     * Constructor que inyecta las dependencias necesarias para la gestión de evaluaciones.
+     *
+     * @param evaluacionRepository Repositorio para la persistencia de las evaluaciones.
+     * @param examenRepository Repositorio para consultar los datos y preguntas de los exámenes.
+     * @param evaluacionMapper Mapper para convertir entre entidades de evaluación y sus respectivos DTOs.
+     */
     public EvaluacionServiceImpl(EvaluacionRepository evaluacionRepository, ExamenRepository examenRepository, EvaluacionMapper evaluacionMapper) {
         this.evaluacionRepository = evaluacionRepository;
         this.examenRepository = examenRepository;
@@ -43,14 +52,14 @@ public class EvaluacionServiceImpl implements EvaluacionService {
 
     /**
      * Procesa la entrega de un examen comparando las respuestas dadas por el alumno
-     * con las respuestas correctas de cada pregunta. Calcula la nota sobre 10 y
-     * guarda el intento en la base de datos si el alumno no ha superado el límite.
+     * con las respuestas correctas de cada pregunta. Calcula la nota final sobre 10 y
+     * guarda el intento en la base de datos si el alumno no ha superado el límite permitido.
      *
      * @param idExamen Identificador del examen a corregir.
-     * @param submitDTO Objeto que contiene las respuestas del alumno.
-     * @return DTO con el resultado detallado de la corrección.
-     * @throws BadRequestException Si el contexto de seguridad está vacío o se superan los 2 intentos.
-     * @throws NotFoundException Si el examen solicitado no existe.
+     * @param submitDTO Objeto {@link ExamenSubmitDTO} que contiene las respuestas enviadas por el alumno.
+     * @return {@link EvaluacionResultDTO} con el resultado detallado de la corrección (aciertos, fallos, blancos y nota final).
+     * @throws BadRequestException Si el contexto de seguridad está vacío o si el alumno ya ha consumido sus 2 intentos.
+     * @throws NotFoundException Si el examen solicitado no existe en la base de datos.
      */
     @Override
     public EvaluacionResultDTO corregirExamen(Long idExamen, ExamenSubmitDTO submitDTO) throws BadRequestException {
@@ -111,11 +120,11 @@ public class EvaluacionServiceImpl implements EvaluacionService {
     }
 
     /**
-     * Recupera el historial de notas del usuario actualmente autenticado en el sistema.
+     * Recupera el historial completo de notas del usuario actualmente autenticado en el sistema.
      *
-     * @return Lista de evaluaciones ordenadas por fecha descendente.
-     * @throws BadRequestException Si no hay un usuario logueado en el contexto de seguridad.
-     * @throws NotFoundException Si el usuario no ha realizado ningún examen.
+     * @return Lista de {@link EvaluacionHistorialDTO} ordenadas por fecha de forma descendente.
+     * @throws BadRequestException Si no hay un usuario logueado válido en el contexto de seguridad.
+     * @throws NotFoundException Si el usuario autenticado no ha realizado ningún examen todavía.
      */
     @Override
     public List<EvaluacionHistorialDTO> obtenerMisNotas() throws BadRequestException {
@@ -136,6 +145,14 @@ public class EvaluacionServiceImpl implements EvaluacionService {
         return evaluacionMapper.toHistorialDTOList(misEvaluaciones);
     }
 
+    /**
+     * Obtiene el historial de intentos y calificaciones de un alumno específico para un examen concreto.
+     *
+     * @param idExamen Identificador del examen a consultar.
+     * @param correoAlumno Correo electrónico del alumno cuyas notas se desean buscar.
+     * @return Lista de {@link EvaluacionHistorialDTO} con las evaluaciones correspondientes, ordenadas por fecha descendente.
+     * @throws NotFoundException Si el alumno especificado no ha realizado el examen indicado.
+     */
     @Override
     public List<EvaluacionHistorialDTO> obtenerNotasDeAlumnoEnExamen(Long idExamen, String correoAlumno) {
 
@@ -147,11 +164,14 @@ public class EvaluacionServiceImpl implements EvaluacionService {
     }
 
     /**
-     * Calcula las estadísticas de rendimiento general de un alumno a partir de su historial.
+     * Calcula las estadísticas de rendimiento general de un alumno a partir de su historial completo.
+     * <p>
+     * Se evalúa el total de exámenes realizados, la nota media global y el número de exámenes aprobados y suspensos.
+     * </p>
      *
-     * @param correo Correo del alumno a analizar.
-     * @return Objeto con el total de exámenes, nota media y conteo de aprobados/suspensos.
-     * @throws NotFoundException Si el alumno no tiene registros de exámenes.
+     * @param correo Correo electrónico del alumno a analizar.
+     * @return {@link EstadisticasAlumnoDTO} con las métricas calculadas.
+     * @throws NotFoundException Si el alumno no tiene registros de exámenes en el sistema.
      */
     @Override
     public EstadisticasAlumnoDTO obtenerEstadisticasAlumno(String correo) {
@@ -189,6 +209,16 @@ public class EvaluacionServiceImpl implements EvaluacionService {
         );
     }
 
+    /**
+     * Recupera el historial completo de evaluaciones de un alumno específico,
+     * aplicando ordenación dinámica según los parámetros indicados.
+     *
+     * @param correo Correo electrónico del alumno cuyo historial se desea consultar.
+     * @param sortBy Campo de la entidad por el cual se ordenarán los resultados (ej: "fecha", "nota").
+     * @param sortDir Dirección de la ordenación, "asc" para ascendente o "desc" para descendente.
+     * @return Lista de {@link EvaluacionHistorialDTO} con el historial ordenado.
+     * @throws NotFoundException Si el alumno no ha realizado ninguna evaluación.
+     */
     @Override
     public List<EvaluacionHistorialDTO> obtenerHistorialAlumno(String correo, String sortBy, String sortDir) {
         String campoEntidad = traducirCampoSort(sortBy);
@@ -205,13 +235,14 @@ public class EvaluacionServiceImpl implements EvaluacionService {
     }
 
     /**
-     * Obtiene todas las evaluaciones de un examen concreto aplicando criterios de ordenación.
+     * Obtiene todas las evaluaciones registradas para un examen concreto,
+     * aplicando criterios de ordenación dinámica (ideal para generar rankings).
      *
-     * @param idExamen Identificador del examen.
-     * @param sortBy Criterio de ordenación proporcionado por la URL.
+     * @param idExamen Identificador del examen del que se extraerán las notas.
+     * @param sortBy Campo por el cual se ordenarán los resultados (ej: "nota").
      * @param sortDir Dirección de la ordenación ("asc" o "desc").
-     * @return Lista de historial de evaluaciones ordenadas.
-     * @throws NotFoundException Si nadie ha realizado el examen todavía.
+     * @return Lista de {@link EvaluacionHistorialDTO} con las calificaciones ordenadas de todos los participantes.
+     * @throws NotFoundException Si el examen indicado no ha sido realizado por ningún usuario todavía.
      */
     @Override
     public List<EvaluacionHistorialDTO> obtenerNotasExamen(Long idExamen, String sortBy, String sortDir) {

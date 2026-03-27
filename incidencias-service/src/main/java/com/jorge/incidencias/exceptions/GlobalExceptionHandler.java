@@ -28,7 +28,11 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     private final IncidenciasService incidenciaService;
 
-    // Solo inyectamos IncidenciasService (aquí no existe UserRepository)
+    /**
+     * Constructor que inyecta el servicio de incidencias para persistir los errores automáticamente.
+     *
+     * @param incidenciaService Servicio para guardar las incidencias en la base de datos.
+     */
     public GlobalExceptionHandler(IncidenciasService incidenciaService) {
         this.incidenciaService = incidenciaService;
     }
@@ -59,6 +63,14 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
     }
 
+    /**
+     * Construye la respuesta JSON estandarizada para todos los errores interceptados por la API.
+     *
+     * @param status Código de estado HTTP a devolver.
+     * @param error Nombre corto descriptivo del error.
+     * @param message Mensaje detallado para el cliente.
+     * @return {@link ResponseEntity} con la estructura de error mapeada.
+     */
     private ResponseEntity<Object> buildResponse(HttpStatus status, String error, String message) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", status.value());
@@ -107,6 +119,14 @@ public class GlobalExceptionHandler {
         incidenciaService.guardar(incidencia);
     }
 
+    /**
+     * Extrae y decodifica manualmente el ID del usuario directamente desde el token JWT
+     * presente en la cabecera de la petición, evitando depender del contexto de Spring Security.
+     * Esto asegura que la incidencia registre al usuario incluso si falla la autenticación de Spring.
+     *
+     * @param request Petición HTTP entrante.
+     * @return ID del usuario extraído del payload, o 0L si no está autenticado o el token es inválido.
+     */
     private Long extraerIdDelToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 
@@ -135,6 +155,7 @@ public class GlobalExceptionHandler {
         }
     }
 
+
     private String limpiarNombreClase(String claseOriginal) {
         String claseLimpia = claseOriginal;
         if (claseLimpia.contains(".")) {
@@ -153,6 +174,12 @@ public class GlobalExceptionHandler {
         return metodoOriginal;
     }
 
+    /**
+     * Formatea y recorta la traza de la excepción para proteger la base de datos de desbordamientos.
+     *
+     * @param ex La excepción original lanzada.
+     * @return Cadena de texto con el StackTrace recortado a un máximo de 2000 caracteres.
+     */
     private String obtenerTrazaRecortada(Exception ex) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);

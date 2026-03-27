@@ -24,6 +24,15 @@ public interface UserService {
      */
     List<UsersAllDTO> listarUsuarios();
 
+    /**
+     * Obtiene una lista paginada de todos los usuarios activos del sistema.
+     *
+     * @param page Número de página.
+     * @param size Tamaño de la página.
+     * @param sortBy Campo de ordenación.
+     * @param sortDir Dirección de ordenación ("asc" o "desc").
+     * @return Página de {@link UsersAllDTO} con la información de los usuarios.
+     */
     Page<UsersAllDTO> obtenerTodosLosUsuariosPaginados(int page, int size, String sortBy, String sortDir);
 
     /**
@@ -89,7 +98,20 @@ public interface UserService {
      */
     String deleteRolUser(Long idUser, Long idRol);
 
+    /**
+     * Obtiene una lista completa de los usuarios activos, ordenada dinámicamente.
+     *
+     * @param sortBy Campo de ordenación.
+     * @param sortDir Dirección de ordenación ("asc" o "desc").
+     * @return Lista ordenada de {@link UsersAllDTO}.
+     */
     List<UsersAllDTO> obtenerTodosLosUsuarios(String sortBy, String sortDir);
 
+    /**
+     * Busca los detalles de un usuario mediante su dirección de correo electrónico.
+     *
+     * @param email Correo electrónico a buscar.
+     * @return {@link UserIdDTo} con los detalles completos del usuario.
+     */
     UserIdDTo buscarPorEmail(String email);
 }

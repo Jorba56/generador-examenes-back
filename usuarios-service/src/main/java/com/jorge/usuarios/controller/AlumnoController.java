@@ -20,6 +20,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Controlador REST dedicado a la gestión exclusiva de los alumnos.
+ * <p>
+ * Proporciona endpoints para que el profesorado y la administración puedan listar,
+ * buscar, paginar y exportar los datos de los usuarios con el rol de ALUMNO.
+ * </p>
+ */
 @RestController
 @RequestMapping("/alumnos")
 @Tag(name = "Alumnos", description = "Gestión exclusiva de alumnos para uso del profesorado")
@@ -27,10 +34,20 @@ public class AlumnoController {
 
     private final AlumnoService alumnoService;
 
+    /**
+     * Constructor que inyecta la dependencia del servicio de alumnos.
+     *
+     * @param alumnoService Servicio que encapsula la lógica de negocio de los alumnos.
+     */
     public AlumnoController(AlumnoService alumnoService) {
         this.alumnoService = alumnoService;
     }
 
+    /**
+     * Obtiene una lista completa con todos los alumnos registrados en el sistema.
+     *
+     * @return {@link ResponseEntity} que contiene la lista de {@link AlumnoDTO}.
+     */
     @Operation(summary = "Listar todos los alumnos",
             description = "Devuelve una lista con todos los usuarios que tienen el rol de ALUMNO en el sistema.")
     @ApiResponses(value = {
@@ -43,6 +60,13 @@ public class AlumnoController {
         return ResponseEntity.ok(alumnoService.obtenerTodosLosAlumnos());
     }
 
+    /**
+     * Busca los datos de un alumno específico utilizando su dirección de correo electrónico.
+     *
+     * @param email Correo electrónico del alumno a consultar.
+     * @return {@link ResponseEntity} con los datos del {@link AlumnoDTO} encontrado.
+     * @throws NotFoundException Si el correo no pertenece a un alumno o no existe en la base de datos.
+     */
     @Operation(summary = "Buscar un alumno por su correo electrónico",
             description = "Devuelve los datos de un alumno específico buscándolo por su email. Si el correo existe pero pertenece a un profesor o admin, devolverá un error 404.")
     @ApiResponses(value = {
@@ -55,6 +79,13 @@ public class AlumnoController {
     public ResponseEntity<AlumnoDTO> obtenerAlumnoPorCorreo(@PathVariable String email) throws NotFoundException {
         return ResponseEntity.ok(alumnoService.obtenerAlumnoPorCorreo(email));
     }
+
+    /**
+     * Genera y exporta un archivo Excel (.xlsx) con la lista completa de todos los alumnos del sistema.
+     *
+     * @param response Objeto {@link HttpServletResponse} utilizado para inyectar el archivo descargable.
+     * @throws IOException Si ocurre un error de lectura o escritura al generar el documento.
+     */
     @Operation(summary = "Exportar lista de alumnos a Excel", description = "Genera y descarga un archivo .xlsx con todos los alumnos.")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
     @GetMapping("/exportar/excel")
@@ -77,6 +108,15 @@ public class AlumnoController {
         exportador.exportar(response);
     }
 
+    /**
+     * Obtiene una lista paginada de alumnos, permitiendo ordenación dinámica de las columnas.
+     *
+     * @param page Número de la página a consultar (comienza en 0).
+     * @param size Cantidad máxima de alumnos a mostrar por página.
+     * @param sortBy Campo de la entidad por el cual se ordenarán los resultados (ej. "apellidos").
+     * @param sortDir Dirección de la ordenación ("asc" para ascendente, "desc" para descendente).
+     * @return {@link ResponseEntity} que envuelve una página ({@link Page}) de {@link AlumnoDTO}.
+     */
     @Operation(summary = "Listar alumnos paginados")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'PROFESOR')")
     @GetMapping("/paginados")
