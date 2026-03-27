@@ -56,19 +56,19 @@ class UserServiceImplTest {
 
     private User mockUser;
     private UserIdDTo mockDto;
-    private final String TEST_EMAIL = "alumno@test.com";
+    private final String testEmail = "alumno@test.com";
 
     @BeforeEach
     void setUp() {
         // Preparamos un usuario de prueba antes de cada test
         mockUser = new User();
         mockUser.setIdUser(1L);
-        mockUser.setEmailUsuario(TEST_EMAIL);
+        mockUser.setEmailUsuario(testEmail);
         mockUser.setActivo(true);
 
         mockDto = new UserIdDTo();
         mockDto.setIdUser(1L);
-        mockDto.setEmailUsuario(TEST_EMAIL);
+        mockDto.setEmailUsuario(testEmail);
     }
 
     @Test
@@ -869,32 +869,32 @@ class UserServiceImplTest {
     @Test
     void buscarPorEmail_Exito() {
         // 1. Arrange (Preparar)
-        when(userRepository.findUserByEmailUsuario(TEST_EMAIL)).thenReturn(mockUser);
+        when(userRepository.findUserByEmailUsuario(testEmail)).thenReturn(mockUser);
         when(userMap.userToIdDTO(mockUser)).thenReturn(mockDto);
 
         // 2. Act (Actuar)
-        UserIdDTo resultado = userServiceImpl.buscarPorEmail(TEST_EMAIL);
+        UserIdDTo resultado = userServiceImpl.buscarPorEmail(testEmail);
 
         // 3. Assert (Comprobar)
         assertNotNull(resultado);
         assertEquals(1L, resultado.getIdUser());
-        assertEquals(TEST_EMAIL, resultado.getEmailUsuario());
-        verify(userRepository, times(1)).findUserByEmailUsuario(TEST_EMAIL);
+        assertEquals(testEmail, resultado.getEmailUsuario());
+        verify(userRepository, times(1)).findUserByEmailUsuario(testEmail);
         verify(userMap, times(1)).userToIdDTO(mockUser);
     }
 
     @Test
     void buscarPorEmail_UsuarioNoExiste_LanzaException() {
         // 1. Arrange: El repositorio devuelve null
-        when(userRepository.findUserByEmailUsuario(TEST_EMAIL)).thenReturn(null);
+        when(userRepository.findUserByEmailUsuario(testEmail)).thenReturn(null);
 
         // 2 & 3. Act & Assert: Comprobamos que salta la NotFoundException
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            userServiceImpl.buscarPorEmail(TEST_EMAIL);
+            userServiceImpl.buscarPorEmail(testEmail);
         });
 
-        assertEquals("Usuario no encontrado con el correo: " + TEST_EMAIL, exception.getMessage());
-        verify(userRepository, times(1)).findUserByEmailUsuario(TEST_EMAIL);
+        assertEquals("Usuario no encontrado con el correo: " + testEmail, exception.getMessage());
+        verify(userRepository, times(1)).findUserByEmailUsuario(testEmail);
         verify(userMap, never()).userToIdDTO(any()); // El mapper nunca debe llegar a ejecutarse
     }
 
@@ -902,15 +902,15 @@ class UserServiceImplTest {
     void buscarPorEmail_UsuarioDesactivado_LanzaException() {
         // 1. Arrange: El usuario existe, pero está desactivado
         mockUser.setActivo(false);
-        when(userRepository.findUserByEmailUsuario(TEST_EMAIL)).thenReturn(mockUser);
+        when(userRepository.findUserByEmailUsuario(testEmail)).thenReturn(mockUser);
 
         // 2 & 3. Act & Assert: Comprobamos que salta la NotFoundException
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            userServiceImpl.buscarPorEmail(TEST_EMAIL);
+            userServiceImpl.buscarPorEmail(testEmail);
         });
 
         assertEquals("El usuario está desactivado.", exception.getMessage());
-        verify(userRepository, times(1)).findUserByEmailUsuario(TEST_EMAIL);
+        verify(userRepository, times(1)).findUserByEmailUsuario(testEmail);
         verify(userMap, never()).userToIdDTO(any());
     }
     @Test

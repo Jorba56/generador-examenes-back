@@ -23,7 +23,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.mockito.ArgumentCaptor;
-import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class PreguntaServiceImplTest {

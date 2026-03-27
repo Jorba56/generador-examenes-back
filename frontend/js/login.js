@@ -53,8 +53,7 @@ async function obtenerIdPorCorreo(correo, token) {
 
         if (response.ok) {
             const usuario = await response.json();
-            // Buscamos el ID con todos los nombres posibles que use tu Backend
-            const idEncontrado = usuario.id_user || usuario.id_usuario || usuario.idUser || usuario.id;
+            const idEncontrado = usuario.id_user ||usuario.idUser;
             console.log("ID de usuario recuperado:", idEncontrado);
             return idEncontrado;
         }

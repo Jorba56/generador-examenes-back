@@ -1,7 +1,5 @@
 package com.jorge.usuarios.exceptions;
 
-import com.jorge.usuarios.entity.User;
-import com.jorge.usuarios.repository.UserRepository;
 import com.jorge.usuarios.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,9 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -34,13 +30,12 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     private final JwtUtil jwtUtil;
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private final UserRepository userRepository; // para sacar el id
 
     String badR = "Bad Request";
     String unauthorized = "Unauthorized";
 
-    public GlobalExceptionHandler(UserRepository userRepository, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
+    public GlobalExceptionHandler(JwtUtil jwtUtil) {
+
         this.jwtUtil = jwtUtil;
     }
 
@@ -133,90 +128,88 @@ public class GlobalExceptionHandler {
      * para rellenar la Incidencia y guardarla en Base de Datos.
      */
     private void registrarIncidencia(Exception ex) {
-        String endpoint = "Desconocido";
-
-        //extraer endpoint
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attrs != null) {
-            endpoint = attrs.getRequest().getRequestURI();
+
+        // 1. Extraemos datos de la petición de forma segura e independiente
+        String endpoint = extraerEndpoint(attrs);
+        Long idUsuario = extraerIdUsuario(attrs); // Adiós a la asignación inútil
+
+        // 2. Construimos el payload de la incidencia
+        java.util.Map<String, Object> incidenciaJson = construirPayloadIncidencia(ex, endpoint, idUsuario);
+
+        // 3. La enviamos al otro microservicio
+        enviarIncidencia(incidenciaJson);
+    }
+
+    private String extraerEndpoint(ServletRequestAttributes attrs) {
+        return (attrs != null) ? attrs.getRequest().getRequestURI() : "Desconocido";
+    }
+
+    private Long extraerIdUsuario(ServletRequestAttributes attrs) {
+        if (attrs == null) return 0L;
+
+        String authHeader = attrs.getRequest().getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return 0L; // Retorno temprano, no hace falta variable temporal
         }
 
-        //extraer id del usuario (si está logueado)
-        Long idUsuario = 0L;
-        if (attrs != null) {
-            String authHeader = attrs.getRequest().getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                try {
-                    String token = authHeader.substring(7);
+        try {
+            String token = authHeader.substring(7);
+            Long id = jwtUtil.obtenerIdUsuario(token);
+            return (id != null) ? id : 0L;
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
 
-                    // 🕵️ USAMOS EL NUEVO MÉTODO QUE CREAMOS ANTES
-                    idUsuario = jwtUtil.obtenerIdUsuario(token);
+    private java.util.Map<String, Object> construirPayloadIncidencia(Exception ex, String endpoint, Long idUsuario) {
+        String clase = "Desconocida";
+        String metodo = "Desconocido";
 
-                    // Si esto te devuelve null, es que el token no traía el ID
-                    if (idUsuario == null) idUsuario = 0L;
+        if (ex.getStackTrace() != null && ex.getStackTrace().length > 0) {
+            StackTraceElement elemento = ex.getStackTrace()[0];
+            clase = limpiarNombreClase(elemento.getClassName());
+            metodo = limpiarNombreMetodo(elemento.getMethodName());
+        }
 
-                } catch (Exception e) {
-                    idUsuario = 0L;
-                }
+        java.util.Map<String, Object> incidenciaJson = new java.util.HashMap<>();
+        incidenciaJson.put("endpoint", endpoint);
+        incidenciaJson.put("tipo", ex.getClass().getSimpleName());
+        incidenciaJson.put("clase", clase);
+        incidenciaJson.put("metodo", metodo);
+        incidenciaJson.put("traza", obtenerTrazaRecortada(ex));
+        incidenciaJson.put("fecha", LocalDateTime.now().toString());
+        incidenciaJson.put("id_usuario", idUsuario);
 
-                //extraer detalles exactos de la excepción
-                String tipo = ex.getClass().getSimpleName();
-                String clase = "Desconocida";
-                String metodo = "Desconocido";
+        return incidenciaJson;
+    }
 
-                // cogemos la primera línea del stacktrace (donde se originó el fallo)
-                if (ex.getStackTrace() != null && ex.getStackTrace().length > 0) {
-                    StackTraceElement elemento = ex.getStackTrace()[0];
-                    clase = elemento.getClassName();
-                    metodo = elemento.getMethodName();
-                }
+    private String limpiarNombreClase(String claseOriginal) {
+        String clase = claseOriginal;
+        if (clase.contains(".")) clase = clase.substring(clase.lastIndexOf(".") + 1);
+        if (clase.contains("$$")) clase = clase.substring(0, clase.indexOf("$$"));
+        return clase;
+    }
 
-                if (clase.contains(".")) {
-                    clase = clase.substring(clase.lastIndexOf(".") + 1);
-                }
+    private String limpiarNombreMetodo(String metodo) {
+        return metodo.startsWith("lambda$") ? metodo.split("\\$")[1] : metodo;
+    }
 
-                //limpiar proxys de spring en la clase (ej: userservice$$springcglib$$0 -> userservice)
-                if (clase.contains("$$")) {
-                    clase = clase.substring(0, clase.indexOf("$$"));
-                }
+    private String obtenerTrazaRecortada(Exception ex) {
+        StringWriter sw = new StringWriter();
+        ex.printStackTrace(new PrintWriter(sw));
+        String trazaCompleta = sw.toString();
+        return trazaCompleta.length() > 2000 ? trazaCompleta.substring(0, 2000) : trazaCompleta;
+    }
 
-                // limpiar lambdas en el metodo
-                if (metodo.startsWith("lambda$")) {
-                    // separamos por el símbolo '$' y nos quedamos con la segunda parte
-                    metodo = metodo.split("\\$")[1];
-                }
-
-                //extraer la traza completa (la pasamos a string)
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                ex.printStackTrace(pw);
-                String trazaCompleta = sw.toString();
-
-                // recortamos la traza si es larga para proteger la base de datos
-                String traza = trazaCompleta.length() > 2000 ? trazaCompleta.substring(0, 2000) : trazaCompleta;
-
-                //creamos un map (diccionario) para representar el json
-                java.util.Map<String, Object> incidenciaJson = new java.util.HashMap<>();
-                incidenciaJson.put("endpoint", endpoint);
-                incidenciaJson.put("tipo", tipo);
-                incidenciaJson.put("clase", clase);
-                incidenciaJson.put("metodo", metodo);
-                incidenciaJson.put("traza", traza);
-                incidenciaJson.put("fecha", LocalDateTime.now().toString());
-
-                // AQUÍ ESTÁ EL ARREGLO PARA EL NULL
-                incidenciaJson.put("id_usuario", idUsuario);
-
-                // la magia de microservicios: hacemos una petición post al otro microservicio
-                org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-                try {
-                    restTemplate.postForObject("http://host.docker.internal:8082/incidencias", incidenciaJson, String.class);
-                } catch (Exception e) {
-                    // Usamos logger nativo para asegurar la compilación
-                    java.util.logging.Logger.getLogger(this.getClass().getName())
-                            .severe("No se pudo comunicar con el servidor de incidencias: " + e.getMessage());
-                }
-            }
+    private void enviarIncidencia(java.util.Map<String, Object> incidenciaJson) {
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+        try {
+            restTemplate.postForObject("http://host.docker.internal:8082/incidencias", incidenciaJson, String.class);
+        } catch (Exception e) {
+            java.util.logging.Logger.getLogger(this.getClass().getName())
+                    .severe("No se pudo comunicar con el servidor de incidencias: " + e.getMessage());
         }
     }
 }
+

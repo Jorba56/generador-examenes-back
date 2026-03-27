@@ -82,31 +82,7 @@ public class GlobalExceptionHandler {
         if (attrs != null) {
             HttpServletRequest request = attrs.getRequest();
             endpoint = request.getRequestURI();
-
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                try {
-                    String token = authHeader.substring(7);
-                    // 1. El JWT tiene 3 partes separadas por puntos. La 2ª es el Payload (datos).
-                    String[] partes = token.split("\\.");
-                    if (partes.length > 1) {
-                        // 2. Decodificamos la base64 del payload
-                        String payloadJson = new String(Base64.getUrlDecoder().decode(partes[1]));
-
-                        // 3. Usamos ObjectMapper (que Spring ya tiene) para leer el JSON
-                        ObjectMapper mapper = new ObjectMapper();
-                        JsonNode nodo = mapper.readTree(payloadJson);
-
-                        // 4. Buscamos el campo "id_user" que inyectamos en el otro microservicio
-                        if (nodo.has("id_user")) {
-                            idUsuario = nodo.get("id_user").asLong();
-                        }
-                    }
-                } catch (Exception e) {
-                    // Si el token es inválido o no tiene el ID, se queda en 0L
-                    idUsuario = 0L;
-                }
-            }
+            idUsuario = extraerIdDelToken(request);
         }
 
         String tipo = ex.getClass().getSimpleName();
@@ -115,40 +91,74 @@ public class GlobalExceptionHandler {
 
         if (ex.getStackTrace() != null && ex.getStackTrace().length > 0) {
             StackTraceElement elemento = ex.getStackTrace()[0];
-            clase = elemento.getClassName();
-            metodo = elemento.getMethodName();
+            clase = limpiarNombreClase(elemento.getClassName()); // 🚀 Lógica delegada
+            metodo = limpiarNombreMetodo(elemento.getMethodName()); // 🚀 Lógica delegada
         }
 
-        if (clase.contains(".")) {
-            clase = clase.substring(clase.lastIndexOf(".") + 1);
-        }
+        String traza = obtenerTrazaRecortada(ex); // 🚀 Lógica delegada
 
-        if (clase.contains("$$")) {
-            clase = clase.substring(0, clase.indexOf("$$"));
-        }
-
-        if (metodo.startsWith("lambda$")) {
-            metodo = metodo.split("\\$")[1];
-        }
-
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        String trazaCompleta = sw.toString();
-        String traza = trazaCompleta.length() > 2000 ? trazaCompleta.substring(0, 2000) : trazaCompleta;
-
-        // Aquí SÍ guardamos usando el objeto Incidencia y el servicio directamente
         Incidencia incidencia = new Incidencia();
         incidencia.setEndpoint(endpoint);
         incidencia.setTipo(tipo);
         incidencia.setClase(clase);
         incidencia.setMetodo(metodo);
         incidencia.setTraza(traza);
-        incidencia.setFecha(LocalDateTime.now());
-
-        // Asignamos el ID capturado
         incidencia.setIdUsuario(idUsuario);
-
         incidenciaService.guardar(incidencia);
+    }
+
+    private Long extraerIdDelToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        // Retorno temprano si no hay cabecera válida
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return 0L;
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            String[] partes = token.split("\\.");
+
+            // Retorno temprano si el token no tiene el formato correcto
+            if (partes.length <= 1) {
+                return 0L;
+            }
+
+            String payloadJson = new String(Base64.getUrlDecoder().decode(partes[1]));
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode nodo = mapper.readTree(payloadJson);
+
+            return nodo.has("id_user") ? nodo.get("id_user").asLong() : 0L;
+
+        } catch (Exception e) {
+            return 0L; // Si el token es inválido o falla el parseo, se queda en 0L
+        }
+    }
+
+    private String limpiarNombreClase(String claseOriginal) {
+        String claseLimpia = claseOriginal;
+        if (claseLimpia.contains(".")) {
+            claseLimpia = claseLimpia.substring(claseLimpia.lastIndexOf(".") + 1);
+        }
+        if (claseLimpia.contains("$$")) {
+            claseLimpia = claseLimpia.substring(0, claseLimpia.indexOf("$$"));
+        }
+        return claseLimpia;
+    }
+
+    private String limpiarNombreMetodo(String metodoOriginal) {
+        if (metodoOriginal.startsWith("lambda$")) {
+            return metodoOriginal.split("\\$")[1];
+        }
+        return metodoOriginal;
+    }
+
+    private String obtenerTrazaRecortada(Exception ex) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+
+        String trazaCompleta = sw.toString();
+        return trazaCompleta.length() > 2000 ? trazaCompleta.substring(0, 2000) : trazaCompleta;
     }
 }

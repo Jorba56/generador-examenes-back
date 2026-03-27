@@ -107,7 +107,6 @@ class PreguntaControllerTest {
         String sortDir = "desc";
 
         // Creamos una pregunta simulada para rellenar la página
-        Pregunta preguntaMock = new Pregunta();
         preguntaMock.setId(1L);
         preguntaMock.setEnunciado("Pregunta paginada de prueba");
 

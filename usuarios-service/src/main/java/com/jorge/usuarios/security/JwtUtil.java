@@ -25,11 +25,11 @@ public class JwtUtil {
      * @param roles Lista de roles asignados al usuario.
      * @return String que representa el token JWT firmado.
      */
-    public String generarToken(String email, List<String> roles, Long id_user) {
+    public String generarToken(String email, List<String> roles, Long idUser) {
         return JWT.create()
                 .withSubject(email)// guardamos el correo en el token
                 .withClaim("roles", roles)
-                .withClaim("id_user", id_user)
+                .withClaim("id_user", idUser)
                 .withIssuedAt(new Date()) // fecha de creación
                 .withExpiresAt(new Date(System.currentTimeMillis() + 86400000)) // expira en 1 día
                 .sign(ALGORITHM);

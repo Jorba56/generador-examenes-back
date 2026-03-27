@@ -12,7 +12,6 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
-import com.jorge.examenes.services.EvaluacionService;
 import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
