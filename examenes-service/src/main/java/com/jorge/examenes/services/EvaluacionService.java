@@ -45,7 +45,7 @@ public interface EvaluacionService {
     List<EvaluacionHistorialDTO> obtenerNotasDeAlumnoEnExamen(Long idExamen, String correoAlumno);
 
     /**
-     * Calcula las métricas de rendimiento de un alumno en base a todo su historial.
+     * Calcula las métricas de rendimiento de un alumno en base a su historial.
      *
      * @param correo Correo electrónico del alumno a analizar.
      * @return {@link EstadisticasAlumnoDTO} que contiene la nota media, total de exámenes, aprobados y suspensos.
