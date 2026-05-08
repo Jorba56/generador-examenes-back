@@ -12,6 +12,7 @@ import com.jorge.examenes.exceptions.NotFoundException;
 import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
+import com.jorge.examenes.repository.RespuestaUsuarioRepository;
 import com.jorge.examenes.services.impl.EvaluacionServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,10 @@ class EvaluacionServiceImplTest {
     @Mock
     private EvaluacionMapper evaluacionMapper;
 
+    // ¡AÑADIDO! Faltaba mockear el nuevo repositorio de respuestas
+    @Mock
+    private RespuestaUsuarioRepository respuestaUsuarioRepository;
+
     @InjectMocks
     private EvaluacionServiceImpl evaluacionService;
 
@@ -60,11 +65,13 @@ class EvaluacionServiceImplTest {
 
         SecurityContextHolder.setContext(securityContext);
     }
+
     @AfterEach
     void tearDown() {
         // limpiamos el contexto de seguridad después de cada test
         SecurityContextHolder.clearContext();
     }
+
     @SuppressWarnings("java:S1130")
     @Test
     void deberiaCorregirExamenCorrectamente() throws BadRequestException {
@@ -80,11 +87,16 @@ class EvaluacionServiceImplTest {
 
         when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
 
+        // ¡CORRECCIÓN! Le decimos a Mockito que al hacer save devuelva una Evaluación con ID ficticio
+        Evaluacion evGuardada = new Evaluacion();
+        evGuardada.setId(100L);
+        when(evaluacionRepository.save(any(Evaluacion.class))).thenReturn(evGuardada);
+
         ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
-        Map<Integer, String> respuestas = new HashMap<>();
-        respuestas.put(1, "A"); // acierto
-        respuestas.put(2, "C"); // fallo (era la b)
-        // la 3 la dejamos sin enviar (en bl
+        Map<Integer, String> respuestas = new HashMap<>(); // <-- Vuelve a ser Integer
+        respuestas.put(10, "A"); // acierto
+        respuestas.put(11, "C"); // fallo (era la b)
+        // la 12 la dejamos sin enviar (en blanco)
         submitDTO.setRespuestas(respuestas);
 
         EvaluacionResultDTO resultado = evaluacionService.corregirExamen(1L, submitDTO);
@@ -109,14 +121,18 @@ class EvaluacionServiceImplTest {
 
         when(examenRepository.findById(1L)).thenReturn(Optional.of(examen));
 
+        // ¡CORRECCIÓN! Le decimos a Mockito que al hacer save devuelva una Evaluación con ID ficticio
+        Evaluacion evGuardada = new Evaluacion();
+        evGuardada.setId(100L);
+        when(evaluacionRepository.save(any(Evaluacion.class))).thenReturn(evGuardada);
+
         ExamenSubmitDTO submitDTO = new ExamenSubmitDTO();
-        Map<Integer, String> respuestas = new HashMap<>();
+        Map<Integer, String> respuestas = new HashMap<>(); // <-- Vuelve a ser Integer
 
-        //la pregunta 1 no la metemos en el map. al hacer get(1) devolverá 'null'
-        //la pregunta 2 la metemos como espacios en blanco. cumplirá el 'trim().isempty()'
-        respuestas.put(2, "   ");
+        //la pregunta 10 no la metemos en el map
+        //la pregunta 11 la metemos como espacios en blanco
+        respuestas.put(11, "   ");
         submitDTO.setRespuestas(respuestas);
-
 
         EvaluacionResultDTO resultado = evaluacionService.corregirExamen(1L, submitDTO);
 
@@ -161,15 +177,12 @@ class EvaluacionServiceImplTest {
         List<Evaluacion> misEvaluaciones = Arrays.asList(new Evaluacion(), new Evaluacion());
         List<EvaluacionHistorialDTO> dtosEsperados = Arrays.asList(new EvaluacionHistorialDTO(), new EvaluacionHistorialDTO());
 
-
         when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc("alumno@test.com"))
                 .thenReturn(misEvaluaciones);
         when(evaluacionMapper.toHistorialDTOList(misEvaluaciones))
                 .thenReturn(dtosEsperados);
 
-
         List<EvaluacionHistorialDTO> resultado = evaluacionService.obtenerMisNotas();
-
 
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
@@ -230,8 +243,6 @@ class EvaluacionServiceImplTest {
     void obtenerEstadisticasAlumno_ConExamenes_DeberiaCalcularMediaYAprobados() {
         String correo = "alumno@gmail.com";
 
-        // tres exámenes ficticios: 4.0, 8.0 y 6.0
-        // la media debería ser (4 + 8 + 6) / 3 = 6.0. debería haber 2 aprobados y 1 suspenso.
         Evaluacion eval1 = new Evaluacion();
         eval1.setNota(4.0);
 
@@ -292,7 +303,6 @@ class EvaluacionServiceImplTest {
     void obtenerEstadisticas_CuandoListaEstaVacia_DeberiaLanzarNotFound() {
         String correo = "nuevo@test.com";
 
-        // simulamos que el repositorio devuelve una lista vacía
         when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc(correo))
                 .thenReturn(java.util.Collections.emptyList());
 
@@ -314,7 +324,6 @@ class EvaluacionServiceImplTest {
                 .thenReturn(evaluaciones);
         when(evaluacionMapper.toHistorialDTOList(evaluaciones)).thenReturn(dtos);
 
-        // forzamos pasar por todas las ramas posibles del switch para el 100% de branch coverage
         evaluacionService.obtenerHistorialAlumno("alumno@test.com", "nota", "asc");
         evaluacionService.obtenerHistorialAlumno("alumno@test.com", "fecha", "desc");
         evaluacionService.obtenerHistorialAlumno("alumno@test.com", "correo", "asc");
@@ -346,7 +355,6 @@ class EvaluacionServiceImplTest {
         when(evaluacionRepository.findByIdExamen(eq(1L), any(Sort.class))).thenReturn(evaluaciones);
         when(evaluacionMapper.toHistorialDTOList(evaluaciones)).thenReturn(dtos);
 
-        // forzamos el "asc" para cubrir la rama que faltaba del operador ternario
         List<EvaluacionHistorialDTO> resultado = evaluacionService.obtenerNotasExamen(1L, "nota", "asc");
 
         assertNotNull(resultado);
@@ -356,7 +364,6 @@ class EvaluacionServiceImplTest {
 
     @Test
     void obtenerMisNotas_DeberiaLanzarNotFoundSiNoHayExamenes() {
-        // Simulamos que la base de datos devuelve una lista vacía
         when(evaluacionRepository.findByCorreoUsuarioOrderByFechaDesc("alumno@test.com"))
                 .thenReturn(new ArrayList<>());
 

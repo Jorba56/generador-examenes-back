@@ -1,24 +1,28 @@
 package com.jorge.examenes.services.impl;
 
+import com.jorge.examenes.dto.ExamenSubmitDTO;
 import com.jorge.examenes.dto.ExamenDetalleDTO;
 import com.jorge.examenes.dto.ExamenGetDTO;
+import com.jorge.examenes.entity.Evaluacion;
 import com.jorge.examenes.entity.Examen;
 import com.jorge.examenes.entity.Pregunta;
+import com.jorge.examenes.entity.RespuestaUsuario;
 import com.jorge.examenes.exceptions.NotFoundException;
+import com.jorge.examenes.mapping.EvaluacionMapper;
 import com.jorge.examenes.mapping.ExamenMapper;
+import com.jorge.examenes.repository.EvaluacionRepository;
 import com.jorge.examenes.repository.ExamenRepository;
 import com.jorge.examenes.repository.PreguntaRepository;
+import com.jorge.examenes.repository.RespuestaUsuarioRepository;
 import com.jorge.examenes.services.ExamenService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementación del servicio de gestión de Exámenes.
@@ -31,19 +35,30 @@ import java.util.Set;
 public class ExamenServiceImpl implements ExamenService {
 
     String nf = "Examen no encontrado con ID: ";
+
     private final ExamenRepository examenRepository;
+    private final EvaluacionRepository evaluacionesRepository;
+    private final EvaluacionMapper evaluacionMapper;
+    private final RespuestaUsuarioRepository respuestasUsuarioRepository; // <-- AÑADIR ESTO
+
+    // AÑADIDO: Necesarios para que no den error el resto de tus métodos
     private final PreguntaRepository preguntaRepository;
-    private final ExamenMapper examenMapper; // <-- Inyectamos el Mapper
+    private final ExamenMapper examenMapper;
 
     /**
      * Constructor que inyecta las dependencias necesarias.
-     *
-     * @param examenRepository Repositorio para acceder a los datos de los exámenes.
-     * @param preguntaRepository Repositorio para acceder al banco general de preguntas.
-     * @param examenMapper Mapper para transformar entre entidades de base de datos y objetos DTO.
      */
-    public ExamenServiceImpl(ExamenRepository examenRepository, PreguntaRepository preguntaRepository, ExamenMapper examenMapper) {
+    // CORREGIDO: El constructor debe llamarse igual que la clase (ExamenServiceImpl)
+    public ExamenServiceImpl(EvaluacionRepository evaluacionesRepository,
+                             ExamenRepository examenRepository,
+                             EvaluacionMapper evaluacionMapper,
+                             RespuestaUsuarioRepository respuestasUsuarioRepository,
+                             PreguntaRepository preguntaRepository,
+                             ExamenMapper examenMapper) {
+        this.evaluacionesRepository = evaluacionesRepository;
         this.examenRepository = examenRepository;
+        this.evaluacionMapper = evaluacionMapper;
+        this.respuestasUsuarioRepository = respuestasUsuarioRepository;
         this.preguntaRepository = preguntaRepository;
         this.examenMapper = examenMapper;
     }
@@ -216,5 +231,50 @@ public class ExamenServiceImpl implements ExamenService {
         Page<Examen> paginaExamenes = examenRepository.findAll(pageable);
 
         return paginaExamenes.map(examenMapper::toResumenDTO);
+    }
+
+    @Transactional
+    public Evaluacion finalizarExamen(Long idExamen, String correoUsuario, ExamenSubmitDTO submitDTO) {
+        Examen examen = examenRepository.findById(idExamen)
+                .orElseThrow(() -> new NotFoundException(nf + idExamen));
+
+        int aciertos = 0;
+        Map<Integer, String> respuestas = submitDTO.getRespuestas();
+        if (respuestas == null) {
+            respuestas = new java.util.HashMap<>();
+        }
+
+        for (Pregunta p : examen.getPreguntas()) {
+
+            String marcada = respuestas.get(p.getId().intValue());
+            if (marcada != null && marcada.equalsIgnoreCase(p.getCorrecta())) {
+                aciertos++;
+            }
+        }
+
+        double notaFinal = examen.getPreguntas().isEmpty() ? 0.0 : ((double) aciertos / examen.getPreguntas().size()) * 10.0;
+        notaFinal = Math.round(notaFinal * 100.0) / 100.0;
+
+        // Guardar la evaluación general para obtener el ID generado
+        Evaluacion ev = new Evaluacion();
+        ev.setCorreoUsuario(correoUsuario);
+        ev.setNota(notaFinal);
+        ev.setIdExamen(idExamen);
+        ev = evaluacionesRepository.save(ev);
+
+        //Guardar el detalle de cada respuesta elegida por el alumno
+        for (Pregunta p : examen.getPreguntas()) {
+            RespuestaUsuario ru = new RespuestaUsuario();
+            ru.setIdEvaluacion(ev.getId());
+            ru.setIdPregunta(p.getId());
+
+            String marcada = respuestas.get(p.getId().intValue());
+
+            // Si no marcó nada o está vacío, le ponemos un guion "-"
+            ru.setRespuestaMarcada((marcada == null || marcada.trim().isEmpty()) ? "-" : marcada.toUpperCase());
+
+            respuestasUsuarioRepository.save(ru);
+        }
+        return ev;
     }
 }

@@ -17,7 +17,6 @@ let preguntasExamen = [];
 // --- 1. CARGAR EXAMEN Y PREGUNTAS ---
 async function iniciarExamen() {
     try {
-        // Tu endpoint GET /examenes/{id} devuelve el ExamenDetalleDTO con las preguntas dentro
         const response = await fetch(`${API_URL}/examenes/${idExamen}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -30,9 +29,9 @@ async function iniciarExamen() {
 
         if (response.ok) {
             const examen = await response.json();
-            document.getElementById('tituloExamen').innerText = examen.titulo || `Examen #${id}`;
+            // CORREGIDO: La variable id no existía, era idExamen
+            document.getElementById('tituloExamen').innerText = examen.titulo || `Examen #${idExamen}`;
 
-            // Extraemos las preguntas del DTO (Asegúrate de que la variable se llame 'preguntas' en tu DTO)
             preguntasExamen = examen.preguntas || [];
             pintarPreguntas();
         } else {
@@ -53,27 +52,41 @@ function pintarPreguntas() {
         return;
     }
 
-    preguntasExamen.forEach((p, index) => {
+    // ¡EL CHIVATO! Esto nos dirá en la consola del navegador qué está mandando Java
+    console.log("JSON real de Preguntas:", preguntasExamen);
+
+    preguntasExamen.forEach((item, index) => {
+        // Por si Spring Data REST o el Mapper lo envuelve en un sub-objeto
+        const p = item.pregunta ? item.pregunta : item;
+
+        // Autodetección: Busca el dato sin importar si es camelCase, snake_case o nulo
+        const idPregunta = p.id || index + 1;
+        const enunciado = p.enunciado || p.texto || "⚠️ ERROR: Enunciado vacío";
+        const opA = p.opcionA || p.opcion_a || "⚠️ Vacío";
+        const opB = p.opcionB || p.opcion_b || "⚠️ Vacío";
+        const opC = p.opcionC || p.opcion_c || "⚠️ Vacío";
+        const opD = p.opcionD || p.opcion_d || "⚠️ Vacío";
+
         contenedor.innerHTML += `
-            <div class="bg-gray-50 p-6 rounded border border-gray-200 shadow-sm" id="bloque-pregunta-${p.id}">
-                <h3 class="font-bold text-lg text-gray-800 mb-4"><span class="text-blue-600 mr-2">${index + 1}.</span> ${p.enunciado}</h3>
+            <div class="bg-gray-50 p-6 rounded border border-gray-200 shadow-sm" id="bloque-pregunta-${idPregunta}">
+                <h3 class="font-bold text-lg text-gray-800 mb-4"><span class="text-blue-600 mr-2">${index + 1}.</span> ${enunciado}</h3>
                 
                 <div class="space-y-3 pl-6">
                     <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-blue-100 rounded transition border border-transparent hover:border-blue-200">
-                        <input type="radio" name="pregunta_${p.id}" value="A" class="form-radio h-5 w-5 text-blue-600">
-                        <span class="text-gray-700 font-medium">Opción A ${p.opcion_a ? '- ' + p.opcion_a : ''}</span>
+                        <input type="radio" name="pregunta_${idPregunta}" value="A" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="text-gray-700 font-medium">Opción A - ${opA}</span>
                     </label>
                     <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-blue-100 rounded transition border border-transparent hover:border-blue-200">
-                        <input type="radio" name="pregunta_${p.id}" value="B" class="form-radio h-5 w-5 text-blue-600">
-                        <span class="text-gray-700 font-medium">Opción B ${p.opcion_b ? '- ' + p.opcion_b : ''}</span>
+                        <input type="radio" name="pregunta_${idPregunta}" value="B" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="text-gray-700 font-medium">Opción B - ${opB}</span>
                     </label>
                     <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-blue-100 rounded transition border border-transparent hover:border-blue-200">
-                        <input type="radio" name="pregunta_${p.id}" value="C" class="form-radio h-5 w-5 text-blue-600">
-                        <span class="text-gray-700 font-medium">Opción C ${p.opcion_c ? '- ' + p.opcion_c : ''}</span>
+                        <input type="radio" name="pregunta_${idPregunta}" value="C" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="text-gray-700 font-medium">Opción C - ${opC}</span>
                     </label>
                     <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-blue-100 rounded transition border border-transparent hover:border-blue-200">
-                        <input type="radio" name="pregunta_${p.id}" value="D" class="form-radio h-5 w-5 text-blue-600">
-                        <span class="text-gray-700 font-medium">Opción D ${p.opcion_d ? '- ' + p.opcion_d : ''}</span>
+                        <input type="radio" name="pregunta_${idPregunta}" value="D" class="form-radio h-5 w-5 text-blue-600">
+                        <span class="text-gray-700 font-medium">Opción D - ${opD}</span>
                     </label>
                 </div>
             </div>
@@ -84,15 +97,19 @@ function pintarPreguntas() {
 }
 
 // --- 3. RECOGER RESPUESTAS Y ENVIAR AL BACKEND ---
+
 async function entregarExamen() {
     if (!confirm("¿Estás seguro de que quieres entregar el examen ya? Revisa tus respuestas.")) return;
 
     let respuestasUsuario = {};
     let todasRespondidas = true;
 
-    // Fíjate que ahora usamos (p, index) para saber si es la pregunta 1, 2, 3...
-    preguntasExamen.forEach((p, index) => {
-        const opciones = document.getElementsByName(`pregunta_${p.id}`);
+    // Misma lógica segura para leer las preguntas que al pintarlas
+    preguntasExamen.forEach((item, index) => {
+        const p = item.pregunta ? item.pregunta : item;
+        const idPregunta = p.id || index + 1; // Pillamos el ID real asegurado
+
+        const opciones = document.getElementsByName(`pregunta_${idPregunta}`);
         let valorSeleccionado = null;
 
         for (const radio of opciones) {
@@ -104,14 +121,10 @@ async function entregarExamen() {
 
         if (!valorSeleccionado) {
             todasRespondidas = false;
-            document.getElementById(`bloque-pregunta-${p.id}`).classList.add('border-red-500', 'bg-red-50');
+            document.getElementById(`bloque-pregunta-${idPregunta}`).classList.add('border-red-500', 'bg-red-50');
         } else {
-            document.getElementById(`bloque-pregunta-${p.id}`).classList.remove('border-red-500', 'bg-red-50');
-
-            // AQUÍ ESTÁ LA MAGIA: Tu backend espera 1, 2, 3...
-            // Como los arrays en JS empiezan en 0, le sumamos 1.
-            const numeroPreguntaParaJava = index + 1;
-            respuestasUsuario[numeroPreguntaParaJava] = valorSeleccionado;
+            document.getElementById(`bloque-pregunta-${idPregunta}`).classList.remove('border-red-500', 'bg-red-50');
+            respuestasUsuario[idPregunta] = valorSeleccionado;
         }
     });
 
@@ -123,6 +136,8 @@ async function entregarExamen() {
     const payloadEvaluacion = {
         respuestas: respuestasUsuario
     };
+
+    console.log("Enviando a Java:", payloadEvaluacion); // Para ver qué mandamos exactamente
 
     try {
         const response = await fetch(`${API_URL}/evaluaciones/${idExamen}`, {
@@ -136,7 +151,13 @@ async function entregarExamen() {
 
         if (response.ok) {
             const resultado = await response.json();
-            alert(`¡Examen entregado correctamente!\n\nTu Nota: ${resultado.nota_final} / 10\nAciertos: ${resultado.aciertos}\nFallos: ${resultado.fallos}\nEn Blanco: ${resultado.en_blanco}`);
+            console.log("Recibido de Java:", resultado); // Para ver qué nos devuelve
+
+            // Autodetección: Si no encuentra notaFinal, busca nota_final por si acaso
+            const nota = resultado.notaFinal !== undefined ? resultado.notaFinal : resultado.nota_final;
+            const blancas = resultado.enBlanco !== undefined ? resultado.enBlanco : resultado.en_blanco;
+
+            alert(`¡Examen entregado correctamente!\n\nTu Nota: ${nota} / 10\nAciertos: ${resultado.aciertos}\nFallos: ${resultado.fallos}\nEn Blanco: ${blancas}`);
             window.location.href = 'mis-notas.html';
         } else if (response.status === 400) {
             alert("El servidor ha rechazado la entrega. Has agotado tus intentos permitidos.");
@@ -149,11 +170,10 @@ async function entregarExamen() {
     }
 }
 
-
-    function abandonarExamen() {
-        if (confirm("Si abandonas ahora, perderás el progreso. ¿Salir?")) {
-            window.location.href = 'examenes-disponibles.html';
-        }
+function abandonarExamen() {
+    if (confirm("Si abandonas ahora, perderás el progreso. ¿Salir?")) {
+        window.location.href = 'examenes-disponibles.html';
     }
+}
 
 iniciarExamen();
