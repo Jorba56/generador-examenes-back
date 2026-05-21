@@ -132,3 +132,52 @@ window.guardarMiPerfil = async function() {
         alert("Fallo de conexión al guardar.");
     }
 }
+
+async function descargarReporteGeneral() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("Error: No estás autenticado.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    try {
+        console.log("[JS-DEBUG] Solicitando PDF global a BIRT...");
+
+        // Llamada al endpoint que creamos en el ReporteController
+        const response = await fetch('http://localhost:8080/reportes/general', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        // Convertir la respuesta en un archivo Blob (Binario)
+        const blob = await response.blob();
+
+        // Crear una URL temporal en el navegador para descargar el archivo
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        // Nombre con el que se descargará en el ordenador del usuario
+        a.download = "Listado_General_Examenes.pdf";
+
+        document.body.appendChild(a);
+        a.click(); // Simulamos el clic
+
+        // Limpiamos la URL temporal
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        console.log("[JS-DEBUG] ¡Descarga del PDF global completada!");
+
+    } catch (error) {
+        console.error("[JS-DEBUG] ❌ Error al descargar el PDF:", error);
+        alert("Hubo un problema al generar el reporte global. Revisa la consola.");
+    }
+}

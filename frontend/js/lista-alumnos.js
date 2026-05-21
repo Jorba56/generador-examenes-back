@@ -87,9 +87,9 @@ window.verEstadisticas = async function(correo) {
         if (response.ok) {
             const stats = await response.json();
             document.getElementById('modalMedia').innerText = stats.notaMedia || stats.nota_media || 0;
-            document.getElementById('modalTotal').innerText = stats.totalExamenes || stats.total_examenes_realizados || 0;
-            document.getElementById('modalAprobados').innerText = stats.aprobados || stats.examenes_aprobados || 0;
-            document.getElementById('modalSuspensos').innerText = stats.suspensos || stats.examenes_suspendidos || 0;
+            document.getElementById('modalTotal').innerText = stats.totalExamenes || stats.totalExamenesRealizados || 0;
+            document.getElementById('modalAprobados').innerText = stats.aprobados || stats.examenesAprobados || 0;
+            document.getElementById('modalSuspensos').innerText = stats.suspensos || stats.examenesSuspendidos || 0;
             document.getElementById('contenedorDatosModal').classList.remove('hidden');
         } else {
             document.getElementById('mensajeErrorModal').classList.remove('hidden');

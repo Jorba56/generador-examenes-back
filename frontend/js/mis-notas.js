@@ -67,8 +67,8 @@ async function cargarMisNotas() {
                     ? `<span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">Aprobado</span>`
                     : `<span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">Suspenso</span>`;
 
-                // Usamos el idExamen (o el titulo si tu DTO lo incluye)
-                const nombreExamen = nota.tituloExamen ? nota.tituloExamen : `Examen #${nota.id_examen}`;
+                // CORREGIDO: Usamos nota.idExamen (camelCase)
+                const nombreExamen = nota.tituloExamen ? nota.tituloExamen : `Examen #${nota.idExamen}`;
 
                 tabla.innerHTML += `
                     <tr class="hover:bg-blue-50 border-b border-gray-100 transition duration-150">
@@ -76,6 +76,12 @@ async function cargarMisNotas() {
                         <td class="px-5 py-4 text-sm font-bold text-gray-800">${nombreExamen}</td>
                         <td class="px-5 py-4 text-center">${badgeEstado}</td>
                         <td class="px-5 py-4 text-center text-lg font-black ${colorNota}">${nota.nota}</td>
+                        <td class="px-5 py-4 text-center">
+                            <button onclick="descargarReporteBirt(${nota.idEvaluacion})" 
+                             class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded shadow">
+                            📄 Descargar PDF
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -88,5 +94,56 @@ async function cargarMisNotas() {
     }
 }
 
+async function descargarReporteBirt(idEvaluacion) {
+    // 1. Esto pausará el navegador si tienes el F12 abierto
+
+    console.log("==========================================");
+    console.log("[JS-DEBUG] 1. Iniciando petición de PDF...");
+    console.log("[JS-DEBUG] 2. ID de la evaluación solicitada:", idEvaluacion);
+
+    const urlDestino = `${API_URL}/reportes/${idEvaluacion}`;
+    console.log("[JS-DEBUG] 3. URL exacta a la que disparamos:", urlDestino);
+    console.log("[JS-DEBUG] 4. ¿Hay Token JWT?:", token ? "Sí, preparado." : "¡FALTA EL TOKEN!");
+
+    try {
+        const response = await fetch(urlDestino, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        console.log("[JS-DEBUG] --- RESPUESTA DEL SERVIDOR ---");
+        console.log("[JS-DEBUG] 5. Código de estado HTTP:", response.status);
+        console.log("[JS-DEBUG] 6. ¿Respuesta OK?:", response.ok);
+
+        if (response.ok) {
+            console.log("[JS-DEBUG] 7. ¡Éxito! Java ha devuelto el archivo. Ensamblando PDF...");
+            const blob = await response.blob();
+            console.log("[JS-DEBUG] 8. Tamaño del archivo recibido:", blob.size, "bytes");
+
+            const urlDescarga = window.URL.createObjectURL(blob);
+            const enlaceFalso = document.createElement('a');
+            enlaceFalso.href = urlDescarga;
+            enlaceFalso.download = `Reporte_Examen_${idEvaluacion}.pdf`;
+            document.body.appendChild(enlaceFalso);
+            enlaceFalso.click();
+            document.body.removeChild(enlaceFalso);
+            window.URL.revokeObjectURL(urlDescarga);
+
+            console.log("[JS-DEBUG] 9. Archivo descargado en tu ordenador.");
+        } else {
+            console.error("[JS-DEBUG] ❌ El servidor ha rechazado la petición.");
+            // Leemos qué mensaje de error exacto ha mandado Spring Boot
+            const textoError = await response.text();
+            console.error("[JS-DEBUG] Mensaje de Java:", textoError);
+            alert(`Error del servidor: ${response.status}. Revisa la consola F12.`);
+        }
+    } catch (error) {
+        console.error("[JS-DEBUG] ❌ FALLO DE RED (Gateway apagado o CORS):", error);
+        alert("Fallo de red total. ¿Está Docker encendido?");
+    }
+    console.log("==========================================");
+}
 // Arrancamos
 cargarMisNotas();

@@ -85,7 +85,7 @@ async function cargarExamenes() {
             }
 
             examenes.forEach(examen => {
-                const fechaFormat = examen.fecha_creacion ? new Date(examen.fecha_creacion).toLocaleDateString() : 'N/A';
+                const fechaFormat = examen.fechaCreacion ? new Date(examen.fechaCreacion).toLocaleDateString() : 'N/A';
 
                 tabla.innerHTML += `
                     <tr class="hover:bg-gray-50 transition duration-150">
@@ -94,7 +94,7 @@ async function cargarExamenes() {
                         <td class="px-5 py-4 border-b border-gray-200 text-sm">${fechaFormat}</td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm text-center">
                             <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-xs font-bold">
-                                ${examen.numero_preguntas}
+                                ${examen.numeroPreguntas}
                             </span>
                         </td>
                         <td class="px-5 py-4 border-b border-gray-200 text-sm text-center">

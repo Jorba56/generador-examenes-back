@@ -47,10 +47,10 @@ async function cargarDetallesExamen() {
                             <span class="text-blue-600 mr-2">${index + 1}.</span>${pregunta.enunciado}
                         </h4>
                         <div class="pl-6 space-y-2">
-                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">A) ${pregunta.opcion_a}</p>
-                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">B) ${pregunta.opcion_b}</p>
-                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">C) ${pregunta.opcion_c}</p>
-                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">D) ${pregunta.opcion_d}</p>
+                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">A) ${pregunta.opcionA}</p>
+                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">B) ${pregunta.opcionB}</p>
+                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">C) ${pregunta.opcionC}</p>
+                            <p class="text-gray-700 p-2 bg-gray-50 rounded border">D) ${pregunta.opcionD}</p>
                         </div>
                     </div>
                 `;

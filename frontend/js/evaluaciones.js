@@ -117,9 +117,9 @@ function pintarTabla(listaNotas, titulo) {
 
         tabla.innerHTML += `
             <tr class="hover:bg-gray-50 border-b border-gray-200">
-                <td class="px-5 py-3 text-sm text-gray-500">#${nota.id_evaluacion}</td>
-                <td class="px-5 py-3 text-sm font-bold text-gray-800">Examen #${nota.id_examen}</td>
-                <td class="px-5 py-3 text-sm text-gray-700">${nota.correo_usuario || 'N/A'}</td>
+                <td class="px-5 py-3 text-sm text-gray-500">#${nota.idEvaluacion}</td>
+                <td class="px-5 py-3 text-sm font-bold text-gray-800">Examen #${nota.idExamen}</td>
+                <td class="px-5 py-3 text-sm text-gray-700">${nota.correoUsuario || 'N/A'}</td>
                 <td class="px-5 py-3 text-sm text-center text-gray-500">${fecha}</td>
                 <td class="px-5 py-3 text-sm text-center font-black ${colorNota}">${nota.nota}</td>
             </tr>
