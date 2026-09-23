@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
-
+// configuracion open api
 @OpenAPIDefinition(
         info = @Info(title = "API del Sprint 2", version = "1.0", description = "Generador de Exámenes"),
         security = @SecurityRequirement(name = "bearerAuth")
