@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario de Pregunta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+<nav class="bg-blue-800 p-4 shadow text-white flex justify-between">
+  <h1 id="tituloPagina" class="text-xl font-bold">Crear Nueva Pregunta</h1>
+  <button onclick="window.location.href='preguntas.html'" class="bg-gray-700 hover:bg-gray-900 px-4 py-2 rounded font-bold">Volver</button>
+</nav>
+
+<main class="container mx-auto mt-8 p-4 max-w-2xl">
+  <form id="formPregunta" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+    <div>
+      <label class="font-bold text-gray-700">Enunciado de la pregunta</label>
+      <textarea id="enunciado" required class="w-full border rounded p-2 mt-1" rows="3"></textarea>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div><label class="font-bold text-sm">Opción A</label><input type="text" id="opcionA" required class="w-full border rounded p-2"></div>
+      <div><label class="font-bold text-sm">Opción B</label><input type="text" id="opcionB" required class="w-full border rounded p-2"></div>
+      <div><label class="font-bold text-sm">Opción C</label><input type="text" id="opcionC" required class="w-full border rounded p-2"></div>
+      <div><label class="font-bold text-sm">Opción D</label><input type="text" id="opcionD" class="w-full border rounded p-2" placeholder="(Opcional)"></div>
+    </div>
+    <div>
+      <label class="font-bold text-gray-700">Respuesta Correcta</label>
+      <select id="correcta" class="w-full border rounded p-2 mt-1">
+        <option value="A">Opción A</option>
+        <option value="B">Opción B</option>
+        <option value="C">Opción C</option>
+        <option value="D">Opción D</option>
+      </select>
+    </div>
+    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded mt-4">Guardar Pregunta</button>
+  </form>
+</main>
+<script src="js/crear-pregunta.js"></script>
+</body>
+</html>

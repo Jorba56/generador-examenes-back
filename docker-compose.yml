@@ -1,46 +1,63 @@
 version: '3.8'
 
 services:
-  # 1. Nuestro contenedor de Base de Datos
-  mysqldb:
-    image: mysql:8.0
-    container_name: sprint3-mysql
+  incidencias-service:
+    build: ./incidencias-service
+    container_name: sprint3-incidencias
     ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_DATABASE=usuarios # <-- Pon aquí el nombre exacto de tu BBDD
-      - MYSQL_ROOT_PASSWORD=12345
-    command: --default-authentication-plugin=mysql_native_password
+      - "8082:8082"
+    depends_on:
+      - eureka-server
+    networks:
+      - red-generador
 
-  # 2. Nuestro contenedor de la Aplicación Java
-  backend:
-    build: . # Le dice a Docker que busque tu Dockerfile en esta misma carpeta
-    container_name: sprint3-backend
+  usuarios-service:
+    build: ./usuarios-service
+    container_name: sprint3-usuarios
+    ports:
+      - "8081:8081"
+    depends_on:
+      - incidencias-service
+      - eureka-server
+    networks:
+      - red-generador
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: sprint3-gateway
     ports:
       - "8080:8080"
     depends_on:
-      - mysqldb # Espera a que la BD exista antes de arrancar Java
-    environment:
-      # Estos parámetros sobreescriben tu application.properties para que se conecte a Docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/usuarios?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=12345
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - usuarios-service
+      - incidencias-service
+      - eureka-server
+    networks:
+      - red-generador
 
-  sonarqube:
-    image: sonarqube:26.1.0.118079-community
-    container_name: sprint3-sonarqube
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
     ports:
-      - "9000:9000"
-    environment:
-      - SONAR_FORCEAUTHENTICATION=false
+      - "8761:8761"
+    networks:
+      - red-generador
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: sprint3-jenkins
-    user: root
+  examen-service:
+    build: ./examenes-service
+    container_name: sprint4-examenes
     ports:
-      - "8090:8080"
-    volumes:
-      - ./jenkins_data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # ruta para poder borrar y actualizar dockers
+      - "8083:8083"
+    depends_on:
+      - usuarios-service
+      - eureka-server
+    networks:
+      - red-generador
+
+networks:
+  red-generador:
+      driver: bridge

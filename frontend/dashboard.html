@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Plataforma de Exámenes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<nav class="bg-blue-600 p-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center text-white">
+        <h1 class="text-xl font-bold tracking-wider">Panel de Control</h1>
+        <div class="flex items-center gap-4">
+            <span id="userBadge" class="bg-blue-800 px-3 py-1 rounded text-sm font-semibold">Sesión Activa</span>
+            <button href="index.html" id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-bold transition">
+                Cerrar Sesión
+            </button>
+        </div>
+    </div>
+</nav>
+
+<main class="container mx-auto mt-8 p-4">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Listado de Exámenes</h2>
+        <div class="flex gap-4 items-center">
+            <select id="sortExamenes" onchange="cambiarOrden()" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-bold text-gray-600">
+                <option value="id-desc">Más recientes (ID)</option>
+                <option value="id-asc">Más antiguos (ID)</option>
+                <option value="titulo-asc">Título (A-Z)</option>
+                <option value="titulo-desc">Título (Z-A)</option>
+                <option value="fecha-desc">Fecha (Más nuevos)</option>
+                <option value="fecha-asc">Fecha (Más antiguos)</option>
+            </select>
+
+            <button onclick="window.location.href='crear-examen.html'" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition">
+                + Crear Examen
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full leading-normal">
+            <thead class="bg-gray-800 text-white">
+            <tr>
+                <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-sm font-semibold uppercase tracking-wider">ID</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-sm font-semibold uppercase tracking-wider">Título</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-sm font-semibold uppercase tracking-wider">Fecha de Creación</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 text-center text-sm font-semibold uppercase tracking-wider">Nº Preguntas</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 text-center text-sm font-semibold uppercase tracking-wider">Acciones</th>
+            </tr>
+            </thead>
+            <tbody id="tablaExamenes" class="text-gray-700">
+            <tr>
+                <td colspan="5" class="px-5 py-8 text-center text-gray-500 animate-pulse">
+                    Cargando exámenes desde el servidor...
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-between items-center mt-4 bg-white p-4 rounded-lg shadow-md">
+        <span class="text-sm font-bold text-gray-600" id="infoPaginacion">Página 1</span>
+        <div class="flex gap-2">
+            <button id="btnAnt" onclick="cambiarPagina(-1)" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-4 rounded transition disabled:opacity-50 cursor-pointer">Anterior</button>
+            <button id="btnSig" onclick="cambiarPagina(1)" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-4 rounded transition disabled:opacity-50 cursor-pointer">Siguiente</button>
+        </div>
+    </div>
+</main>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

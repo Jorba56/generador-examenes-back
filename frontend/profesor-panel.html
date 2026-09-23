@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del Profesor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex h-screen overflow-hidden">
+
+<aside class="w-64 bg-indigo-900 text-white flex flex-col shadow-xl">
+    <div class="p-6 text-center border-b border-indigo-800">
+        <h2 class="text-2xl font-black tracking-tighter">TEACHER<span class="text-indigo-400">HUB</span></h2>
+        <p class="text-xs text-indigo-300 mt-1 uppercase font-bold">Panel Docente</p>
+    </div>
+
+    <nav class="flex-1 mt-6">
+        <a href="#" onclick="cargarVistaProfesor('dashboard.html', this, 'Gestión de Exámenes')" class="flex items-center px-6 py-3 bg-indigo-800 border-l-4 border-indigo-400 transition">
+            <i class="fas fa-file-signature mr-3 w-5 text-center"></i> Exámenes
+        </a>
+        <a href="#" onclick="cargarVistaProfesor('preguntas.html', this, 'Banco de Preguntas')" class="flex items-center px-6 py-3 hover:bg-indigo-800 border-l-4 border-transparent transition">
+            <i class="fas fa-question-circle mr-3 w-5 text-center"></i> Preguntas
+        </a>
+        <a href="#" onclick="cargarVistaProfesor('evaluaciones.html', this, 'Evaluaciones Globales')" class="flex items-center px-6 py-3 hover:bg-indigo-800 border-l-4 border-transparent transition">
+            <i class="fas fa-chart-bar mr-3 w-5 text-center"></i> Evaluaciones
+        </a>
+        <a href="#" onclick="cargarVistaProfesor('lista-alumnos.html', this, 'Listado de Alumnos')" class="flex items-center px-6 py-3 hover:bg-indigo-800 border-l-4 border-transparent transition">
+            <i class="fas fa-users mr-3 w-5 text-center"></i> Mis Alumnos
+        </a>
+    </nav>
+
+    <button onclick="descargarReporteGeneral()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 mb-3 rounded font-bold transition flex items-center justify-center shadow">
+        <i class="fas fa-file-pdf mr-2"></i> Reporte Global PDF
+    </button>
+
+    <div class="p-4 border-t border-indigo-800">
+        <button onclick="abrirModalMiPerfil()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-white py-2 mb-3 rounded font-bold transition flex items-center justify-center shadow">
+            <i class="fas fa-user-circle mr-2"></i> Mi Perfil
+        </button>
+
+    <div class="p-4 border-t border-indigo-800">
+        <button onclick="cerrarSesion()" class="w-full bg-red-500 hover:bg-red-600 py-2 rounded font-bold transition flex items-center justify-center shadow-lg">
+            <i class="fas fa-sign-out-alt mr-2"></i> Salir
+        </button>
+    </div>
+</aside>
+
+<main class="flex-1 flex flex-col">
+    <header class="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-200">
+        <h1 id="titulo-pagina" class="text-xl font-bold text-gray-800">Gestión de Exámenes</h1>
+        <div class="flex items-center gap-3">
+            <span class="bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-xs tracking-wider">PROFESOR</span>
+            <div id="usuario-info" class="text-sm font-bold text-gray-500">Cargando...</div>
+        </div>
+    </header>
+
+    <iframe id="contenido-profesor" src="dashboard.html" class="w-full flex-1 border-none bg-gray-50"></iframe>
+</main>
+
+<div id="modalMiPerfil" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
+    <div class="bg-white w-11/12 max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+        <div class="bg-indigo-900 p-6 flex justify-between items-center text-white">
+            <h3 class="text-xl font-bold flex items-center">
+                <i class="fas fa-user-circle mr-3 text-indigo-300"></i> Mi Perfil
+            </h3>
+            <button onclick="cerrarModalMiPerfil()" class="text-indigo-200 hover:text-white text-2xl font-bold transition">&times;</button>
+        </div>
+
+        <div class="p-6 bg-gray-50">
+            <form id="formMiPerfil" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nombre</label>
+                    <input type="text" id="miNombre" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Apellidos</label>
+                    <input type="text" id="miApellidos" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Correo Electrónico</label>
+                    <input type="email" id="miCorreo" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition bg-gray-100" readonly title="El correo no se puede cambiar por seguridad">
+                </div>
+
+                <hr class="border-gray-200 my-4">
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nueva Contraseña <span class="text-xs text-gray-400 font-normal">(Opcional)</span></label>
+                    <input type="password" id="miPassword" placeholder="Déjalo en blanco para no cambiarla" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white p-4 border-t border-gray-200 flex justify-end gap-3">
+            <button onclick="cerrarModalMiPerfil()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition">Cancelar</button>
+            <button onclick="guardarMiPerfil()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center">
+                <i class="fas fa-save mr-2"></i> Actualizar Perfil
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/profesor-panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+package com.jorge.examenes.services.impl;
+
+import com.jorge.examenes.dto.ExamenSubmitDTO;
+import com.jorge.examenes.dto.ExamenDetalleDTO;
+import com.jorge.examenes.dto.ExamenGetDTO;
+import com.jorge.examenes.entity.Evaluacion;
+import com.jorge.examenes.entity.Examen;
+import com.jorge.examenes.entity.Pregunta;
+import com.jorge.examenes.entity.RespuestaUsuario;
+import com.jorge.examenes.exceptions.NotFoundException;
+import com.jorge.examenes.mapping.EvaluacionMapper;
+import com.jorge.examenes.mapping.ExamenMapper;
+import com.jorge.examenes.repository.EvaluacionRepository;
+import com.jorge.examenes.repository.ExamenRepository;
+import com.jorge.examenes.repository.PreguntaRepository;
+import com.jorge.examenes.repository.RespuestaUsuarioRepository;
+import com.jorge.examenes.services.ExamenService;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.*;
+
+/**
+ * Implementación del servicio de gestión de Exámenes.
+ * <p>
+ * Contiene toda la lógica de negocio principal para la creación aleatoria de exámenes,
+ * la gestión de sus preguntas y la consulta paginada.
+ * </p>
+ */
+@Service
+public class ExamenServiceImpl implements ExamenService {
+
+    String nf = "Examen no encontrado con ID: ";
+
+    private final ExamenRepository examenRepository;
+    private final EvaluacionRepository evaluacionesRepository;
+    private final EvaluacionMapper evaluacionMapper;
+    private final RespuestaUsuarioRepository respuestasUsuarioRepository; // <-- AÑADIR ESTO
+
+    // AÑADIDO: Necesarios para que no den error el resto de tus métodos
+    private final PreguntaRepository preguntaRepository;
+    private final ExamenMapper examenMapper;
+
+    /**
+     * Constructor que inyecta las dependencias necesarias.
+     */
+    // CORREGIDO: El constructor debe llamarse igual que la clase (ExamenServiceImpl)
+    public ExamenServiceImpl(EvaluacionRepository evaluacionesRepository,
+                             ExamenRepository examenRepository,
+                             EvaluacionMapper evaluacionMapper,
+                             RespuestaUsuarioRepository respuestasUsuarioRepository,
+                             PreguntaRepository preguntaRepository,
+                             ExamenMapper examenMapper) {
+        this.evaluacionesRepository = evaluacionesRepository;
+        this.examenRepository = examenRepository;
+        this.evaluacionMapper = evaluacionMapper;
+        this.respuestasUsuarioRepository = respuestasUsuarioRepository;
+        this.preguntaRepository = preguntaRepository;
+        this.examenMapper = examenMapper;
+    }
+
+    /**
+     * Obtiene una lista con la información resumida de todos los exámenes registrados.
+     *
+     * @return Lista de {@link ExamenGetDTO} con el resumen de cada examen.
+     */
+    @Override
+    public List<ExamenGetDTO> obtenerTodosResumen() {
+        List<Examen> examenes = examenRepository.findAll();
+        return examenMapper.toResumenDTOList(examenes); // <-- 1 sola línea gracias a MapStruct
+    }
+
+    /**
+     * Recupera los detalles completos de un examen específico, incluyendo sus preguntas asociadas.
+     * Las preguntas se devuelven numeradas y con las respuestas correctas censuradas si aplica.
+     *
+     * @param id Identificador único del examen a consultar.
+     * @return {@link ExamenDetalleDTO} con la información detallada del examen.
+     * @throws NotFoundException Si el examen solicitado no existe en la base de datos.
+     */
+    @Override
+    public ExamenDetalleDTO obtenerDetallePorId(Long id) {
+        Examen examen = examenRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(nf + id));
+
+        return examenMapper.toDetalleDTO(examen); // <-- Automáticamente numerará las preguntas
+    }
+
+    /**
+     * Genera un examen de forma aleatoria seleccionando un número específico de preguntas
+     * del banco general de preguntas disponibles en la base de datos.
+     *
+     * @param titulo Título que se le asignará al nuevo examen.
+     * @param descripcion Breve texto descriptivo sobre el contenido del examen.
+     * @param numPreguntas Cantidad exacta de preguntas aleatorias que debe contener.
+     * @return {@link ExamenDetalleDTO} del examen recién creado y persistido.
+     * @throws NotFoundException Si en la base de datos hay menos preguntas disponibles
+     * que la cantidad solicitada para generar el examen.
+     */
+    @Override
+    public ExamenDetalleDTO generarExamenAleatorio(String titulo, String descripcion, int numPreguntas) {
+        Examen examen = new Examen();
+        examen.setTitulo(titulo);
+        examen.setDescripcion(descripcion);
+
+        List<Pregunta> preguntasAleatorias = preguntaRepository.findPreguntasAleatorias(numPreguntas);
+        if (preguntasAleatorias.size() < numPreguntas) {
+            throw new NotFoundException("No hay suficientes preguntas en la base de datos.");
+        }
+
+        examen.setPreguntas(preguntasAleatorias);
+        Examen examenGuardado = examenRepository.save(examen);
+
+        // devolvemos el dto en lugar de la entidad cruda
+        return examenMapper.toDetalleDTO(examenGuardado);
+    }
+
+    /**
+     * Actualiza la lista de preguntas asociadas a un examen existente.
+     * Sustituye las preguntas actuales por una nueva lista, eliminando posibles duplicados
+     * aportados por el usuario.
+     *
+     * @param idExamen Identificador del examen que se va a modificar.
+     * @param idsNuevasPreguntas Lista con los nuevos IDs de las preguntas a asociar.
+     * @return {@link ExamenDetalleDTO} con los detalles actualizados del examen.
+     * @throws NotFoundException Si el examen especificado no existe.
+     */
+    @Override
+    public ExamenDetalleDTO actualizarPreguntasDeExamen(Long idExamen, List<Long> idsNuevasPreguntas) {
+        Examen examen = examenRepository.findById(idExamen)
+                .orElseThrow(() -> new NotFoundException(nf + idExamen));
+
+        List<Pregunta> nuevasPreguntas = preguntaRepository.findAllById(idsNuevasPreguntas);
+        Set<Pregunta> preguntasSinDuplicados = new LinkedHashSet<>(nuevasPreguntas);
+
+        examen.setPreguntas(new ArrayList<>(preguntasSinDuplicados));
+        Examen examenActualizado = examenRepository.save(examen);
+
+        return examenMapper.toDetalleDTO(examenActualizado);
+    }
+
+    /**
+     * Modifica los datos básicos de un examen existente sin alterar las preguntas que contiene.
+     *
+     * @param id Identificador único del examen a modificar.
+     * @param titulo Nuevo título del examen (se ignora si es nulo o vacío).
+     * @param descripcion Nueva descripción del examen (se ignora si es nula).
+     * @return {@link ExamenDetalleDTO} con la información del examen tras aplicar los cambios.
+     * @throws NotFoundException Si el examen a actualizar no existe.
+     */
+    @Override
+    public ExamenDetalleDTO actualizarDetallesExamen(Long id, String titulo, String descripcion) {
+        Examen examen = examenRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(nf + id));
+
+        if (titulo != null && !titulo.isEmpty()) examen.setTitulo(titulo);
+        if (descripcion != null) examen.setDescripcion(descripcion);
+
+        Examen actualizado = examenRepository.save(examen);
+        return examenMapper.toDetalleDTO(actualizado);
+    }
+
+    /**
+     * Elimina un examen de la base de datos de manera definitiva.
+     *
+     * @param id Identificador del examen que se desea borrar.
+     * @throws NotFoundException Si el examen indicado no existe.
+     */
+    @Override
+    public void borrarExamen(Long id) {
+        if (!examenRepository.existsById(id)) {
+            throw new NotFoundException(nf + id);
+        }
+        examenRepository.deleteById(id);
+    }
+
+    /**
+     * Añade un conjunto de preguntas adicionales a un examen existente.
+     * Mantiene las preguntas previas y evita duplicados si alguna de las nuevas preguntas ya existía en el examen.
+     *
+     * @param idExamen Identificador del examen al que se le añadirán las preguntas.
+     * @param idsPreguntasNuevas Lista de los identificadores de las preguntas a añadir.
+     * @return {@link ExamenDetalleDTO} reflejando el examen con las preguntas añadidas al final.
+     * @throws NotFoundException Si el examen especificado no existe.
+     */
+    @Override
+    public ExamenDetalleDTO anadirPreguntas(Long idExamen, List<Long> idsPreguntasNuevas) {
+        Examen examen = examenRepository.findById(idExamen)
+                .orElseThrow(() -> new NotFoundException(nf+idExamen));
+
+        // buscamos las preguntas nuevas en la bd
+        List<Pregunta> nuevasPreguntas = preguntaRepository.findAllById(idsPreguntasNuevas);
+
+        // usamos un linkedhashset y metemos primero las preguntas viejas para no perderlas (ejemplo: ahora estaria asi [1, 5, 9])
+        Set<Pregunta> preguntasUnificadas = new LinkedHashSet<>(examen.getPreguntas());
+
+        // intentamos añadir de golpe las preguntas nuevas [5, 8, 2]
+        preguntasUnificadas.addAll(nuevasPreguntas);
+
+        //actual [1, 5, 9, 8, 2], se ponen al final y se evitan duplicados, y se pasa a la bbdd como lista
+        examen.setPreguntas(new ArrayList<>(preguntasUnificadas));
+        Examen actualizado = examenRepository.save(examen);
+
+        return examenMapper.toDetalleDTO(actualizado);
+    }
+
+    /**
+     * Recupera una lista paginada de todos los exámenes, permitiendo ordenación dinámica.
+     *
+     * @param page Número de página a consultar (comienza en 0).
+     * @param size Cantidad de resultados por página.
+     * @param sortBy Campo de ordenación ("titulo", "fecha" o por defecto "id").
+     * @param sortDir Dirección de la ordenación ("asc" o "desc").
+     * @return Objeto {@link Page} que contiene una lista de {@link ExamenGetDTO} correspondientes a la página solicitada.
+     */
+    @Override
+    public Page<ExamenGetDTO> obtenerExamenesPaginados(int page, int size, String sortBy, String sortDir) {
+        String campoEntidad = switch (sortBy.toLowerCase()) {
+            case "titulo" -> "titulo";
+            case "fecha" -> "fechaCreacion";
+            default -> "id";
+        };
+
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(campoEntidad).ascending() : Sort.by(campoEntidad).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Examen> paginaExamenes = examenRepository.findAll(pageable);
+
+        return paginaExamenes.map(examenMapper::toResumenDTO);
+    }
+
+    @Transactional
+    public Evaluacion finalizarExamen(Long idExamen, String correoUsuario, ExamenSubmitDTO submitDTO) {
+        Examen examen = examenRepository.findById(idExamen)
+                .orElseThrow(() -> new NotFoundException(nf + idExamen));
+
+        int aciertos = 0;
+        Map<Integer, String> respuestas = submitDTO.getRespuestas();
+        if (respuestas == null) {
+            respuestas = new java.util.HashMap<>();
+        }
+
+        for (Pregunta p : examen.getPreguntas()) {
+
+            String marcada = respuestas.get(p.getId().intValue());
+            if (marcada != null && marcada.equalsIgnoreCase(p.getCorrecta())) {
+                aciertos++;
+            }
+        }
+
+        double notaFinal = examen.getPreguntas().isEmpty() ? 0.0 : ((double) aciertos / examen.getPreguntas().size()) * 10.0;
+        notaFinal = Math.round(notaFinal * 100.0) / 100.0;
+
+        // Guardar la evaluación general para obtener el ID generado
+        Evaluacion ev = new Evaluacion();
+        ev.setCorreoUsuario(correoUsuario);
+        ev.setNota(notaFinal);
+        ev.setIdExamen(idExamen);
+        ev = evaluacionesRepository.save(ev);
+
+        //Guardar el detalle de cada respuesta elegida por el alumno
+        for (Pregunta p : examen.getPreguntas()) {
+            RespuestaUsuario ru = new RespuestaUsuario();
+            ru.setIdEvaluacion(ev.getId());
+            ru.setIdPregunta(p.getId());
+
+            String marcada = respuestas.get(p.getId().intValue());
+
+            // Si no marcó nada o está vacío, le ponemos un guion "-"
+            ru.setRespuestaMarcada((marcada == null || marcada.trim().isEmpty()) ? "-" : marcada.toUpperCase());
+
+            respuestasUsuarioRepository.save(ru);
+        }
+        return ev;
+    }
+}

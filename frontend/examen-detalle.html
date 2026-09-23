@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalles del Examen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<nav class="bg-blue-600 p-4 shadow-lg text-white">
+  <div class="container mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold">Detalles del Examen</h1>
+    <button onclick="window.location.href='dashboard.html'" class="bg-gray-800 hover:bg-gray-900 px-4 py-2 rounded font-bold">
+      ← Volver al Dashboard
+    </button>
+  </div>
+</nav>
+
+<main class="container mx-auto mt-8 p-4 max-w-4xl">
+  <div class="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
+    <h2 id="tituloExamen" class="text-3xl font-bold text-gray-800 mb-2">Cargando...</h2>
+    <p id="descExamen" class="text-gray-600">Por favor, espera...</p>
+  </div>
+
+  <h3 class="text-xl font-bold text-gray-800 mb-4">Preguntas del examen:</h3>
+
+  <div id="contenedorPreguntas" class="space-y-4">
+    <p class="text-center text-gray-500 animate-pulse">Obteniendo preguntas...</p>
+  </div>
+</main>
+
+<script src="js/examen-detalle.js"></script>
+</body>
+</html>
